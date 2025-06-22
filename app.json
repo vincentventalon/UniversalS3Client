@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Universal S3 client",
+    "slug": "universal-s3-client",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/aws_buckets3.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/aws_buckets3.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vincentventalon.universals3client",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/aws_buckets3.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/aws_buckets3.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "66911a74-ef2b-4192-bfac-92067ac83b06"
+      }
+    },
+    "owner": "vincentventalon"
+  }
+}

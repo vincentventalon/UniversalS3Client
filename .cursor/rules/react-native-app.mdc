@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+This app is a react native app, do not try to use Chakra UI or any web library
