@@ -1,6 +1,5 @@
 # Privacy Policy
 
-Last updated: [DATE]
 
 This privacy policy describes how the Universal S3 Client app collects, uses, stores, and protects your personal information when using our mobile application.
 
