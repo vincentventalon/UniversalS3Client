@@ -13,9 +13,8 @@ A React Native application that allows you to manage S3-compatible storage bucke
 ## Supported Providers
 
 - AWS S3
-- Cloudflare R2
 - Hetzner Storage
-- Any S3-compatible service
+- Soon: Any S3-compatible service
 
 ## Important Compatibility Notes
 
