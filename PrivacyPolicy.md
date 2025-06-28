@@ -34,6 +34,10 @@ We may update this privacy policy. Any changes will be posted in this section wi
 
 For any questions regarding this privacy policy, please contact us at: [contact email address]
 
+## 8. Access to Photos
+
+The Universal S3 Client app may request access to your photo library only when you choose to upload a file or image from your device. This access is used solely to allow you to select and upload files to your S3 storage. No photos or data are accessed or uploaded without your explicit action.
+
 ---
 
 This policy complies with Apple App Store requirements and respects the privacy of your personal data. 
