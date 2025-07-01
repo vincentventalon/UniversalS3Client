@@ -1,5 +1,11 @@
 # Universal S3 Client
 
+## Changelog
+
+### 1.1
+- Mise à jour de la version de l'application (1.0 → 1.1)
+- Mise à jour de la version du package (1.0.0 → 1.1.0 dans package.json)
+
 A React Native application that allows you to manage S3-compatible storage buckets from different providers like AWS, Cloudflare, Hetzner, and more.
 
 ## Features
@@ -55,18 +61,24 @@ npm install --legacy-peer-deps
 3. Start the development server:
 
 ```bash
-npm start
+npx expo start
 ```
 
 4. Follow the instructions to open the app in a simulator or on your physical device.
 
 ## Building for Production
 
-To create a production build:
+To create a production build, make sure you have EAS CLI installed:
 
 ```bash
-expo build:android  # For Android
-expo build:ios      # For iOS
+npm install -g eas-cli
+```
+
+Then run:
+
+```bash
+npx eas build -p android
+npx eas build -p ios
 ```
 
 ## License
