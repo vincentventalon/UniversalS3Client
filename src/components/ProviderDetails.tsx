@@ -205,11 +205,13 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
             <Checkbox
               status={selectedKeys.includes(item.key) ? 'checked' : 'unchecked'}
               onPress={() => {
-                setSelectedKeys(keys =>
-                  keys.includes(item.key)
+                setSelectedKeys(keys => {
+                  const newKeys = keys.includes(item.key)
                     ? keys.filter(k => k !== item.key)
-                    : [...keys, item.key]
-                );
+                    : [...keys, item.key];
+                  console.log(`Checkbox toggled for ${item.key}. New selected keys:`, newKeys);
+                  return newKeys;
+                });
               }}
             />
           ) : (
@@ -232,11 +234,13 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         )}
         onPress={() => {
           if (isMultiSelect) {
-            setSelectedKeys(keys =>
-              keys.includes(item.key)
+            setSelectedKeys(keys => {
+              const newKeys = keys.includes(item.key)
                 ? keys.filter(k => k !== item.key)
-                : [...keys, item.key]
-            );
+                : [...keys, item.key];
+              console.log(`List item pressed for ${item.key}. New selected keys:`, newKeys);
+              return newKeys;
+            });
           } else {
             item.isFolder ? navigateToFolder(item) : setSelectedObject(item);
           }
@@ -621,16 +625,54 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
           style: 'destructive',
           onPress: async () => {
             setLoading(true);
+            let deletedCount = 0;
+            let failedCount = 0;
+            
             try {
+              console.log(`Starting deletion of ${selectedKeys.length} selected items:`, selectedKeys);
+              
               for (const key of selectedKeys) {
-                await deleteObject(provider, bucketName, key);
+                try {
+                  // Find the object in our current objects list to determine if it's a folder
+                  const objectToDelete = objects.find(obj => obj.key === key);
+                  console.log(`Deleting object ${key}, isFolder: ${objectToDelete?.isFolder}`);
+                  
+                  if (objectToDelete?.isFolder) {
+                    await deleteFolder(provider, bucketName, key);
+                    console.log(`Successfully deleted folder: ${key}`);
+                  } else {
+                    await deleteObject(provider, bucketName, key);
+                    console.log(`Successfully deleted file: ${key}`);
+                  }
+                  deletedCount++;
+                } catch (error) {
+                  console.error(`Error deleting object ${key}:`, error);
+                  failedCount++;
+                }
               }
+              
+              // Always clear selection and reload, even if some deletions failed
               setSelectedKeys([]);
               setIsMultiSelect(false);
               await loadBucketObjects();
-              Alert.alert('Succès', 'Objets supprimés');
+              
+              if (failedCount === 0) {
+                Alert.alert('Succès', `${deletedCount} objet(s) supprimé(s)`);
+              } else if (deletedCount > 0) {
+                Alert.alert(
+                  'Partiellement réussi', 
+                  `${deletedCount} objet(s) supprimé(s), ${failedCount} échec(s)`
+                );
+              } else {
+                Alert.alert('Erreur', 'Aucun objet n\'a pu être supprimé');
+              }
             } catch (error) {
-              Alert.alert('Erreur', 'Erreur lors de la suppression');
+              console.error('Error during batch deletion:', error);
+              // Still clear selection and reload on general error
+              setSelectedKeys([]);
+              setIsMultiSelect(false);
+              await loadBucketObjects();
+              Alert.alert('Erreur', 'Erreur lors de la suppression multiple');
             } finally {
               setLoading(false);
             }
@@ -671,8 +713,10 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         <Button
           mode={isMultiSelect ? 'contained' : 'outlined'}
           onPress={() => {
+            console.log(`Multi-select toggled. Was: ${isMultiSelect}, now will be: ${!isMultiSelect}`);
             setIsMultiSelect(v => !v);
             setSelectedKeys([]);
+            console.log('Selected keys cleared');
           }}
           style={{ marginLeft: 8 }}
         >
@@ -681,11 +725,14 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         {isMultiSelect && (
           <Button
             mode="contained"
-            onPress={handleDeleteSelected}
+            onPress={() => {
+              console.log(`Delete button pressed with ${selectedKeys.length} selected items:`, selectedKeys);
+              handleDeleteSelected();
+            }}
             disabled={selectedKeys.length === 0}
             style={{ marginLeft: 8, backgroundColor: '#FF5252' }}
           >
-            Supprimer la sélection
+            Supprimer la sélection ({selectedKeys.length})
           </Button>
         )}
       </View>
