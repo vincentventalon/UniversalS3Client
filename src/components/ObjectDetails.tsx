@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, View, Linking, Alert, TextInput } from 'react-native';
-import { Card, Text, IconButton, Button, Portal, Modal } from 'react-native-paper';
+import { StyleSheet, View, Linking, Alert } from 'react-native';
+import { Card, Text, IconButton, Button, Portal, Modal, TextInput } from 'react-native-paper';
 import * as Clipboard from 'expo-clipboard';
 import * as Sharing from 'expo-sharing';
 import { S3Provider, S3Object } from '../types';
@@ -49,6 +49,27 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
     }
   };
 
+  const handleSharePath = async () => {
+    try {
+      const pathToShare = object.fullPath || object.key;
+      
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(pathToShare, {
+          mimeType: 'text/plain',
+          dialogTitle: `Share path for ${object.name}`,
+          UTI: 'public.plain-text'
+        });
+      } else {
+        // Fallback to copying path if sharing is not available
+        await Clipboard.setStringAsync(pathToShare);
+        Alert.alert('Path Copied', 'Full path copied to clipboard');
+      }
+    } catch (err: any) {
+      Alert.alert('Error', 'Could not share path');
+      console.error('Error sharing path:', err);
+    }
+  };
+
   const handleShareLink = async () => {
     try {
       setIsLoadingUrl(true);
@@ -83,7 +104,7 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
         console.error('Error opening URL:', err);
       });
     } catch (err: any) {
-      setError('Impossible de générer une URL signée');
+      setError('Could not generate signed URL');
       console.error('Error generating signed URL:', err);
     } finally {
       setIsLoadingUrl(false);
@@ -92,19 +113,19 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
 
   async function handleDelete() {
     Alert.alert(
-      'Supprimer l\'objet',
-      `Supprimer définitivement « ${object.name} » ?`,
+      'Delete Object',
+      `Permanently delete "${object.name}"?`,
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Supprimer', style: 'destructive', onPress: async () => {
+          text: 'Delete', style: 'destructive', onPress: async () => {
             setIsDeleting(true);
             try {
               await deleteObject(provider, bucketName, object.key);
-              Alert.alert('Succès', 'Objet supprimé');
+              Alert.alert('Success', 'Object deleted successfully');
               onBack();
             } catch (err) {
-              Alert.alert('Erreur', 'Erreur lors de la suppression');
+              Alert.alert('Error', 'Error deleting object');
             } finally {
               setIsDeleting(false);
             }
@@ -121,7 +142,7 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
     }
     setIsRenaming(true);
     try {
-      // Copie l'objet sous le nouveau nom puis supprime l'ancien
+      // Copy the object under the new name then delete the old one
       const client = new (require('@aws-sdk/client-s3').S3Client)({
         region: provider.region || 'us-east-1',
         endpoint: provider.endpoint,
@@ -138,11 +159,11 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
         Key: object.key.replace(/[^/]+$/, newName),
       }));
       await deleteObject(provider, bucketName, object.key);
-      Alert.alert('Succès', 'Objet renommé');
+      Alert.alert('Success', 'Object renamed successfully');
       setIsRenameModalVisible(false);
       onBack();
     } catch (err) {
-      Alert.alert('Erreur', 'Erreur lors du renommage');
+      Alert.alert('Error', 'Error renaming object');
     } finally {
       setIsRenaming(false);
     }
@@ -189,12 +210,20 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
           <View style={styles.pathContainer}>
             <View style={styles.pathHeader}>
               <Text style={styles.label}>Full Path:</Text>
-              <IconButton 
-                icon="content-copy" 
-                size={20} 
-                onPress={handleCopyPath}
-                style={styles.copyButton}
-              />
+              <View style={styles.pathActionsContainer}>
+                <IconButton 
+                  icon="content-copy" 
+                  size={20} 
+                  onPress={handleCopyPath}
+                  style={styles.pathActionButton}
+                />
+                <IconButton 
+                  icon="share" 
+                  size={20} 
+                  onPress={handleSharePath}
+                  style={styles.pathActionButton}
+                />
+              </View>
             </View>
             <Text style={styles.pathValue} selectable numberOfLines={0}>
               {object.fullPath || object.key}
@@ -203,69 +232,92 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
 
           {!object.isFolder && (
             <>
-              <View style={styles.actionButtonsRow}>
+              <View style={styles.actionButtonsContainer}>
                 <Button
                   mode="contained"
                   onPress={handleOpenObject}
-                  style={[styles.actionButton, styles.openButton]}
+                  style={[styles.actionButton, styles.primaryButton]}
                   loading={isLoadingUrl}
                   disabled={isLoadingUrl}
                   icon="open-in-new"
+                  contentStyle={styles.buttonContent}
                 >
-                  Open
+                  Open Link
                 </Button>
                 
                 <Button
                   mode="outlined"
                   onPress={handleShareLink}
-                  style={[styles.actionButton, styles.shareButton]}
+                  style={[styles.actionButton, styles.secondaryButton]}
                   loading={isLoadingUrl}
                   disabled={isLoadingUrl}
                   icon="share"
+                  contentStyle={styles.buttonContent}
                 >
-                  Share
+                  Share Link
                 </Button>
               </View>
 
               {error && <Text style={styles.errorText}>{error}</Text>}
               
-              <Button
-                mode="outlined"
-                onPress={() => setIsRenameModalVisible(true)}
-                style={styles.openButton}
-                disabled={isRenaming}
-                icon="pencil"
-              >
-                Renommer
-              </Button>
-              
-              <Button
-                mode="contained"
-                onPress={handleDelete}
-                style={[styles.openButton, styles.deleteButton]}
-                loading={isDeleting}
-                disabled={isDeleting}
-                icon="delete"
-              >
-                Supprimer
-              </Button>
+              <View style={styles.managementButtonsContainer}>
+                <Button
+                  mode="outlined"
+                  onPress={() => setIsRenameModalVisible(true)}
+                  style={[styles.actionButton, styles.managementButton]}
+                  disabled={isRenaming}
+                  icon="pencil"
+                  contentStyle={styles.buttonContent}
+                >
+                  Rename
+                </Button>
+                
+                <Button
+                  mode="contained"
+                  onPress={handleDelete}
+                  style={[styles.actionButton, styles.deleteButton]}
+                  loading={isDeleting}
+                  disabled={isDeleting}
+                  icon="delete"
+                  contentStyle={styles.buttonContent}
+                >
+                  Delete
+                </Button>
+              </View>
 
               <Portal>
-                <Modal visible={isRenameModalVisible} onDismiss={() => setIsRenameModalVisible(false)} contentContainerStyle={{ backgroundColor: 'white', padding: 20, margin: 20, borderRadius: 8 }}>
-                  <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 12 }}>Renommer l'objet</Text>
+                <Modal 
+                  visible={isRenameModalVisible} 
+                  onDismiss={() => setIsRenameModalVisible(false)} 
+                  contentContainerStyle={styles.modalContainer}
+                >
+                  <Text style={styles.modalTitle}>Rename Object</Text>
                   <TextInput
                     mode="outlined"
-                    label="Nouveau nom"
+                    label="New name"
                     value={newName}
                     onChangeText={setNewName}
-                    style={{ marginBottom: 16 }}
+                    style={styles.modalInput}
                   />
-                  <Button mode="contained" onPress={handleRename} loading={isRenaming} disabled={isRenaming || !newName.trim() || newName === object.name}>
-                    Renommer
-                  </Button>
-                  <Button mode="text" onPress={() => setIsRenameModalVisible(false)} disabled={isRenaming}>
-                    Annuler
-                  </Button>
+                  <View style={styles.modalButtonsContainer}>
+                    <Button 
+                      mode="contained" 
+                      onPress={handleRename} 
+                      loading={isRenaming} 
+                      disabled={isRenaming || !newName.trim() || newName === object.name}
+                      style={[styles.modalButton, styles.primaryButton]}
+                    >
+                      Rename
+                    </Button>
+                    <Button 
+                      mode="text" 
+                      onPress={() => setIsRenameModalVisible(false)} 
+                      disabled={isRenaming}
+                      style={styles.modalButton}
+                    >
+                      Cancel
+                    </Button>
+                  </View>
                 </Modal>
               </Portal>
             </>
@@ -309,7 +361,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pathContainer: {
-    marginBottom: 16,
+    marginBottom: 20,
     padding: 12,
     backgroundColor: '#f5f5f5',
     borderRadius: 8,
@@ -326,32 +378,76 @@ const styles = StyleSheet.create({
     color: '#333',
     lineHeight: 16,
   },
-  copyButton: {
+  pathActionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  pathActionButton: {
     margin: 0,
     padding: 4,
   },
-  actionButtonsRow: {
+  actionButtonsContainer: {
     flexDirection: 'row',
-    marginTop: 16,
-    marginBottom: 8,
+    marginBottom: 16,
+    gap: 12,
+  },
+  managementButtonsContainer: {
+    flexDirection: 'row',
+    marginTop: 8,
     gap: 12,
   },
   actionButton: {
     flex: 1,
+    minHeight: 48,
   },
-  openButton: {
-    marginTop: 16,
+  buttonContent: {
+    height: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  shareButton: {
+  primaryButton: {
+    backgroundColor: '#2196F3',
+  },
+  secondaryButton: {
     borderColor: '#4CAF50',
+    borderWidth: 1,
+  },
+  managementButton: {
+    borderColor: '#FF9800',
+    borderWidth: 1,
   },
   deleteButton: {
     backgroundColor: '#FF5252',
   },
   errorText: {
-    color: 'red',
+    color: '#FF5252',
     marginTop: 8,
     marginBottom: 8,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  modalContainer: {
+    backgroundColor: 'white',
+    padding: 24,
+    margin: 20,
+    borderRadius: 12,
+  },
+  modalTitle: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  modalInput: {
+    marginBottom: 20,
+  },
+  modalButtonsContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
   },
 });
 
