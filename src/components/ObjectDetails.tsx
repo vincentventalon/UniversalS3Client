@@ -1,6 +1,8 @@
 import React from 'react';
 import { StyleSheet, View, Linking, Alert, TextInput } from 'react-native';
 import { Card, Text, IconButton, Button, Portal, Modal } from 'react-native-paper';
+import * as Clipboard from 'expo-clipboard';
+import * as Sharing from 'expo-sharing';
 import { S3Provider, S3Object } from '../types';
 import { getObjectUrl, getSignedObjectUrl, deleteObject } from '../services/s3Service';
 
@@ -37,6 +39,39 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
       minute: '2-digit'
     });
   }
+
+  const handleCopyPath = async () => {
+    try {
+      await Clipboard.setStringAsync(object.fullPath || object.key);
+      Alert.alert('Copied', 'Full path copied to clipboard');
+    } catch (err) {
+      Alert.alert('Error', 'Could not copy to clipboard');
+    }
+  };
+
+  const handleShareLink = async () => {
+    try {
+      setIsLoadingUrl(true);
+      const signedUrl = await getSignedObjectUrl(provider, bucketName, object.key);
+      
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(signedUrl, {
+          mimeType: 'text/plain',
+          dialogTitle: `Share ${object.name}`,
+          UTI: 'public.url'
+        });
+      } else {
+        // Fallback to copying URL if sharing is not available
+        await Clipboard.setStringAsync(signedUrl);
+        Alert.alert('URL Copied', 'Share URL copied to clipboard');
+      }
+    } catch (err: any) {
+      setError('Could not generate share URL');
+      console.error('Error generating share URL:', err);
+    } finally {
+      setIsLoadingUrl(false);
+    }
+  };
 
   const handleOpenObject = async () => {
     setIsLoadingUrl(true);
@@ -148,39 +183,73 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
                 <Text style={styles.label}>Last Modified:</Text>
                 <Text style={styles.value}>{formatDate(object.lastModified)}</Text>
               </View>
+            </>
+          )}
 
-              <View style={styles.row}>
-                <Text style={styles.label}>Full Path:</Text>
-                <Text style={styles.value} numberOfLines={2}>{object.fullPath}</Text>
+          <View style={styles.pathContainer}>
+            <View style={styles.pathHeader}>
+              <Text style={styles.label}>Full Path:</Text>
+              <IconButton 
+                icon="content-copy" 
+                size={20} 
+                onPress={handleCopyPath}
+                style={styles.copyButton}
+              />
+            </View>
+            <Text style={styles.pathValue} selectable numberOfLines={0}>
+              {object.fullPath || object.key}
+            </Text>
+          </View>
+
+          {!object.isFolder && (
+            <>
+              <View style={styles.actionButtonsRow}>
+                <Button
+                  mode="contained"
+                  onPress={handleOpenObject}
+                  style={[styles.actionButton, styles.openButton]}
+                  loading={isLoadingUrl}
+                  disabled={isLoadingUrl}
+                  icon="open-in-new"
+                >
+                  Open
+                </Button>
+                
+                <Button
+                  mode="outlined"
+                  onPress={handleShareLink}
+                  style={[styles.actionButton, styles.shareButton]}
+                  loading={isLoadingUrl}
+                  disabled={isLoadingUrl}
+                  icon="share"
+                >
+                  Share
+                </Button>
               </View>
 
-              <Button
-                mode="contained"
-                onPress={handleOpenObject}
-                style={styles.openButton}
-                loading={isLoadingUrl}
-                disabled={isLoadingUrl}
-              >
-                Open in Browser
-              </Button>
-              {error && <Text style={{ color: 'red', marginTop: 8 }}>{error}</Text>}
+              {error && <Text style={styles.errorText}>{error}</Text>}
+              
               <Button
                 mode="outlined"
                 onPress={() => setIsRenameModalVisible(true)}
                 style={styles.openButton}
                 disabled={isRenaming}
+                icon="pencil"
               >
                 Renommer
               </Button>
+              
               <Button
                 mode="contained"
                 onPress={handleDelete}
-                style={[styles.openButton, { backgroundColor: '#FF5252' }]}
+                style={[styles.openButton, styles.deleteButton]}
                 loading={isDeleting}
                 disabled={isDeleting}
+                icon="delete"
               >
                 Supprimer
               </Button>
+
               <Portal>
                 <Modal visible={isRenameModalVisible} onDismiss={() => setIsRenameModalVisible(false)} contentContainerStyle={{ backgroundColor: 'white', padding: 20, margin: 20, borderRadius: 8 }}>
                   <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 12 }}>Renommer l'objet</Text>
@@ -239,8 +308,50 @@ const styles = StyleSheet.create({
   value: {
     flex: 1,
   },
+  pathContainer: {
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+  },
+  pathHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  pathValue: {
+    fontFamily: 'monospace',
+    fontSize: 12,
+    color: '#333',
+    lineHeight: 16,
+  },
+  copyButton: {
+    margin: 0,
+    padding: 4,
+  },
+  actionButtonsRow: {
+    flexDirection: 'row',
+    marginTop: 16,
+    marginBottom: 8,
+    gap: 12,
+  },
+  actionButton: {
+    flex: 1,
+  },
   openButton: {
     marginTop: 16,
+  },
+  shareButton: {
+    borderColor: '#4CAF50',
+  },
+  deleteButton: {
+    backgroundColor: '#FF5252',
+  },
+  errorText: {
+    color: 'red',
+    marginTop: 8,
+    marginBottom: 8,
   },
 });
 
