@@ -49,6 +49,27 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
     }
   };
 
+  const handleSharePath = async () => {
+    try {
+      const pathToShare = object.fullPath || object.key;
+      
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(pathToShare, {
+          mimeType: 'text/plain',
+          dialogTitle: `Share path for ${object.name}`,
+          UTI: 'public.plain-text'
+        });
+      } else {
+        // Fallback to copying path if sharing is not available
+        await Clipboard.setStringAsync(pathToShare);
+        Alert.alert('Path Copied', 'Full path copied to clipboard');
+      }
+    } catch (err: any) {
+      Alert.alert('Error', 'Could not share path');
+      console.error('Error sharing path:', err);
+    }
+  };
+
   const handleShareLink = async () => {
     try {
       setIsLoadingUrl(true);
@@ -189,12 +210,20 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
           <View style={styles.pathContainer}>
             <View style={styles.pathHeader}>
               <Text style={styles.label}>Full Path:</Text>
-              <IconButton 
-                icon="content-copy" 
-                size={20} 
-                onPress={handleCopyPath}
-                style={styles.copyButton}
-              />
+              <View style={styles.pathActionsContainer}>
+                <IconButton 
+                  icon="content-copy" 
+                  size={20} 
+                  onPress={handleCopyPath}
+                  style={styles.pathActionButton}
+                />
+                <IconButton 
+                  icon="share" 
+                  size={20} 
+                  onPress={handleSharePath}
+                  style={styles.pathActionButton}
+                />
+              </View>
             </View>
             <Text style={styles.pathValue} selectable numberOfLines={0}>
               {object.fullPath || object.key}
@@ -349,7 +378,11 @@ const styles = StyleSheet.create({
     color: '#333',
     lineHeight: 16,
   },
-  copyButton: {
+  pathActionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  pathActionButton: {
     margin: 0,
     padding: 4,
   },
