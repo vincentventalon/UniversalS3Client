@@ -11,7 +11,8 @@ export type S3ProviderType =
   | 'backblaze'
   | 'scaleway'
   | 'vultr'
-  | 'linode';
+  | 'linode'
+  | 'minio';
 
 export interface S3Provider {
   id: string;
@@ -26,6 +27,7 @@ export interface S3Provider {
   namespace?: string; // For Oracle OCI
   locationHint?: string; // For Cloudflare R2
   clusterId?: string; // For Linode
+  customEndpoint?: string; // For MinIO and custom endpoints
 }
 
 export interface Bucket {

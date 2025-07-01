@@ -85,93 +85,6 @@ export const PROVIDER_CONFIGS: Record<S3ProviderType, ProviderConfig> = {
     ],
   },
 
-  google: {
-    name: 'Google Cloud Storage',
-    type: 'google',
-    endpointPattern: 'https://storage.googleapis.com',
-    regions: [
-      { value: 'us', label: 'Multi-Regional US' },
-      { value: 'eu', label: 'Multi-Regional EU' },
-      { value: 'asia', label: 'Multi-Regional Asia' },
-      { value: 'us-central1', label: 'us-central1 (Iowa)' },
-      { value: 'us-east1', label: 'us-east1 (South Carolina)' },
-      { value: 'us-east4', label: 'us-east4 (Northern Virginia)' },
-      { value: 'us-west1', label: 'us-west1 (Oregon)' },
-      { value: 'us-west2', label: 'us-west2 (Los Angeles)' },
-      { value: 'us-west3', label: 'us-west3 (Salt Lake City)' },
-      { value: 'us-west4', label: 'us-west4 (Las Vegas)' },
-      { value: 'europe-north1', label: 'europe-north1 (Finland)' },
-      { value: 'europe-west1', label: 'europe-west1 (Belgium)' },
-      { value: 'europe-west2', label: 'europe-west2 (London)' },
-      { value: 'europe-west3', label: 'europe-west3 (Frankfurt)' },
-      { value: 'europe-west4', label: 'europe-west4 (Netherlands)' },
-      { value: 'europe-west6', label: 'europe-west6 (Zurich)' },
-      { value: 'asia-east1', label: 'asia-east1 (Taiwan)' },
-      { value: 'asia-east2', label: 'asia-east2 (Hong Kong)' },
-      { value: 'asia-northeast1', label: 'asia-northeast1 (Tokyo)' },
-      { value: 'asia-south1', label: 'asia-south1 (Mumbai)' },
-      { value: 'asia-southeast1', label: 'asia-southeast1 (Singapore)' },
-    ],
-  },
-
-  azure: {
-    name: 'Microsoft Azure Blob Storage',
-    type: 'azure',
-    endpointPattern: 'https://{account}.blob.core.windows.net',
-    regions: [
-      { value: 'eastus', label: 'East US' },
-      { value: 'eastus2', label: 'East US 2' },
-      { value: 'westus', label: 'West US' },
-      { value: 'westus2', label: 'West US 2' },
-      { value: 'centralus', label: 'Central US' },
-      { value: 'northeurope', label: 'North Europe' },
-      { value: 'westeurope', label: 'West Europe' },
-      { value: 'eastasia', label: 'East Asia' },
-      { value: 'southeastasia', label: 'Southeast Asia' },
-      { value: 'japaneast', label: 'Japan East' },
-      { value: 'japanwest', label: 'Japan West' },
-      { value: 'australiaeast', label: 'Australia East' },
-      { value: 'australiasoutheast', label: 'Australia Southeast' },
-    ],
-  },
-
-  oracle: {
-    name: 'Oracle Cloud Infrastructure',
-    type: 'oracle',
-    endpointPattern: 'https://{namespace}.compat.objectstorage.{region}.oraclecloud.com',
-    requiresNamespace: true,
-    regions: [
-      { value: 'us-ashburn-1', label: 'us-ashburn-1 (Ashburn)' },
-      { value: 'us-phoenix-1', label: 'us-phoenix-1 (Phoenix)' },
-      { value: 'eu-amsterdam-1', label: 'eu-amsterdam-1 (Amsterdam)' },
-      { value: 'eu-frankfurt-1', label: 'eu-frankfurt-1 (Frankfurt)' },
-      { value: 'eu-zurich-1', label: 'eu-zurich-1 (Zurich)' },
-      { value: 'ap-mumbai-1', label: 'ap-mumbai-1 (Mumbai)' },
-      { value: 'ap-seoul-1', label: 'ap-seoul-1 (Seoul)' },
-      { value: 'ap-sydney-1', label: 'ap-sydney-1 (Sydney)' },
-      { value: 'ap-tokyo-1', label: 'ap-tokyo-1 (Tokyo)' },
-      { value: 'ca-toronto-1', label: 'ca-toronto-1 (Toronto)' },
-      { value: 'sa-saopaulo-1', label: 'sa-saopaulo-1 (São Paulo)' },
-    ],
-  },
-
-  ibm: {
-    name: 'IBM Cloud Object Storage',
-    type: 'ibm',
-    endpointPattern: 'https://s3.{region}.cloud-object-storage.appdomain.cloud',
-    regions: [
-      { value: 'us', label: 'Cross-Region US' },
-      { value: 'eu', label: 'Cross-Region EU' },
-      { value: 'ap', label: 'Cross-Region Asia-Pacific' },
-      { value: 'us-south', label: 'us-south (Dallas)' },
-      { value: 'us-east', label: 'us-east (Washington DC)' },
-      { value: 'eu-gb', label: 'eu-gb (London)' },
-      { value: 'eu-de', label: 'eu-de (Frankfurt)' },
-      { value: 'jp-tok', label: 'jp-tok (Tokyo)' },
-      { value: 'au-syd', label: 'au-syd (Sydney)' },
-    ],
-  },
-
   wasabi: {
     name: 'Wasabi',
     type: 'wasabi',
@@ -233,6 +146,53 @@ export const PROVIDER_CONFIGS: Record<S3ProviderType, ProviderConfig> = {
       { value: 'ap-south-1', label: 'ap-south-1 (Singapore)' },
     ],
   },
+
+  oracle: {
+    name: 'Oracle Cloud Infrastructure',
+    type: 'oracle',
+    endpointPattern: 'https://{namespace}.compat.objectstorage.{region}.oraclecloud.com',
+    requiresNamespace: true,
+    regions: [
+      { value: 'us-ashburn-1', label: 'us-ashburn-1 (Ashburn)' },
+      { value: 'us-phoenix-1', label: 'us-phoenix-1 (Phoenix)' },
+      { value: 'eu-amsterdam-1', label: 'eu-amsterdam-1 (Amsterdam)' },
+      { value: 'eu-frankfurt-1', label: 'eu-frankfurt-1 (Frankfurt)' },
+      { value: 'eu-zurich-1', label: 'eu-zurich-1 (Zurich)' },
+      { value: 'ap-mumbai-1', label: 'ap-mumbai-1 (Mumbai)' },
+      { value: 'ap-seoul-1', label: 'ap-seoul-1 (Seoul)' },
+      { value: 'ap-sydney-1', label: 'ap-sydney-1 (Sydney)' },
+      { value: 'ap-tokyo-1', label: 'ap-tokyo-1 (Tokyo)' },
+      { value: 'ca-toronto-1', label: 'ca-toronto-1 (Toronto)' },
+      { value: 'sa-saopaulo-1', label: 'sa-saopaulo-1 (São Paulo)' },
+    ],
+  },
+
+  ibm: {
+    name: 'IBM Cloud Object Storage',
+    type: 'ibm',
+    endpointPattern: 'https://s3.{region}.cloud-object-storage.appdomain.cloud',
+    regions: [
+      { value: 'us', label: 'Cross-Region US' },
+      { value: 'eu', label: 'Cross-Region EU' },
+      { value: 'ap', label: 'Cross-Region Asia-Pacific' },
+      { value: 'us-south', label: 'us-south (Dallas)' },
+      { value: 'us-east', label: 'us-east (Washington DC)' },
+      { value: 'eu-gb', label: 'eu-gb (London)' },
+      { value: 'eu-de', label: 'eu-de (Frankfurt)' },
+      { value: 'jp-tok', label: 'jp-tok (Tokyo)' },
+      { value: 'au-syd', label: 'au-syd (Sydney)' },
+    ],
+  },
+
+  // Note: MinIO would also be S3-compatible but requires custom deployment
+  minio: {
+    name: 'MinIO',
+    type: 'minio',
+    endpointPattern: 'https://{customEndpoint}', // User provides custom endpoint
+    regions: [
+      { value: 'custom', label: 'Custom Endpoint' },
+    ],
+  },
 };
 
 export function getProviderConfig(type: S3ProviderType): ProviderConfig {
@@ -244,7 +204,8 @@ export function generateEndpoint(
   region?: string,
   accountId?: string,
   namespace?: string,
-  clusterId?: string
+  clusterId?: string,
+  customEndpoint?: string
 ): string {
   const config = getProviderConfig(type);
   let endpoint = config.endpointPattern;
@@ -260,6 +221,9 @@ export function generateEndpoint(
   }
   if (clusterId) {
     endpoint = endpoint.replace('{clusterId}', clusterId);
+  }
+  if (customEndpoint) {
+    endpoint = endpoint.replace('{customEndpoint}', customEndpoint);
   }
 
   return endpoint;

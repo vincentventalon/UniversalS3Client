@@ -7,11 +7,12 @@ import { Provider as PaperProvider, Text, Portal, Modal, FAB } from 'react-nativ
 import ProviderForm from './src/components/ProviderForm';
 import ProviderList from './src/components/ProviderList';
 import ProviderDetails from './src/components/ProviderDetails';
-import { S3Provider } from './src/types';
+import { S3Provider, S3ProviderType } from './src/types';
 import * as SecureStore from 'expo-secure-store';
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import { listBucketObjects, extractBucketName } from './src/services/s3Service';
 import { generateId } from './src/utils/idGenerator';
+import { generateEndpoint, getProviderConfig } from './src/config/providers';
 
 // Storage key for providers
 const PROVIDERS_KEY = 'universal_s3_client_providers';
@@ -24,13 +25,19 @@ export default function App() {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [addBucketError, setAddBucketError] = useState<string | null>(null);
-  // Champs du formulaire d'ajout de bucket (contrôlé)
+  
+  // Form fields for adding bucket (controlled)
   const [bucketName, setBucketName] = useState('');
-  const [type, setType] = useState<'aws' | 'hetzner'>('aws');
+  const [type, setType] = useState<S3ProviderType>('aws');
   const [region, setRegion] = useState('');
   const [accessKey, setAccessKey] = useState('');
   const [secretKey, setSecretKey] = useState('');
-  const [hetznerLocation, setHetznerLocation] = useState('fsn1');
+  // Additional provider-specific fields
+  const [accountId, setAccountId] = useState('');
+  const [namespace, setNamespace] = useState('');
+  const [locationHint, setLocationHint] = useState('');
+  const [clusterId, setClusterId] = useState('');
+  const [customEndpoint, setCustomEndpoint] = useState('');
 
   // Initial app setup - load providers immediately
   useEffect(() => {
@@ -86,12 +93,11 @@ export default function App() {
     setAddBucketError(null);
     try {
       setLoading(true);
-      const endpoint = type === 'aws'
-        ? `https://s3.${region || 'us-east-1'}.amazonaws.com`
-        : `https://${hetznerLocation}.your-objectstorage.com`;
-      const providerName = type === 'aws'
-        ? `AWS S3 - ${bucketName}`
-        : `Hetzner - ${bucketName} (${hetznerLocation})`;
+      
+      const config = getProviderConfig(type);
+      const endpoint = generateEndpoint(type, region, accountId, namespace, clusterId, customEndpoint);
+      const providerName = `${config.name} - ${bucketName}`;
+      
       const newProvider: S3Provider = {
         id: generateId(),
         name: providerName,
@@ -99,29 +105,33 @@ export default function App() {
         endpoint,
         accessKey: accessKey.trim(),
         secretKey: secretKey.trim(),
-        region: type === 'aws' ? (region.trim() || 'us-east-1') : hetznerLocation,
+        region: region.trim() || undefined,
+        accountId: accountId.trim() || undefined,
+        namespace: namespace.trim() || undefined,
+        locationHint: locationHint.trim() || undefined,
+        clusterId: clusterId.trim() || undefined,
+        customEndpoint: customEndpoint.trim() || undefined,
       };
-      // Vérification de la connexion au bucket
+      
+      // Test connection to the bucket
       const bucketNameExtracted = extractBucketName(newProvider);
       await listBucketObjects(newProvider, bucketNameExtracted, '', '/');
-      // Si pas d'erreur, on ajoute le provider
+      
+      // If no error, add the provider
       const updatedProviders = [...providers, newProvider];
       await saveProviders(updatedProviders);
       setProviders(updatedProviders);
       setIsFormVisible(false);
-      // Reset les champs du formulaire
-      setBucketName('');
-      setType('aws');
-      setRegion('');
-      setAccessKey('');
-      setSecretKey('');
-      setHetznerLocation('fsn1');
+      
+      // Reset form fields
+      resetFormFields();
+      
       Alert.alert('Success', 'S3 provider added successfully');
     } catch (error: any) {
       let message = 'Failed to connect to the bucket.';
       if (error && error.message) {
         if (error.message.includes('AccessDenied')) {
-          message = '403 – Mot de passe incorrect ou accès refusé.';
+          message = '403 – Incorrect credentials or access denied.';
         } else {
           message = error.message;
         }
@@ -130,6 +140,19 @@ export default function App() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function resetFormFields() {
+    setBucketName('');
+    setType('aws');
+    setRegion('');
+    setAccessKey('');
+    setSecretKey('');
+    setAccountId('');
+    setNamespace('');
+    setLocationHint('');
+    setClusterId('');
+    setCustomEndpoint('');
   }
 
   async function handleDeleteProvider(providerId: string) {
@@ -229,8 +252,16 @@ export default function App() {
               setAccessKey={setAccessKey}
               secretKey={secretKey}
               setSecretKey={setSecretKey}
-              hetznerLocation={hetznerLocation}
-              setHetznerLocation={setHetznerLocation}
+              accountId={accountId}
+              setAccountId={setAccountId}
+              namespace={namespace}
+              setNamespace={setNamespace}
+              locationHint={locationHint}
+              setLocationHint={setLocationHint}
+              clusterId={clusterId}
+              setClusterId={setClusterId}
+              customEndpoint={customEndpoint}
+              setCustomEndpoint={setCustomEndpoint}
               onSubmit={handleAddBucket}
             />
           </Modal>
@@ -251,7 +282,7 @@ export default function App() {
         <StatusBar barStyle="dark-content" />
         {isOffline && (
           <View style={{ backgroundColor: '#ff5252', padding: 8 }}>
-            <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>Network error : vous êtes hors ligne</Text>
+            <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>Network error: you are offline</Text>
           </View>
         )}
         {renderContent()}
