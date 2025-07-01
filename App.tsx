@@ -3,10 +3,11 @@ import './src/utils/polyfills';
 
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Alert, SafeAreaView, StatusBar, ActivityIndicator } from 'react-native';
-import { Provider as PaperProvider, Text, Portal, Modal, FAB } from 'react-native-paper';
+import { Provider as PaperProvider, Text, Portal, Modal, FAB, Appbar } from 'react-native-paper';
 import ProviderForm from './src/components/ProviderForm';
 import ProviderList from './src/components/ProviderList';
 import ProviderDetails from './src/components/ProviderDetails';
+import Settings from './src/components/Settings';
 import { S3Provider } from './src/types';
 import * as SecureStore from 'expo-secure-store';
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
@@ -24,6 +25,7 @@ export default function App() {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [addBucketError, setAddBucketError] = useState<string | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
   // Champs du formulaire d'ajout de bucket (contrôlé)
   const [bucketName, setBucketName] = useState('');
   const [type, setType] = useState<'aws' | 'hetzner'>('aws');
@@ -191,6 +193,15 @@ export default function App() {
       );
     }
 
+    if (showSettings) {
+      return (
+        <Settings
+          onBack={() => setShowSettings(false)}
+          appVersion="1.1.0"
+        />
+      );
+    }
+
     if (selectedProvider) {
       return (
         <ProviderDetails
@@ -202,7 +213,15 @@ export default function App() {
 
     return (
       <View style={styles.container}>
-        <Text style={styles.header}>Universal S3 Client</Text>
+        <View style={styles.headerContainer}>
+          <Text style={styles.header}>Universal S3 Client</Text>
+          <Appbar.Action 
+            icon="cog" 
+            onPress={() => setShowSettings(true)}
+            style={styles.settingsIcon}
+            accessibilityLabel="Settings"
+          />
+        </View>
         <ProviderList
           providers={providers}
           onSelect={setSelectedProvider}
@@ -269,11 +288,22 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+    paddingHorizontal: 8,
+  },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 24,
+    flex: 1,
     textAlign: 'center',
+  },
+  settingsIcon: {
+    position: 'absolute',
+    right: 0,
+    top: -8,
   },
   loadingContainer: {
     flex: 1,
