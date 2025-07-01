@@ -185,11 +185,10 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
                 <Modal visible={isRenameModalVisible} onDismiss={() => setIsRenameModalVisible(false)} contentContainerStyle={{ backgroundColor: 'white', padding: 20, margin: 20, borderRadius: 8 }}>
                   <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 12 }}>Renommer l'objet</Text>
                   <TextInput
-                    mode="outlined"
-                    label="Nouveau nom"
+                    placeholder="Nouveau nom"
                     value={newName}
                     onChangeText={setNewName}
-                    style={{ marginBottom: 16 }}
+                    style={{ marginBottom: 16, borderWidth: 1, borderColor: '#ccc', padding: 8, borderRadius: 4 }}
                   />
                   <Button mode="contained" onPress={handleRename} loading={isRenaming} disabled={isRenaming || !newName.trim() || newName === object.name}>
                     Renommer

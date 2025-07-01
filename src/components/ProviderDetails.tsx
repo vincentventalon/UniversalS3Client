@@ -602,7 +602,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
     );
   }
 
-  function handleEditProvider(updatedProvider: S3Provider) {
+  function handleEditProvider() {
     setIsEditModalVisible(false);
     setEditProvider(null);
     // TODO: Sauvegarder la modification dans la liste globale (remonter via callback ou context)
@@ -787,9 +787,19 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
           <Text style={styles.modalTitle}>Modifier le bucket</Text>
           {editProvider && (
             <ProviderForm
-              provider={editProvider}
+              bucketName={extractBucketName(editProvider)}
+              setBucketName={() => {}}
+              type={editProvider.type}
+              setType={() => {}}
+              region={editProvider.region || ''}
+              setRegion={() => {}}
+              accessKey={editProvider.accessKey}
+              setAccessKey={() => {}}
+              secretKey={editProvider.secretKey}
+              setSecretKey={() => {}}
+              hetznerLocation={editProvider.region || 'fsn1'}
+              setHetznerLocation={() => {}}
               onSubmit={handleEditProvider}
-              onCancel={() => setIsEditModalVisible(false)}
             />
           )}
         </Modal>
