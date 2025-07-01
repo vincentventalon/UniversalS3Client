@@ -9,7 +9,7 @@ interface SettingsProps {
 
 export default function Settings({ onBack, appVersion }: SettingsProps) {
   const handleGitHubPress = () => {
-    const gitHubURL = 'https://github.com/vincent-ventalon/universal-s3-client/issues';
+    const gitHubURL = 'https://github.com/vincentventalon/universal-s3-client/issues';
     
     Linking.canOpenURL(gitHubURL)
       .then((supported) => {
