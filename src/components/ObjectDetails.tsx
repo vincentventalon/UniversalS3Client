@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Linking, Alert } from 'react-native';
+import { StyleSheet, View, Linking, Alert, Share } from 'react-native';
 import { Card, Text, IconButton, Button, Portal, Modal, TextInput } from 'react-native-paper';
 import * as Clipboard from 'expo-clipboard';
 import * as Sharing from 'expo-sharing';
@@ -53,20 +53,24 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
     try {
       const pathToShare = object.fullPath || object.key;
       
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(pathToShare, {
-          mimeType: 'text/plain',
-          dialogTitle: `Share path for ${object.name}`,
-          UTI: 'public.plain-text'
-        });
-      } else {
-        // Fallback to copying path if sharing is not available
-        await Clipboard.setStringAsync(pathToShare);
-        Alert.alert('Path Copied', 'Full path copied to clipboard');
-      }
+      await Share.share({
+        message: pathToShare,
+        title: `Share path for ${object.name}`,
+      });
     } catch (err: any) {
-      Alert.alert('Error', 'Could not share path');
-      console.error('Error sharing path:', err);
+      // If sharing was cancelled by user, don't show error
+      if (err.message === 'User did not share') {
+        return;
+      }
+      
+      // Fallback to copying path if sharing fails
+      try {
+        await Clipboard.setStringAsync(pathToShare);
+        Alert.alert('Path Copied', 'Sharing failed, but path was copied to clipboard');
+      } catch (clipboardErr) {
+        Alert.alert('Error', 'Could not share or copy path');
+        console.error('Error sharing path:', err);
+      }
     }
   };
 
