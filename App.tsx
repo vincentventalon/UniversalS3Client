@@ -8,12 +8,16 @@ import ProviderForm from './src/components/ProviderForm';
 import ProviderList from './src/components/ProviderList';
 import ProviderDetails from './src/components/ProviderDetails';
 import Settings from './src/components/Settings';
+
 import { S3Provider, S3ProviderType } from './src/types';
+
 import * as SecureStore from 'expo-secure-store';
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import { listBucketObjects, extractBucketName } from './src/services/s3Service';
 import { generateId } from './src/utils/idGenerator';
 import { generateEndpoint, getProviderConfig } from './src/config/providers';
+
+
 
 
 
@@ -28,8 +32,7 @@ export default function App() {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [addBucketError, setAddBucketError] = useState<string | null>(null);
-  
-  // Form fields for adding bucket (controlled)
+
   const [showSettings, setShowSettings] = useState(false);
   // Champs du formulaire d'ajout de bucket (contrôlé)
   
