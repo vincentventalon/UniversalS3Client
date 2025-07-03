@@ -14,9 +14,12 @@ function generateSimpleId(): string {
 }
 
 /**
- * Créer un client S3 compatible avec AWS et Hetzner
+ * Create an S3 client compatible with all S3-compatible providers
  */
 function createS3Client(provider: S3Provider): S3Client {
+  // Path-style is needed for most S3-compatible providers except AWS
+  const usePathStyle = provider.type !== 'aws';
+  
   return new S3Client({
     region: provider.region || 'us-east-1',
     endpoint: provider.endpoint,
@@ -24,8 +27,8 @@ function createS3Client(provider: S3Provider): S3Client {
       accessKeyId: provider.accessKey,
       secretAccessKey: provider.secretKey
     },
-    forcePathStyle: provider.type === 'hetzner', // Utilise path-style pour Hetzner
-    // Options optimisées pour la stabilité
+    forcePathStyle: usePathStyle,
+    // Options optimized for stability
     signingEscapePath: true,
     retryMode: 'standard',
     maxAttempts: 3
@@ -162,45 +165,22 @@ export async function listBucketObjects(
 }
 
 /**
- * Extrait le nom du bucket à partir du nom du fournisseur
+ * Extract bucket name from provider name
  */
 export function extractBucketName(provider: S3Provider): string {
   try {
-    // Pour Hetzner, le nom du bucket est extrait du nom du fournisseur
-    if (provider.type === 'hetzner') {
-      // Extraction standard du format du nom du provider
-      const nameMatch = provider.name.match(/- ([^(]+)(?:\s|$)/);
-      if (nameMatch && nameMatch[1]) {
-        // Toujours convertir en minuscules pour Hetzner
-        return nameMatch[1].trim().toLowerCase();
-      }
-      
-      // Sinon, utilisons le nom du provider directement
-      return provider.name.split(' ')[0].toLowerCase();
-    }
-    
-    // Pour AWS, le bucket peut aussi être extrait du nom
+    // Extract bucket name from the provider name format: "Provider Name - BucketName"
     const nameMatch = provider.name.match(/- ([^(]+)(?:\s|$)/);
     if (nameMatch && nameMatch[1]) {
-      return nameMatch[1].trim();
+      const bucketName = nameMatch[1].trim();
+      // Convert to lowercase for providers that require it
+      if (['hetzner', 'digitalocean', 'vultr'].indexOf(provider.type) !== -1) {
+        return bucketName.toLowerCase();
+      }
+      return bucketName;
     }
     
-    // Si le nom n'a pas le format attendu, on essaie d'autres approches
-    if (provider.endpoint) {
-      // Si c'est un endpoint de type bucket virtuel, on extrait le bucket du domaine
-      const virtualBucketMatch = provider.endpoint.match(/https?:\/\/([^.]+)\.s3\./);
-      if (virtualBucketMatch && virtualBucketMatch[1]) {
-        return virtualBucketMatch[1];
-      }
-      
-      // Tentative générique d'extraction du nom du bucket depuis l'endpoint
-      const endpointMatch = provider.endpoint.match(/https?:\/\/([^.]+)\./);
-      if (endpointMatch && endpointMatch[1]) {
-        return endpointMatch[1];
-      }
-    }
-    
-    // Dernière tentative - première partie du nom du provider
+    // Fallback: use first part of provider name
     const fallbackName = provider.name.split(' ')[0].toLowerCase();
     return fallbackName || 'bucket';
   } catch (e) {
@@ -210,42 +190,19 @@ export function extractBucketName(provider: S3Provider): string {
 }
 
 /**
- * Obtenir une URL pour télécharger ou visualiser un objet
+ * Get URL for downloading or viewing an object
  */
 export function getObjectUrl(provider: S3Provider, bucketName: string, key: string): string {
-  if (provider.type === 'aws') {
-    if (provider.endpoint) {
-      return `${provider.endpoint}/${bucketName}/${key}`;
-    }
-    return `https://${bucketName}.s3.${provider.region || 'us-east-1'}.amazonaws.com/${key}`;
-  } else if (provider.type === 'hetzner') {
-    if (provider.endpoint) {
-      return `${provider.endpoint}/${bucketName}/${key}`;
-    }
-    return `https://${bucketName}.${provider.region}.your-objectstorage.com/${key}`;
-  } else {
-    return `${provider.endpoint}/${bucketName}/${key}`;
-  }
+  // Most S3-compatible providers use path-style URLs
+  return `${provider.endpoint}/${bucketName}/${key}`;
 }
 
 /**
- * Générer l'URL d'un bucket
+ * Generate bucket URL
  */
 function generateBucketUrl(provider: S3Provider, bucketName: string): string {
-  switch (provider.type) {
-    case 'aws':
-      if (provider.endpoint) {
-        return `${provider.endpoint}/${bucketName}`;
-      }
-      return `https://${bucketName}.s3.${provider.region || 'us-east-1'}.amazonaws.com`;
-    case 'hetzner':
-      if (provider.endpoint) {
-        return `${provider.endpoint}/${bucketName}`;
-      }
-      return `https://${bucketName.toLowerCase()}.${provider.region}.your-objectstorage.com`;
-    default:
-      return `${provider.endpoint}/${bucketName}`;
-  }
+  // All providers use path-style URLs for buckets
+  return `${provider.endpoint}/${bucketName}`;
 }
 
 /**
@@ -285,7 +242,7 @@ export async function uploadFile(
     const blobData = await response.blob();
     
     // Convert blob to buffer for S3 upload
-    const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+    const arrayBuffer = await new Promise<ArrayBuffer>((resolve: (value: ArrayBuffer) => void, reject: (reason?: any) => void) => {
       const fileReader = new FileReader();
       fileReader.onload = () => {
         if (fileReader.result instanceof ArrayBuffer) {
@@ -316,7 +273,7 @@ export async function uploadFile(
 
     // Handle progress
     if (onProgress) {
-      upload.on('httpUploadProgress', (progress) => {
+      upload.on('httpUploadProgress', (progress: any) => {
         const percentage = Math.round((progress.loaded || 0) / (progress.total || 1) * 100);
         onProgress(percentage);
       });

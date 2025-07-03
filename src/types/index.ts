@@ -1,11 +1,33 @@
+export type S3ProviderType = 
+  | 'aws' 
+  | 'hetzner'
+  | 'cloudflare'
+  | 'digitalocean'
+  | 'google'
+  | 'azure'
+  | 'oracle'
+  | 'ibm'
+  | 'wasabi'
+  | 'backblaze'
+  | 'scaleway'
+  | 'vultr'
+  | 'linode'
+  | 'minio';
+
 export interface S3Provider {
   id: string;
   name: string;
-  type: 'aws' | 'hetzner';
+  type: S3ProviderType;
   endpoint: string;
   accessKey: string;
   secretKey: string;
   region?: string;
+  // Additional provider-specific configs
+  accountId?: string; // For Cloudflare R2
+  namespace?: string; // For Oracle OCI
+  locationHint?: string; // For Cloudflare R2
+  clusterId?: string; // For Linode
+  customEndpoint?: string; // For MinIO and custom endpoints
 }
 
 export interface Bucket {
@@ -30,4 +52,23 @@ export interface AppState {
   providers: S3Provider[];
   selectedProvider: S3Provider | null;
   buckets: Bucket[];
+}
+
+// Provider configuration for regions and endpoints
+export interface ProviderConfig {
+  name: string;
+  type: S3ProviderType;
+  regions: Array<{
+    value: string;
+    label: string;
+  }>;
+  endpointPattern: string;
+  requiresAccountId?: boolean;
+  requiresNamespace?: boolean;
+  requiresClusterId?: boolean;
+  supportsLocationHints?: boolean;
+  locationHints?: Array<{
+    value: string;
+    label: string;
+  }>;
 } 

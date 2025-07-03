@@ -1,22 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, ScrollView, FlatList } from 'react-native';
-import { TextInput, Button, Text, Card, Divider, HelperText, RadioButton, Menu, List, Icon } from 'react-native-paper';
-import { S3Provider } from '../types';
+import { TextInput, Button, Text, Card, Divider, HelperText, Menu, List, Icon } from 'react-native-paper';
+import { S3Provider, S3ProviderType } from '../types';
 import { generateId } from '../utils/idGenerator';
+import { getProviderConfig, generateEndpoint, PROVIDER_CONFIGS } from '../config/providers';
 
 interface ProviderFormProps {
   bucketName: string;
   setBucketName: (v: string) => void;
-  type: 'aws' | 'hetzner';
-  setType: (v: 'aws' | 'hetzner') => void;
+  type: S3ProviderType;
+  setType: (v: S3ProviderType) => void;
   region: string;
   setRegion: (v: string) => void;
   accessKey: string;
   setAccessKey: (v: string) => void;
   secretKey: string;
   setSecretKey: (v: string) => void;
-  hetznerLocation: string;
-  setHetznerLocation: (v: string) => void;
+  accountId: string;
+  setAccountId: (v: string) => void;
+  namespace: string;
+  setNamespace: (v: string) => void;
+  locationHint: string;
+  setLocationHint: (v: string) => void;
+  clusterId: string;
+  setClusterId: (v: string) => void;
+  customEndpoint: string;
+  setCustomEndpoint: (v: string) => void;
   onSubmit: () => void;
 }
 
@@ -31,8 +40,16 @@ function ProviderForm({
   setAccessKey,
   secretKey,
   setSecretKey,
-  hetznerLocation,
-  setHetznerLocation,
+  accountId,
+  setAccountId,
+  namespace,
+  setNamespace,
+  locationHint,
+  setLocationHint,
+  clusterId,
+  setClusterId,
+  customEndpoint,
+  setCustomEndpoint,
   onSubmit
 }: ProviderFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,47 +59,26 @@ function ProviderForm({
     region: '',
     accessKey: '',
     secretKey: '',
+    accountId: '',
+    namespace: '',
+    clusterId: '',
+    customEndpoint: '',
   });
   const [typeMenuVisible, setTypeMenuVisible] = useState(false);
-  const [locationMenuVisible, setLocationMenuVisible] = useState(false);
-  const [customRegion, setCustomRegion] = useState('');
-  const [showCustomRegion, setShowCustomRegion] = useState(false);
   const [regionMenuVisible, setRegionMenuVisible] = useState(false);
-  const awsRegions = [
-    { value: 'us-east-1', label: 'us-east-1 (N. Virginia)' },
-    { value: 'us-east-2', label: 'us-east-2 (Ohio)' },
-    { value: 'us-west-1', label: 'us-west-1 (N. California)' },
-    { value: 'us-west-2', label: 'us-west-2 (Oregon)' },
-    { value: 'af-south-1', label: 'af-south-1 (Cape Town)' },
-    { value: 'ap-east-1', label: 'ap-east-1 (Hong Kong)' },
-    { value: 'ap-south-2', label: 'ap-south-2 (Hyderabad)' },
-    { value: 'ap-southeast-3', label: 'ap-southeast-3 (Jakarta)' },
-    { value: 'ap-southeast-5', label: 'ap-southeast-5 (Kuala Lumpur)' },
-    { value: 'ap-southeast-4', label: 'ap-southeast-4 (Melbourne)' },
-    { value: 'ap-south-1', label: 'ap-south-1 (Mumbai)' },
-    { value: 'ap-northeast-3', label: 'ap-northeast-3 (Osaka)' },
-    { value: 'ap-northeast-2', label: 'ap-northeast-2 (Seoul)' },
-    { value: 'ap-southeast-1', label: 'ap-southeast-1 (Singapore)' },
-    { value: 'ap-southeast-2', label: 'ap-southeast-2 (Sydney)' },
-    { value: 'ap-northeast-1', label: 'ap-northeast-1 (Tokyo)' },
-    { value: 'ca-central-1', label: 'ca-central-1 (Central Canada)' },
-    { value: 'ca-west-1', label: 'ca-west-1 (Calgary)' },
-    { value: 'eu-central-1', label: 'eu-central-1 (Frankfurt)' },
-    { value: 'eu-west-1', label: 'eu-west-1 (Ireland)' },
-    { value: 'eu-west-2', label: 'eu-west-2 (London)' },
-    { value: 'eu-south-1', label: 'eu-south-1 (Milan)' },
-    { value: 'eu-west-3', label: 'eu-west-3 (Paris)' },
-    { value: 'eu-south-2', label: 'eu-south-2 (Spain)' },
-    { value: 'eu-north-1', label: 'eu-north-1 (Stockholm)' },
-    { value: 'eu-central-2', label: 'eu-central-2 (Zurich)' },
-    { value: 'il-central-1', label: 'il-central-1 (Tel Aviv)' },
-    { value: 'me-south-1', label: 'me-south-1 (Bahrain)' },
-    { value: 'me-central-1', label: 'me-central-1 (UAE)' },
-    { value: 'mx-central-1', label: 'mx-central-1 (Mexico City)' },
-    { value: 'sa-east-1', label: 'sa-east-1 (São Paulo)' },
-    { value: 'us-gov-east-1', label: 'us-gov-east-1 (GovCloud US-East)' },
-    { value: 'us-gov-west-1', label: 'us-gov-west-1 (GovCloud US-West)' },
-  ];
+  const [locationHintMenuVisible, setLocationHintMenuVisible] = useState(false);
+
+  const currentConfig = getProviderConfig(type);
+
+  // Reset additional fields when provider type changes
+  useEffect(() => {
+    setAccountId('');
+    setNamespace('');
+    setLocationHint('');
+    setClusterId('');
+    setCustomEndpoint('');
+    setRegion('');
+  }, [type]);
 
   function validateForm() {
     let isValid = true;
@@ -91,6 +87,10 @@ function ProviderForm({
       region: '',
       accessKey: '',
       secretKey: '',
+      accountId: '',
+      namespace: '',
+      clusterId: '',
+      customEndpoint: '',
     };
 
     if (!bucketName.trim()) {
@@ -98,8 +98,8 @@ function ProviderForm({
       isValid = false;
     }
 
-    if (type === 'aws' && !region.trim()) {
-      newErrors.region = 'Region is required for AWS';
+    if (!region.trim() && type !== 'minio') {
+      newErrors.region = 'Region is required';
       isValid = false;
     }
 
@@ -113,18 +113,37 @@ function ProviderForm({
       isValid = false;
     }
 
+    if (currentConfig.requiresAccountId && !accountId.trim()) {
+      newErrors.accountId = 'Account ID is required for this provider';
+      isValid = false;
+    }
+
+    if (currentConfig.requiresNamespace && !namespace.trim()) {
+      newErrors.namespace = 'Namespace is required for this provider';
+      isValid = false;
+    }
+
+    if (currentConfig.requiresClusterId && !clusterId.trim()) {
+      newErrors.clusterId = 'Cluster ID is required for this provider';
+      isValid = false;
+    }
+
+    if (type === 'minio' && !customEndpoint.trim()) {
+      newErrors.customEndpoint = 'Custom endpoint is required for MinIO';
+      isValid = false;
+    }
+
     setErrors(newErrors);
     return isValid;
   }
   
   // Generate endpoint based on provider type and settings
-  function generateEndpoint(): string {
-    if (type === 'aws') {
-      return `https://s3.${region || 'us-east-1'}.amazonaws.com`;
-    } else if (type === 'hetzner') {
-      return `https://${hetznerLocation}.your-objectstorage.com`;
+  function getEndpointPreview(): string {
+    try {
+      return generateEndpoint(type, region, accountId, namespace, clusterId, customEndpoint);
+    } catch {
+      return 'Invalid configuration';
     }
-    return '';
   }
 
   function handleSubmit() {
@@ -135,6 +154,8 @@ function ProviderForm({
     onSubmit();
     setIsSubmitting(false);
   }
+
+  const providerTypes = Object.keys(PROVIDER_CONFIGS).map(key => PROVIDER_CONFIGS[key as S3ProviderType]);
 
   return (
     <Card style={styles.card}>
@@ -153,23 +174,106 @@ function ProviderForm({
           />
           {errors.bucketName ? <HelperText type="error">{errors.bucketName}</HelperText> : null}
 
-          <Text style={styles.sectionLabel}>Type de stockage</Text>
+          <Text style={styles.sectionLabel}>Storage Provider</Text>
           <Menu
             visible={typeMenuVisible}
             onDismiss={() => setTypeMenuVisible(false)}
             anchor={
-              <Button mode="outlined" onPress={() => setTypeMenuVisible(true)} style={styles.dropdownButton} contentStyle={styles.dropdownContent} icon="chevron-down">
-                {type === 'aws' ? 'AWS S3' : 'Hetzner Storage Box'}
+              <Button 
+                mode="outlined" 
+                onPress={() => setTypeMenuVisible(true)} 
+                style={styles.dropdownButton} 
+                contentStyle={styles.dropdownContent} 
+                icon="chevron-down"
+              >
+                {currentConfig.name}
               </Button>
             }
           >
-            <Menu.Item onPress={() => { setType('aws'); setTypeMenuVisible(false); }} title="AWS S3" />
-            <Menu.Item onPress={() => { setType('hetzner'); setTypeMenuVisible(false); }} title="Hetzner Storage Box" />
+            {providerTypes.map((provider) => (
+              <Menu.Item 
+                key={provider.type}
+                onPress={() => { 
+                  setType(provider.type); 
+                  setTypeMenuVisible(false); 
+                }} 
+                title={provider.name} 
+              />
+            ))}
           </Menu>
 
-          {type === 'aws' ? (
+          {/* Account ID field for Cloudflare R2 */}
+          {currentConfig.requiresAccountId && (
             <>
-              <Text style={styles.sectionLabel}>Région AWS</Text>
+              <TextInput
+                mode="outlined"
+                label="Account ID"
+                value={accountId}
+                onChangeText={setAccountId}
+                style={styles.input}
+                error={!!errors.accountId}
+                placeholder="Your Cloudflare account ID"
+                autoCapitalize="none"
+              />
+              {errors.accountId ? <HelperText type="error">{errors.accountId}</HelperText> : null}
+            </>
+          )}
+
+          {/* Namespace field for Oracle OCI */}
+          {currentConfig.requiresNamespace && (
+            <>
+              <TextInput
+                mode="outlined"
+                label="Namespace"
+                value={namespace}
+                onChangeText={setNamespace}
+                style={styles.input}
+                error={!!errors.namespace}
+                placeholder="Your Oracle Cloud namespace"
+                autoCapitalize="none"
+              />
+              {errors.namespace ? <HelperText type="error">{errors.namespace}</HelperText> : null}
+            </>
+          )}
+
+          {/* Cluster ID field for Linode */}
+          {currentConfig.requiresClusterId && (
+            <>
+              <TextInput
+                mode="outlined"
+                label="Cluster ID"
+                value={clusterId}
+                onChangeText={setClusterId}
+                style={styles.input}
+                error={!!errors.clusterId}
+                placeholder="Your Linode cluster ID"
+                autoCapitalize="none"
+              />
+              {errors.clusterId ? <HelperText type="error">{errors.clusterId}</HelperText> : null}
+            </>
+          )}
+
+          {/* Custom endpoint for MinIO */}
+          {type === 'minio' && (
+            <>
+              <TextInput
+                mode="outlined"
+                label="Custom Endpoint"
+                value={customEndpoint}
+                onChangeText={setCustomEndpoint}
+                style={styles.input}
+                error={!!errors.customEndpoint}
+                placeholder="https://your-minio-server.com"
+                autoCapitalize="none"
+              />
+              {errors.customEndpoint ? <HelperText type="error">{errors.customEndpoint}</HelperText> : null}
+            </>
+          )}
+
+          {/* Region selection */}
+          {type !== 'minio' && (
+            <>
+              <Text style={styles.sectionLabel}>Region</Text>
               <Menu
                 visible={regionMenuVisible}
                 onDismiss={() => setRegionMenuVisible(false)}
@@ -181,13 +285,13 @@ function ProviderForm({
                     style={styles.menuButton}
                     icon="chevron-down"
                   >
-                    {awsRegions.find(r => r.value === region)?.label || 'Sélectionner une région'}
+                    {currentConfig.regions.find(r => r.value === region)?.label || 'Select a region'}
                   </Button>
                 }
                 style={{ maxHeight: 320 }}
               >
                 <FlatList
-                  data={awsRegions}
+                  data={currentConfig.regions}
                   keyExtractor={item => item.value}
                   style={{ maxHeight: 300 }}
                   renderItem={({ item }) => (
@@ -201,34 +305,46 @@ function ProviderForm({
                   )}
                 />
               </Menu>
-              {showCustomRegion && (
-                <TextInput
-                  mode="outlined"
-                  label="Région personnalisée"
-                  value={region}
-                  onChangeText={setRegion}
-                  style={styles.input}
-                  error={!!errors.region}
-                  placeholder="us-east-1"
-                />
-              )}
               {errors.region ? <HelperText type="error">{errors.region}</HelperText> : null}
             </>
-          ) : (
+          )}
+
+          {/* Location hint for Cloudflare R2 */}
+          {currentConfig.supportsLocationHints && currentConfig.locationHints && (
             <>
-              <Text style={styles.sectionLabel}>Hetzner Location</Text>
+              <Text style={styles.sectionLabel}>Location Hint (Optional)</Text>
               <Menu
-                visible={locationMenuVisible}
-                onDismiss={() => setLocationMenuVisible(false)}
+                visible={locationHintMenuVisible}
+                onDismiss={() => setLocationHintMenuVisible(false)}
                 anchor={
-                  <Button mode="outlined" onPress={() => setLocationMenuVisible(true)} style={styles.dropdownButton} contentStyle={styles.dropdownContent} icon="chevron-down">
-                    {hetznerLocation === 'fsn1' ? 'Falkenstein (fsn1)' : hetznerLocation === 'nbg1' ? 'Nuremberg (nbg1)' : 'Helsinki (hel1)'}
+                  <Button
+                    mode="outlined"
+                    onPress={() => setLocationHintMenuVisible(true)}
+                    contentStyle={{ justifyContent: 'space-between' }}
+                    style={styles.menuButton}
+                    icon="chevron-down"
+                  >
+                    {currentConfig.locationHints.find(h => h.value === locationHint)?.label || 'Auto (Recommended)'}
                   </Button>
                 }
               >
-                <Menu.Item onPress={() => { setHetznerLocation('fsn1'); setLocationMenuVisible(false); }} title="Falkenstein (fsn1)" />
-                <Menu.Item onPress={() => { setHetznerLocation('nbg1'); setLocationMenuVisible(false); }} title="Nuremberg (nbg1)" />
-                <Menu.Item onPress={() => { setHetznerLocation('hel1'); setLocationMenuVisible(false); }} title="Helsinki (hel1)" />
+                <Menu.Item
+                  onPress={() => {
+                    setLocationHint('');
+                    setLocationHintMenuVisible(false);
+                  }}
+                  title="Auto (Recommended)"
+                />
+                {currentConfig.locationHints.map((hint) => (
+                  <Menu.Item
+                    key={hint.value}
+                    onPress={() => {
+                      setLocationHint(hint.value);
+                      setLocationHintMenuVisible(false);
+                    }}
+                    title={hint.label}
+                  />
+                ))}
               </Menu>
             </>
           )}
@@ -258,14 +374,8 @@ function ProviderForm({
           {errors.secretKey ? <HelperText type="error">{errors.secretKey}</HelperText> : null}
           
           <Text style={styles.endpointPreview}>
-            Endpoint: {generateEndpoint()}
+            Endpoint: {getEndpointPreview()}
           </Text>
-          
-          {type === 'hetzner' && (
-            <Text style={styles.endpointPreview}>
-              Bucket URL: https://{bucketName.toLowerCase() || 'your-bucket-name'}.{hetznerLocation}.your-objectstorage.com/
-            </Text>
-          )}
           
           <Button
             mode="contained"
