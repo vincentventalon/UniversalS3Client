@@ -8,66 +8,45 @@ interface SettingsProps {
 }
 
 export default function Settings({ onBack, appVersion }: SettingsProps) {
-  const handleGitHubPress = () => {
-    const gitHubURL = 'https://github.com/vincentventalon/UniversalS3Client';
-    
-    Linking.canOpenURL(gitHubURL)
+  const handleOpenURL = (url: string, serviceName: string) => {
+    Linking.canOpenURL(url)
       .then((supported) => {
         if (supported) {
-          Linking.openURL(gitHubURL);
+          Linking.openURL(url);
         } else {
           Alert.alert(
             'Unable to open link',
-            'Could not open GitHub. Please visit the repository manually.',
+            `Could not open ${serviceName}. Please visit manually.`,
             [{ text: 'OK' }]
           );
         }
       })
       .catch((err) => {
-        console.error('Error opening GitHub link:', err);
+        console.error(`Error opening ${serviceName} link:`, err);
         Alert.alert(
           'Error',
-          'Failed to open GitHub link.',
+          `Failed to open ${serviceName} link.`,
           [{ text: 'OK' }]
         );
       });
   };
 
+  const handleGitHubPress = () => {
+    handleOpenURL('https://github.com/vincentventalon/UniversalS3Client', 'GitHub');
+  };
+
   const handleTwitterPress = () => {
-    const twitterURL = 'https://x.com/10x_indie?s=21';
-    
-    Linking.canOpenURL(twitterURL)
-      .then((supported) => {
-        if (supported) {
-          Linking.openURL(twitterURL);
-        } else {
-          Alert.alert(
-            'Unable to open link',
-            'Could not open Twitter. Please visit the profile manually.',
-            [{ text: 'OK' }]
-          );
-        }
-      })
-      .catch((err) => {
-        console.error('Error opening Twitter link:', err);
-        Alert.alert(
-          'Error',
-          'Failed to open Twitter link.',
-          [{ text: 'OK' }]
-        );
-      });
+    handleOpenURL('https://x.com/10x_indie?s=21', 'Twitter');
   };
 
   const handleReviewPress = () => {
     Alert.alert(
       'Leave a Review ⭐',
-      'Thank you for using Universal S3 Client! Your 5-star review would help me a lot as an indie developer. Would you like to leave a review on the App Store/Play Store?',
+      'Your 5-star review would help me. Would you like to leave a review on the App Store/Play Store?',
       [
         { text: 'Maybe Later', style: 'cancel' },
         { text: 'Leave Review ⭐', onPress: () => {
-          // This would typically open the app store review page
-          // For now, we'll show a thank you message
-          Alert.alert('Thank You! 🙏', 'Thank you for your support! Please search for "Universal S3 Client" in your app store to leave a review.');
+          Alert.alert('Thank You! 🙏', 'Please search for "Universal S3 Client" in your app store to leave a review.');
         }}
       ]
     );
@@ -85,42 +64,42 @@ export default function Settings({ onBack, appVersion }: SettingsProps) {
       </Appbar.Header>
       
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-        <Card style={styles.openSourceCard}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>About the Developer</Text>
+          <Text style={styles.description}>
+            Hi, I'm Vincent! I built this app to help developers and power users manage their S3 storage efficiently. 
+            This is a passion project that I maintain in my free time.
+          </Text>
+          
+          <Button
+            mode="outlined"
+            onPress={handleTwitterPress}
+            style={styles.button}
+            contentStyle={styles.buttonContent}
+            icon="twitter"
+          >
+            Follow me on Twitter/X
+          </Button>
+        </View>
+
+        <Card style={styles.card}>
           <Card.Content>
-            <Text style={styles.openSourceTitle}>🎉 Free & Open Source</Text>
-            <Text style={styles.openSourceDescription}>
+            <Text style={styles.cardTitle}>🎉 Free & Open Source</Text>
+            <Text style={styles.description}>
               This app is completely free and open source! No ads, no tracking, no premium features. 
-              Your support through reviews helps me continue developing useful tools for the community.
+              I believe in creating useful tools for the developer community.
             </Text>
             <Button
               mode="contained"
               onPress={handleReviewPress}
-              style={styles.reviewButton}
-              contentStyle={styles.reviewButtonContent}
-              labelStyle={styles.reviewButtonLabel}
+              style={styles.primaryButton}
+              contentStyle={styles.buttonContent}
               icon="star"
             >
               Leave a 5⭐ Review - It helps a lot!
             </Button>
           </Card.Content>
         </Card>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About the Developer</Text>
-          <Text style={styles.aboutText}>
-            I'm Vincent Ventalon, an indie hacker building useful tools for developers and power users.
-          </Text>
-          
-          <Button
-            mode="outlined"
-            onPress={handleTwitterPress}
-            style={styles.socialButton}
-            contentStyle={styles.socialButtonContent}
-            icon="twitter"
-          >
-            Follow me on Twitter/X
-          </Button>
-        </View>
 
         <Divider style={styles.divider} />
 
@@ -130,16 +109,14 @@ export default function Settings({ onBack, appVersion }: SettingsProps) {
             mode="contained"
             onPress={handleGitHubPress}
             style={styles.githubButton}
-            contentStyle={styles.githubButtonContent}
-            labelStyle={styles.githubButtonLabel}
+            contentStyle={styles.buttonContent}
             icon="github"
           >
             View Source Code on GitHub
           </Button>
           
           <Text style={styles.contributionText}>
-            Found a bug or have a feature request? The easiest way to contribute 
-            or report something is to open an issue on GitHub. Pull requests are welcome!
+            Found a bug or have a feature request? Open an issue on GitHub. Pull requests are welcome!
           </Text>
         </View>
 
@@ -163,35 +140,30 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 16,
   },
-  openSourceCard: {
+  card: {
     marginBottom: 24,
     elevation: 2,
   },
-  openSourceTitle: {
+  cardTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 12,
     color: '#2E7D32',
     textAlign: 'center',
   },
-  openSourceDescription: {
+  description: {
     fontSize: 16,
     lineHeight: 24,
     color: '#333',
     textAlign: 'center',
     marginBottom: 16,
   },
-  reviewButton: {
+  primaryButton: {
     marginTop: 8,
     backgroundColor: '#FF6B35',
   },
-  reviewButtonContent: {
+  buttonContent: {
     paddingVertical: 8,
-  },
-  reviewButtonLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: 'white',
   },
   section: {
     marginBottom: 32,
@@ -202,17 +174,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: '#333',
   },
-  aboutText: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#666',
-    marginBottom: 16,
-  },
-  socialButton: {
+  button: {
     marginBottom: 8,
-  },
-  socialButtonContent: {
-    paddingVertical: 8,
   },
   divider: {
     marginVertical: 16,
@@ -220,14 +183,6 @@ const styles = StyleSheet.create({
   githubButton: {
     marginBottom: 16,
     backgroundColor: '#24292e',
-  },
-  githubButtonContent: {
-    paddingVertical: 8,
-  },
-  githubButtonLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: 'white',
   },
   contributionText: {
     fontSize: 14,
