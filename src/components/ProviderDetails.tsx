@@ -4,7 +4,6 @@ import {
   Card, 
   Text, 
   IconButton, 
-  Divider, 
   ActivityIndicator, 
   Button,
   List,
@@ -125,10 +124,6 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
   async function handleRefresh() {
     setRefreshing(true);
     await loadBucketObjects();
-  }
-
-  function getProviderTypeDisplay() {
-    return provider.type === 'aws' ? 'AWS S3' : 'Hetzner Storage';
   }
 
   function navigateToFolder(folderObject: S3Object) {
@@ -737,41 +732,6 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         )}
       </View>
       
-      <Card style={styles.providerInfoCard}>
-        <Card.Content>
-          <Text style={styles.providerType}>
-            {getProviderTypeDisplay()}
-          </Text>
-          <Divider style={styles.divider} />
-          
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Bucket:</Text>
-            <Text style={styles.infoValue}>{bucketName}</Text>
-          </View>
-
-          {provider.type === 'aws' && (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Region:</Text>
-              <Text style={styles.infoValue}>{provider.region}</Text>
-            </View>
-          )}
-
-          {provider.type === 'hetzner' && (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Location:</Text>
-              <Text style={styles.infoValue}>{provider.region}</Text>
-            </View>
-          )}
-          
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Endpoint:</Text>
-            <Text style={styles.infoValue} numberOfLines={1} ellipsizeMode="middle">
-              {provider.endpoint}
-            </Text>
-          </View>
-        </Card.Content>
-      </Card>
-      
       <View style={styles.bucketContentHeader}>
         <Text style={styles.sectionTitle}>Bucket Contents</Text>
         
@@ -860,29 +820,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    flex: 1,
-  },
-  providerInfoCard: {
-    marginBottom: 16,
-  },
-  providerType: {
-    fontSize: 16,
-    opacity: 0.7,
-    marginBottom: 4,
-  },
-  divider: {
-    marginVertical: 8,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    marginVertical: 4,
-  },
-  infoLabel: {
-    fontWeight: '500',
-    marginRight: 4,
-    width: 80,
-  },
-  infoValue: {
     flex: 1,
   },
   bucketContentHeader: {
