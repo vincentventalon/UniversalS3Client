@@ -189,17 +189,20 @@ function ProviderForm({
                 {currentConfig.name}
               </Button>
             }
+            style={{ maxHeight: 320 }}
           >
-            {providerTypes.map((provider) => (
-              <Menu.Item 
-                key={provider.type}
-                onPress={() => { 
-                  setType(provider.type); 
-                  setTypeMenuVisible(false); 
-                }} 
-                title={provider.name} 
-              />
-            ))}
+            <ScrollView style={{ maxHeight: 300 }}>
+              {providerTypes.map((provider) => (
+                <Menu.Item 
+                  key={provider.type}
+                  onPress={() => { 
+                    setType(provider.type); 
+                    setTypeMenuVisible(false); 
+                  }} 
+                  title={provider.name} 
+                />
+              ))}
+            </ScrollView>
           </Menu>
 
           {/* Account ID field for Cloudflare R2 */}
@@ -294,6 +297,8 @@ function ProviderForm({
                   data={currentConfig.regions}
                   keyExtractor={item => item.value}
                   style={{ maxHeight: 300 }}
+                  nestedScrollEnabled
+                  showsVerticalScrollIndicator
                   renderItem={({ item }) => (
                     <Menu.Item
                       onPress={() => {
