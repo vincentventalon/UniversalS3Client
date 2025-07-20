@@ -193,6 +193,32 @@ export const PROVIDER_CONFIGS: Record<S3ProviderType, ProviderConfig> = {
       { value: 'custom', label: 'Custom Endpoint' },
     ],
   },
+
+  google: {
+    name: 'Google Cloud Storage',
+    type: 'google',
+    endpointPattern: 'https://storage.googleapis.com',
+    regions: [
+      { value: 'us-central1', label: 'us-central1 (Iowa)' },
+      { value: 'us-east1', label: 'us-east1 (South Carolina)' },
+      { value: 'us-west1', label: 'us-west1 (Oregon)' },
+      { value: 'europe-west1', label: 'europe-west1 (Belgium)' },
+      { value: 'asia-east1', label: 'asia-east1 (Taiwan)' },
+    ],
+  },
+
+  azure: {
+    name: 'Azure Blob Storage',
+    type: 'azure',
+    endpointPattern: 'https://{accountId}.blob.core.windows.net',
+    regions: [
+      { value: 'eastus', label: 'East US' },
+      { value: 'westus', label: 'West US' },
+      { value: 'northeurope', label: 'North Europe' },
+      { value: 'westeurope', label: 'West Europe' },
+      { value: 'southeastasia', label: 'Southeast Asia' },
+    ],
+  },
 };
 
 export function getProviderConfig(type: S3ProviderType): ProviderConfig {
