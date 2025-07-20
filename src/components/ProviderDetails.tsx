@@ -16,7 +16,7 @@ import {
   Checkbox
 } from 'react-native-paper';
 import { S3Provider, S3Object } from '../types';
-import { listBucketObjects, getObjectUrl, createEmptyObject, uploadFile, deleteObject, deleteFolder } from '../services/s3Service';
+import { listBucketObjects, getObjectUrl, createEmptyObject, uploadFile, deleteObject, deleteFolder, copyFolder, renameFolder } from '../services/s3Service';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import ObjectDetails from './ObjectDetails';
@@ -43,10 +43,14 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
   const [itemToDelete, setItemToDelete] = useState<S3Object | null>(null);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [selectedObject, setSelectedObject] = useState<S3Object | null>(null);
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [editProvider, setEditProvider] = useState<S3Provider | null>(null);
   const [isMultiSelect, setIsMultiSelect] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  
+  // États pour la copie et le renommage
+  const [copiedFolder, setCopiedFolder] = useState<S3Object | null>(null);
+  const [isRenameModalVisible, setIsRenameModalVisible] = useState(false);
+  const [folderToRename, setFolderToRename] = useState<S3Object | null>(null);
+  const [newFolderNameForRename, setNewFolderNameForRename] = useState('');
 
   // Extract bucket name from provider
   const bucketName = extractBucketName(provider);
@@ -215,16 +219,38 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         )}
         right={props => (
           !isMultiSelect && (
-            <IconButton
-              {...props}
-              icon="delete"
-              iconColor="#FF5252"
-              size={20}
-              onPress={() => {
-                setItemToDelete(item);
-                setIsDeleteModalVisible(true);
-              }}
-            />
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {item.isFolder && (
+                <>
+                  <IconButton
+                    {...props}
+                    icon="pencil"
+                    iconColor="#2196F3"
+                    size={16}
+                    onPress={() => openRenameModal(item)}
+                    style={{ marginHorizontal: 0 }}
+                  />
+                  <IconButton
+                    {...props}
+                    icon="content-copy"
+                    iconColor="#FF9800"
+                    size={16}
+                    onPress={() => handleCopyFolder(item)}
+                    style={{ marginHorizontal: 0 }}
+                  />
+                </>
+              )}
+              <IconButton
+                {...props}
+                icon="delete"
+                iconColor="#FF5252"
+                size={20}
+                onPress={() => {
+                  setItemToDelete(item);
+                  setIsDeleteModalVisible(true);
+                }}
+              />
+            </View>
           )
         )}
         onPress={() => {
@@ -341,6 +367,77 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
     }
   }
 
+  // Fonctions pour la copie et le renommage de dossiers
+  function handleCopyFolder(folder: S3Object) {
+    setCopiedFolder(folder);
+    Alert.alert('Dossier copié', `Le dossier "${folder.name}" a été copié. Utilisez le bouton + pour le coller.`);
+  }
+
+  async function handlePasteFolder() {
+    if (!copiedFolder) return;
+
+    const newFolderName = `${copiedFolder.name}_copy`;
+    const targetKey = currentPath ? `${currentPath}${newFolderName}/` : `${newFolderName}/`;
+
+    try {
+      setLoading(true);
+      await copyFolder(provider, bucketName, copiedFolder.key, targetKey);
+      
+      // Rafraîchir la liste des objets
+      await loadBucketObjects();
+      
+      Alert.alert('Succès', `Le dossier "${copiedFolder.name}" a été collé avec succès.`);
+      setCopiedFolder(null);
+    } catch (error) {
+      console.error('Failed to paste folder:', error);
+      Alert.alert('Erreur', 'Impossible de coller le dossier. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function openRenameModal(folder: S3Object) {
+    setFolderToRename(folder);
+    setNewFolderNameForRename(folder.name);
+    setIsRenameModalVisible(true);
+  }
+
+  async function handleRenameFolder() {
+    if (!folderToRename || !newFolderNameForRename.trim()) {
+      Alert.alert('Erreur', 'Veuillez entrer un nom de dossier valide');
+      return;
+    }
+
+    if (newFolderNameForRename === folderToRename.name) {
+      setIsRenameModalVisible(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const oldKey = folderToRename.key;
+      const newKey = currentPath 
+        ? `${currentPath}${newFolderNameForRename}/`
+        : `${newFolderNameForRename}/`;
+
+      await renameFolder(provider, bucketName, oldKey, newKey);
+      
+      // Rafraîchir la liste des objets
+      await loadBucketObjects();
+      
+      Alert.alert('Succès', `Le dossier a été renommé en "${newFolderNameForRename}".`);
+      setIsRenameModalVisible(false);
+      setFolderToRename(null);
+      setNewFolderNameForRename('');
+    } catch (error) {
+      console.error('Failed to rename folder:', error);
+      Alert.alert('Erreur', 'Impossible de renommer le dossier. Veuillez réessayer.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleFileUpload() {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -425,29 +522,40 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
   }
 
   function renderActionButton() {
+    const actions = [
+      {
+        icon: 'folder-plus',
+        label: 'Create Folder',
+        onPress: () => setIsCreateFolderModalOpen(true),
+      },
+      {
+        icon: 'file-upload',
+        label: 'Upload File',
+        onPress: handleFileUpload,
+      },
+      {
+        icon: 'image',
+        label: 'Upload Photo',
+        onPress: handlePhotoUpload,
+      },
+    ];
+
+    // Ajouter l'option de collage si un dossier a été copié
+    if (copiedFolder) {
+      actions.unshift({
+        icon: 'content-paste',
+        label: `Paste "${copiedFolder.name}"`,
+        onPress: handlePasteFolder,
+      });
+    }
+
     return (
       <Portal>
         <FAB.Group
           open={isMenuVisible}
           visible
           icon={isMenuVisible ? 'close' : 'plus'}
-          actions={[
-            {
-              icon: 'folder-plus',
-              label: 'Create Folder',
-              onPress: () => setIsCreateFolderModalOpen(true),
-            },
-            {
-              icon: 'file-upload',
-              label: 'Upload File',
-              onPress: handleFileUpload,
-            },
-            {
-              icon: 'image',
-              label: 'Upload Photo',
-              onPress: handlePhotoUpload,
-            },
-          ]}
+          actions={actions}
           onStateChange={({ open }) => setIsMenuVisible(open)}
           onPress={() => {
             if (isMenuVisible) {
@@ -498,6 +606,56 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
                   style={styles.modalButton}
                 >
                   Create
+                </Button>
+              </View>
+            </Card.Content>
+          </Card>
+        </Modal>
+      </Portal>
+    );
+  }
+
+  function renderRenameModal() {
+    return (
+      <Portal>
+        <Modal
+          visible={isRenameModalVisible}
+          onDismiss={() => {
+            setIsRenameModalVisible(false);
+            setFolderToRename(null);
+            setNewFolderNameForRename('');
+          }}
+          contentContainerStyle={styles.modalContainer}
+        >
+          <Card>
+            <Card.Content>
+              <Text style={styles.modalTitle}>Renommer le dossier</Text>
+              <TextInput
+                mode="outlined"
+                label="Nouveau nom"
+                value={newFolderNameForRename}
+                onChangeText={setNewFolderNameForRename}
+                style={styles.input}
+                placeholder="Entrez le nouveau nom"
+              />
+              <View style={styles.buttonRow}>
+                <Button
+                  mode="outlined"
+                  onPress={() => {
+                    setIsRenameModalVisible(false);
+                    setFolderToRename(null);
+                    setNewFolderNameForRename('');
+                  }}
+                  style={styles.modalButton}
+                >
+                  Annuler
+                </Button>
+                <Button
+                  mode="contained"
+                  onPress={handleRenameFolder}
+                  style={styles.modalButton}
+                >
+                  Renommer
                 </Button>
               </View>
             </Card.Content>
@@ -601,12 +759,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
     );
   }
 
-  function handleEditProvider(updatedProvider: S3Provider) {
-    setIsEditModalVisible(false);
-    setEditProvider(null);
-    // TODO: Sauvegarder la modification dans la liste globale (remonter via callback ou context)
-    Alert.alert('Succès', 'Bucket mis à jour.');
-  }
+
 
   async function handleDeleteSelected() {
     if (selectedKeys.length === 0) return;
@@ -782,25 +935,11 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
       )}
       
       {renderCreateFolderModal()}
+      {renderRenameModal()}
       {renderUploadProgress()}
       {renderActionButton()}
       {renderDeleteConfirmationModal()}
-      <Portal>
-        <Modal
-          visible={isEditModalVisible}
-          onDismiss={() => setIsEditModalVisible(false)}
-          contentContainerStyle={styles.modalContainer}
-        >
-          <Text style={styles.modalTitle}>Modifier le bucket</Text>
-          {editProvider && (
-            <ProviderForm
-              provider={editProvider}
-              onSubmit={handleEditProvider}
-              onCancel={() => setIsEditModalVisible(false)}
-            />
-          )}
-        </Modal>
-      </Portal>
+
     </View>
   );
 }

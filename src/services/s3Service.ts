@@ -1,5 +1,5 @@
 import { Bucket, S3Provider, S3Object } from '../types';
-import { S3Client, ListBucketsCommand, ListObjectsV2Command, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, ListBucketsCommand, ListObjectsV2Command, PutObjectCommand, DeleteObjectCommand, GetObjectCommand, CopyObjectCommand } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
@@ -305,7 +305,7 @@ export async function deleteObject(provider: S3Provider, bucketName: string, key
 }
 
 /**
- * Delete a folder and all its contents recursively from S3
+ * Supprimer un dossier et tout son contenu de façon récursive
  */
 export async function deleteFolder(provider: S3Provider, bucketName: string, folderKey: string): Promise<void> {
   try {
@@ -325,6 +325,83 @@ export async function deleteFolder(provider: S3Provider, bucketName: string, fol
     
   } catch (error) {
     console.error('Error deleting folder:', error);
+    throw error;
+  }
+}
+
+/**
+ * Copier un dossier et tout son contenu de façon récursive
+ */
+export async function copyFolder(
+  provider: S3Provider,
+  bucketName: string,
+  sourceFolderKey: string,
+  targetFolderKey: string
+): Promise<void> {
+  try {
+    const client = createS3Client(provider);
+    
+    // Ensure the folder keys end with a forward slash
+    const normalizedSourceKey = sourceFolderKey.endsWith('/') ? sourceFolderKey : `${sourceFolderKey}/`;
+    const normalizedTargetKey = targetFolderKey.endsWith('/') ? targetFolderKey : `${targetFolderKey}/`;
+    
+    // List all objects in the source folder recursively
+    const objects = await listBucketObjects(provider, bucketName, normalizedSourceKey);
+    
+    // Copy all objects including nested folders
+    for (const object of objects) {
+      // Calculate the relative path within the source folder
+      const relativePath = object.key.substring(normalizedSourceKey.length);
+      const targetKey = normalizedTargetKey + relativePath;
+      
+      if (object.isFolder) {
+        // For folders, we just need to ensure they exist (they will be created when we copy files)
+        continue;
+      } else {
+        // Copy the file using S3 copy operation
+        const copyCommand = new CopyObjectCommand({
+          Bucket: bucketName,
+          CopySource: `${bucketName}/${object.key}`,
+          Key: targetKey,
+        });
+        
+        await client.send(copyCommand);
+      }
+    }
+    
+    // Create the target folder marker if it doesn't exist
+    const putCommand = new PutObjectCommand({
+      Bucket: bucketName,
+      Key: normalizedTargetKey,
+      Body: '',
+    });
+    
+    await client.send(putCommand);
+    
+  } catch (error) {
+    console.error('Error copying folder:', error);
+    throw error;
+  }
+}
+
+/**
+ * Renommer un dossier et tout son contenu de façon récursive
+ */
+export async function renameFolder(
+  provider: S3Provider,
+  bucketName: string,
+  oldFolderKey: string,
+  newFolderKey: string
+): Promise<void> {
+  try {
+    // First copy the folder to the new location
+    await copyFolder(provider, bucketName, oldFolderKey, newFolderKey);
+    
+    // Then delete the original folder
+    await deleteFolder(provider, bucketName, oldFolderKey);
+    
+  } catch (error) {
+    console.error('Error renaming folder:', error);
     throw error;
   }
 }

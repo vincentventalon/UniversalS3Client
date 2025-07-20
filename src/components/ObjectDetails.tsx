@@ -50,9 +50,9 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
   };
 
   const handleSharePath = async () => {
+    const pathToShare = object.fullPath || object.key;
+    
     try {
-      const pathToShare = object.fullPath || object.key;
-      
       await Share.share({
         message: pathToShare,
         title: `Share path for ${object.name}`,
