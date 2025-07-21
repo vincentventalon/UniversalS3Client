@@ -312,8 +312,10 @@ export async function deleteFolder(provider: S3Provider, bucketName: string, fol
     // Ensure the folder key ends with a forward slash
     const normalizedFolderKey = folderKey.endsWith('/') ? folderKey : `${folderKey}/`;
     
-    // List all objects in the folder
-    const objects = await listBucketObjects(provider, bucketName, normalizedFolderKey);
+    // List all objects in the folder recursively
+    const objects = await listAllObjectsRecursively(provider, bucketName, normalizedFolderKey);
+    
+    console.log(`Found ${objects.length} objects to delete recursively`);
     
     // Delete all objects including nested folders
     for (const object of objects) {
@@ -325,6 +327,69 @@ export async function deleteFolder(provider: S3Provider, bucketName: string, fol
     
   } catch (error) {
     console.error('Error deleting folder:', error);
+    throw error;
+  }
+}
+
+/**
+ * Lister tous les objets dans un dossier de façon récursive (sans délimiteur)
+ */
+async function listAllObjectsRecursively(
+  provider: S3Provider,
+  bucketName: string,
+  prefix: string = ''
+): Promise<S3Object[]> {
+  try {
+    const client = createS3Client(provider);
+    const objects: S3Object[] = [];
+    let continuationToken: string | undefined;
+    
+    do {
+      const command = new ListObjectsV2Command({
+        Bucket: bucketName,
+        Prefix: prefix,
+        // Pas de délimiteur pour avoir tous les objets récursivement
+        ContinuationToken: continuationToken
+      });
+      
+      const response = await client.send(command);
+      
+      if (response.Contents) {
+        for (const content of response.Contents) {
+          if (content.Key && content.Key !== prefix) {
+            const key = content.Key;
+            const name = key.split('/').pop() || key;
+            
+            // Si le nom se termine par '/', c'est un dossier
+            if (key.endsWith('/')) {
+              objects.push({
+                key: key,
+                name: name.slice(0, -1),
+                lastModified: content.LastModified || null,
+                size: 0,
+                isFolder: true,
+                fullPath: key
+              });
+            } else {
+              objects.push({
+                key: key,
+                name: name,
+                lastModified: content.LastModified || null,
+                size: content.Size || 0,
+                isFolder: false,
+                fullPath: key
+              });
+            }
+          }
+        }
+      }
+      
+      continuationToken = response.NextContinuationToken;
+    } while (continuationToken);
+    
+    return objects;
+  } catch (error) {
+    console.error('Error listing objects recursively:', error);
     throw error;
   }
 }
@@ -346,7 +411,9 @@ export async function copyFolder(
     const normalizedTargetKey = targetFolderKey.endsWith('/') ? targetFolderKey : `${targetFolderKey}/`;
     
     // List all objects in the source folder recursively
-    const objects = await listBucketObjects(provider, bucketName, normalizedSourceKey);
+    const objects = await listAllObjectsRecursively(provider, bucketName, normalizedSourceKey);
+    
+    console.log(`Found ${objects.length} objects to copy recursively`);
     
     // Copy all objects including nested folders
     for (const object of objects) {
@@ -355,8 +422,13 @@ export async function copyFolder(
       const targetKey = normalizedTargetKey + relativePath;
       
       if (object.isFolder) {
-        // For folders, we just need to ensure they exist (they will be created when we copy files)
-        continue;
+        // For folders, create an empty object to mark the folder
+        const putCommand = new PutObjectCommand({
+          Bucket: bucketName,
+          Key: targetKey,
+          Body: '',
+        });
+        await client.send(putCommand);
       } else {
         // Copy the file using S3 copy operation
         const copyCommand = new CopyObjectCommand({
