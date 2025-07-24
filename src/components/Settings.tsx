@@ -134,7 +134,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f8f8',
   },
   header: {
-    height: 56, // Reduced from default ~64px to 56px
+    height: 'auto', // Flexible height based on content
+    minHeight: 48, // Minimum height for touch targets
+    paddingVertical: 8, // Reduced vertical padding
   },
   content: {
     flex: 1,
