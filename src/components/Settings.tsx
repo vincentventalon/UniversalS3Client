@@ -42,11 +42,14 @@ export default function Settings({ onBack, appVersion }: SettingsProps) {
   const handleReviewPress = () => {
     Alert.alert(
       'Leave a Review ⭐',
-      'Your 5-star review would help me. Would you like to leave a review on the App Store/Play Store?',
+      'Your 5-star review would help me. Would you like to leave a review on the App Store?',
       [
         { text: 'Maybe Later', style: 'cancel' },
         { text: 'Leave Review ⭐', onPress: () => {
-          Alert.alert('Thank You! 🙏', 'Please search for "Universal S3 Client" in your app store to leave a review.');
+          handleOpenURL(
+            'https://apps.apple.com/mt/app/universal-s3-client/id6747045182?action=write-review',
+            'App Store Review'
+          );
         }}
       ]
     );
