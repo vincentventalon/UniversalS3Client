@@ -57,7 +57,7 @@ export default function Settings({ onBack, appVersion }: SettingsProps) {
 
   return (
     <View style={styles.container}>
-      <Appbar.Header>
+      <Appbar.Header style={styles.header}>
         <Appbar.Content title="Settings" />
         <Appbar.Action 
           icon="check" 
@@ -135,6 +135,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f8f8',
+  },
+  header: {
+    height: 'auto', // Flexible height based on content
+    minHeight: 48, // Minimum height for touch targets
+    paddingVertical: 8, // Reduced vertical padding
   },
   content: {
     flex: 1,
