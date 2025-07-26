@@ -305,7 +305,7 @@ export async function deleteObject(provider: S3Provider, bucketName: string, key
 }
 
 /**
- * Supprimer un dossier et tout son contenu de façon récursive
+ * Delete a folder and all its contents recursively
  */
 export async function deleteFolder(provider: S3Provider, bucketName: string, folderKey: string): Promise<void> {
   try {
