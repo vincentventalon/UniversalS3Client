@@ -851,7 +851,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
           disabled={pathHistory.length === 0}
           style={styles.backButton} 
         />
-        <Text style={styles.headerTitle}>{provider.name}</Text>
+        <Text style={styles.headerTitle}>{bucketName}</Text>
         <IconButton
           icon="home"
           size={22}
@@ -886,7 +886,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
       </View>
       
       <View style={styles.bucketContentHeader}>
-        <Text style={styles.sectionTitle}>Bucket Contents</Text>
+        <Text style={styles.sectionTitle}>{bucketName}</Text>
         
         {currentPath && (
           <IconButton 
