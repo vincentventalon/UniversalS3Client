@@ -166,6 +166,9 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
   }
 
   function renderPathBreadcrumb() {
+    // Créer un tableau des segments du chemin
+    const pathSegments = currentPath ? currentPath.split('/').filter(segment => segment !== '') : [];
+    
     return (
       <View style={styles.breadcrumb}>
         <TouchableOpacity 
@@ -178,14 +181,40 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
           <Text style={styles.breadcrumbText}>Root</Text>
         </TouchableOpacity>
         
-        {currentPath && (
-          <>
-            <Text style={styles.breadcrumbSeparator}>/</Text>
-            <Text style={styles.breadcrumbCurrent} numberOfLines={1} ellipsizeMode="middle">
-              {currentPath}
-            </Text>
-          </>
-        )}
+        {pathSegments.map((segment, index) => {
+          // Calculer le chemin jusqu'à ce segment
+          const pathToSegment = pathSegments.slice(0, index + 1).join('/') + '/';
+          
+          return (
+            <React.Fragment key={index}>
+              <Text style={styles.breadcrumbSeparator}>/</Text>
+              <TouchableOpacity 
+                onPress={() => {
+                  // Naviguer vers ce segment du chemin
+                  const newPathHistory = [];
+                  let tempPath = '';
+                  
+                  // Reconstruire l'historique jusqu'à ce segment
+                  for (let i = 0; i < index; i++) {
+                    newPathHistory.push(tempPath);
+                    tempPath = tempPath ? `${tempPath}${pathSegments[i]}/` : `${pathSegments[i]}/`;
+                  }
+                  
+                  setPathHistory(newPathHistory);
+                  setCurrentPath(pathToSegment);
+                }}
+                style={styles.breadcrumbItem}
+              >
+                <Text style={[
+                  styles.breadcrumbText,
+                  index === pathSegments.length - 1 && styles.breadcrumbCurrent
+                ]}>
+                  {segment}
+                </Text>
+              </TouchableOpacity>
+            </React.Fragment>
+          );
+        })}
       </View>
     );
   }
