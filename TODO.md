@@ -1,29 +1,29 @@
 @TODO
 
-- [x] Améliorer l'UI d'erreurs :
-   • Afficher « Network error » quand l'app est hors ligne
-   • Afficher « 403 – Mot de passe incorrect » lorsqu'il s'agit d'une erreur d'authentification
+- [x] Improve error UI:
+   • Display "Network error" when the app is offline
+   • Display "403 – Incorrect password" when it's an authentication error
 
-- [x] Permettre l'édition d'un bucket lorsque l'un de ses champs (mot de passe, etc.) est erroné :
-   • Autoriser la modification du mot de passe
-   • Sécuriser l'affichage de l'ancien mot de passe (authentification biométrique / déverrouillage téléphone)
+- [x] Allow editing a bucket when one of its fields (password, etc.) is incorrect:
+   • Allow password modification
+   • Secure the display of the old password (biometric authentication / phone unlock)
 
-- [x] Bouton « Retour » : ne revenir que d'un niveau dans la navigation, pas directement à la liste des buckets
+- [x] "Back" button: only go back one level in navigation, not directly to the bucket list
 
-- [x] À l'ouverture d'un objet, récupérer et afficher un lien signé (signed URL)
+- [x] When opening an object, retrieve and display a signed URL
 
-- [x] Ajouter un mode « Sélection multiple » pour choisir plusieurs objets et leur appliquer une action (supprimer, déplacer)
+- [x] Add a "Multiple Selection" mode to choose multiple objects and apply an action to them (delete, move)
 
-- [x] Vue « Objet » :
-   • Afficher davantage de métadonnées
-   • Permettre de renommer et de supprimer l'objet
+- [x] "Object" view:
+   • Display more metadata
+   • Allow renaming and deleting the object
 
-- [x] Écran principal : n'afficher qu'une ligne par bucket
-   Host (ex. Hetzner) — BucketName (Location) + bouton « Supprimer »
+- [x] Main screen: display only one line per bucket
+   Host (e.g. Hetzner) — BucketName (Location) + "Delete" button
 
-- [x] Écran « Ajouter un bucket S3 » : rendre la sélection du type de stockage plus visible
+- [x] "Add S3 bucket" screen: make the storage type selection more visible
 
-- [x] Remplacer la liste actuelle des emplacements par un menu déroulant (dropdown)
+- [x] Replace the current location list with a dropdown menu
 
-- [x] Faire de même pour la sélection de la région AWS
+- [x] Do the same for AWS region selection
 

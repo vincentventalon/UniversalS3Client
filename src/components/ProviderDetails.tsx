@@ -540,7 +540,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
       },
     ];
 
-    // Ajouter l'option de collage si un dossier a été copié
+    // Add paste option if a folder has been copied
     if (copiedFolder) {
       actions.unshift({
         icon: 'content-paste',
@@ -629,14 +629,14 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         >
           <Card>
             <Card.Content>
-              <Text style={styles.modalTitle}>Renommer le dossier</Text>
+              <Text style={styles.modalTitle}>Rename Folder</Text>
               <TextInput
                 mode="outlined"
-                label="Nouveau nom"
+                label="New Name"
                 value={newFolderNameForRename}
                 onChangeText={setNewFolderNameForRename}
                 style={styles.input}
-                placeholder="Entrez le nouveau nom"
+                placeholder="Enter the new name"
               />
               <View style={styles.buttonRow}>
                 <Button
@@ -648,14 +648,14 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
                   }}
                   style={styles.modalButton}
                 >
-                  Annuler
+                  Cancel
                 </Button>
                 <Button
                   mode="contained"
                   onPress={handleRenameFolder}
                   style={styles.modalButton}
                 >
-                  Renommer
+                  Rename
                 </Button>
               </View>
             </Card.Content>
@@ -764,12 +764,12 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
   async function handleDeleteSelected() {
     if (selectedKeys.length === 0) return;
     Alert.alert(
-      'Confirmer la suppression',
-      `Supprimer ${selectedKeys.length} objet(s) sélectionné(s) ? Cette action est irréversible.`,
+      'Confirm Deletion',
+      `Delete ${selectedKeys.length} selected object(s)? This action is irreversible.`,
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Supprimer',
+          text: 'Delete',
           style: 'destructive',
           onPress: async () => {
             setLoading(true);
@@ -805,14 +805,14 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
               await loadBucketObjects();
               
               if (failedCount === 0) {
-                Alert.alert('Succès', `${deletedCount} objet(s) supprimé(s)`);
+                Alert.alert('Success', `${deletedCount} object(s) deleted`);
               } else if (deletedCount > 0) {
                 Alert.alert(
-                  'Partiellement réussi', 
-                  `${deletedCount} objet(s) supprimé(s), ${failedCount} échec(s)`
+                  'Partially Successful', 
+                  `${deletedCount} object(s) deleted, ${failedCount} failed`
                 );
               } else {
-                Alert.alert('Erreur', 'Aucun objet n\'a pu être supprimé');
+                Alert.alert('Error', 'No objects could be deleted');
               }
             } catch (error) {
               console.error('Error during batch deletion:', error);
@@ -820,7 +820,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
               setSelectedKeys([]);
               setIsMultiSelect(false);
               await loadBucketObjects();
-              Alert.alert('Erreur', 'Erreur lors de la suppression multiple');
+              Alert.alert('Error', 'Error during multiple deletion');
             } finally {
               setLoading(false);
             }
@@ -868,7 +868,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
           }}
           style={{ marginLeft: 8 }}
         >
-          {isMultiSelect ? 'Annuler sélection' : 'Sélection multiple'}
+          {isMultiSelect ? 'Cancel Selection' : 'Multiple Selection'}
         </Button>
         {isMultiSelect && (
           <Button
@@ -880,7 +880,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
             disabled={selectedKeys.length === 0}
             style={{ marginLeft: 8, backgroundColor: '#FF5252' }}
           >
-            Supprimer la sélection ({selectedKeys.length})
+            Delete Selection ({selectedKeys.length})
           </Button>
         )}
       </View>

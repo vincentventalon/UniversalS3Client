@@ -1,10 +1,10 @@
 /**
- * Fichier de polyfills pour l'application
- * Doit être importé au démarrage (dans App.tsx ou index.ts)
+ * Polyfills file for the application
+ * Must be imported at startup (in App.tsx or index.ts)
  */
 
-// Import pour corriger les erreurs crypto.getRandomValues() dans React Native
+// Import to fix crypto.getRandomValues() errors in React Native
 import 'react-native-get-random-values';
 
-// Log pour confirmer que le polyfill est chargé
+// Log to confirm that the polyfill is loaded
 console.log('Crypto polyfills applied successfully'); 
