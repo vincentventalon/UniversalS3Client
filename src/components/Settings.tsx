@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, ScrollView, Linking, Alert } from 'react-native';
 import { Text, Button, Appbar, Card, Divider } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface SettingsProps {
   onBack: () => void;
@@ -8,6 +9,8 @@ interface SettingsProps {
 }
 
 export default function Settings({ onBack, appVersion }: SettingsProps) {
+  const insets = useSafeAreaInsets();
+  
   const handleOpenURL = (url: string, serviceName: string) => {
     Linking.canOpenURL(url)
       .then((supported) => {
@@ -47,7 +50,7 @@ export default function Settings({ onBack, appVersion }: SettingsProps) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <Appbar.Header style={styles.header}>
         <Appbar.Content title="Settings" />
         <Appbar.Action 
@@ -57,7 +60,7 @@ export default function Settings({ onBack, appVersion }: SettingsProps) {
         />
       </Appbar.Header>
       
-      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+      <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About the Developer</Text>
           <Text style={styles.description}>
@@ -128,16 +131,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f8f8',
   },
   header: {
-    height: 'auto', // Flexible height based on content
-    minHeight: 48, // Minimum height for touch targets
-    paddingVertical: 8, // Reduced vertical padding
+    backgroundColor: '#f8f8f8',
+    elevation: 0,
+    shadowOpacity: 0,
+    borderBottomWidth: 0,
+    height: 56,
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
+    backgroundColor: '#f8f8f8',
   },
   contentContainer: {
     flexGrow: 1,
     padding: 16,
+    paddingTop: 0,
   },
   card: {
     marginBottom: 24,
