@@ -4,6 +4,7 @@ import './src/utils/polyfills';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Alert, SafeAreaView, StatusBar, ActivityIndicator } from 'react-native';
 import { Provider as PaperProvider, Text, Portal, Modal, FAB, Appbar } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import ProviderForm from './src/components/ProviderForm';
 import ProviderList from './src/components/ProviderList';
 import ProviderDetails from './src/components/ProviderDetails';
@@ -226,10 +227,12 @@ export default function App() {
 
     if (showSettings) {
       return (
-        <Settings
-          onBack={() => setShowSettings(false)}
-          appVersion="1.1.0"
-        />
+        <View style={{ flex: 1, backgroundColor: '#f8f8f8' }}>
+          <Settings
+            onBack={() => setShowSettings(false)}
+            appVersion="1.1.0"
+          />
+        </View>
       );
     }
 
@@ -304,22 +307,35 @@ export default function App() {
   };
 
   return (
-    <PaperProvider>
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="dark-content" />
-        {isOffline && (
-          <View style={{ backgroundColor: '#ff5252', padding: 8 }}>
-            <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>Network error: you are offline</Text>
+    <SafeAreaProvider>
+      <PaperProvider>
+        {showSettings ? (
+          <View style={styles.fullScreen}>
+            <StatusBar barStyle="dark-content" backgroundColor="#f8f8f8" />
+            {renderContent()}
           </View>
+        ) : (
+          <SafeAreaView style={styles.safeArea}>
+            <StatusBar barStyle="dark-content" />
+            {isOffline && (
+              <View style={{ backgroundColor: '#ff5252', padding: 8 }}>
+                <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>Network error: you are offline</Text>
+              </View>
+            )}
+            {renderContent()}
+          </SafeAreaView>
         )}
-        {renderContent()}
-      </SafeAreaView>
-    </PaperProvider>
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
+    flex: 1,
+    backgroundColor: '#f8f8f8',
+  },
+  fullScreen: {
     flex: 1,
     backgroundColor: '#f8f8f8',
   },
