@@ -1,0 +1,468 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+
+import Hero from '~/components/widgets/Hero.astro';
+import Features from '~/components/widgets/Features.astro';
+import Features2 from '~/components/widgets/Features2.astro';
+import Steps from '~/components/widgets/Steps.astro';
+import Testimonials from '~/components/widgets/Testimonials.astro';
+import Pricing from '~/components/widgets/Pricing.astro';
+import FAQs from '~/components/widgets/FAQs.astro';
+import Stats from '~/components/widgets/Stats.astro';
+import CallToAction from '~/components/widgets/CallToAction.astro';
+import Content from '~/components/widgets/Content.astro';
+
+const metadata = {
+  title: 'HeadshotIA Pro — Le générateur de photos de profil IA le plus réaliste',
+  ignoreTitleTemplate: true,
+  description: 'Créez des photos de profil professionnelles indiscernables de vraies photos en 2 heures. Technologie IA européenne, conforme RGPD.',
+};
+---
+
+<Layout metadata={metadata}>
+  <!-- Hero Widget ******************* -->
+
+  <Hero
+    actions={[
+      {
+        variant: 'primary',
+        text: 'Générer mes headshots IA',
+        href: '#pricing',
+        icon: 'tabler:sparkles',
+      },
+      { 
+        text: 'Voir des exemples', 
+        href: '#examples',
+        variant: 'secondary'
+      },
+    ]}
+    image={{ 
+      src: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', 
+      alt: 'Transformation selfie en photo professionnelle' 
+    }}
+  >
+    <Fragment slot="title">
+      Le générateur de photos de profil IA 
+      <span class="text-accent dark:text-white">le plus réaliste</span>
+    </Fragment>
+
+    <Fragment slot="subtitle">
+      <span class="hidden sm:inline">
+        <span class="font-semibold">Uploadez des selfies et obtenez des photos professionnelles</span> indiscernables de vraies photos grâce à notre technologie IA de pointe.
+      </span>
+      <span class="block mb-1 sm:hidden font-bold text-blue-600">Photos pros en 2 heures.</span>
+      <span class="block mt-2 text-sm text-gray-600">
+        🇪🇺 Conçu en Europe • 🔒 Conforme RGPD • ⚡ Livraison en 2 heures
+      </span>
+    </Fragment>
+  </Hero>
+
+  <!-- Stats Widget ****************** -->
+
+  <Stats
+    stats={[
+      { title: 'Clients satisfaits', amount: '58.725+' },
+      { title: 'Headshots créés', amount: '5M+' },
+      { title: 'Temps de livraison', amount: '2h' },
+      { title: 'Taux de satisfaction', amount: '94%' },
+    ]}
+  />
+
+  <!-- Content Widget - Before/After Examples **************** -->
+
+  <Content
+    id="examples"
+    tagline="Exemples de transformation"
+    title="Transformez vos selfies en photos professionnelles"
+    items={[
+      {
+        title: 'Upload de selfies ordinaires',
+        description: 'Utilisez vos meilleures photos existantes ou prenez de nouveaux selfies sur place.',
+        icon: 'tabler:upload',
+      },
+      {
+        title: 'IA crée votre modèle personnel',
+        description: 'Notre IA analyse vos traits uniques pour créer un modèle personnalisé.',
+        icon: 'tabler:brain',
+      },
+      {
+        title: 'Photos pros indiscernables',
+        description: 'Recevez des headshots professionnels impossibles à distinguer de vraies photos.',
+        icon: 'tabler:photo',
+      },
+    ]}
+    image={{
+      src: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      alt: 'Avant/Après transformation',
+    }}
+  >
+    <Fragment slot="content">
+      <h3 class="text-2xl font-bold tracking-tight dark:text-white sm:text-3xl mb-2">
+        Des résultats qui parlent d'eux-mêmes
+      </h3>
+      Voyez comment nos clients transforment leurs selfies en photos professionnelles dignes d'un studio.
+    </Fragment>
+
+    <Fragment slot="bg">
+      <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
+    </Fragment>
+  </Content>
+
+  <!-- Features Widget *************** -->
+
+  <Features
+    id="features"
+    tagline="Pourquoi HeadshotIA Pro"
+    title="La technologie IA la plus avancée du marché"
+    subtitle="Nous nous concentrons exclusivement sur les headshots professionnels pour offrir une qualité studio inégalée."
+    items={[
+      {
+        title: 'Indiscernables de vraies photos',
+        description:
+          'Notre IA propriétaire créée par des ingénieurs européens produit des résultats d\'un réalisme saisissant.',
+        icon: 'tabler:eye-check',
+      },
+      {
+        title: 'Pas besoin de studio',
+        description:
+          'Fini les rendez-vous chez le photographe, les déplacements et les frais cachés.',
+        icon: 'tabler:home-off',
+      },
+      {
+        title: 'Pas de tenues coûteuses',
+        description:
+          'Notre IA génère automatiquement des tenues professionnelles adaptées à votre secteur.',
+        icon: 'tabler:shirt-off',
+      },
+      {
+        title: 'Facture d\'entreprise',
+        description:
+          'Recevez une facture conforme pour vos frais professionnels et déductions fiscales.',
+        icon: 'tabler:receipt',
+      },
+      {
+        title: 'Confidentialité garantie',
+        description:
+          'Vos données sont supprimées automatiquement après 30 jours. Conformité RGPD complète.',
+        icon: 'tabler:shield-check',
+      },
+      {
+        title: 'Garantie satisfaction',
+        description:
+          'Essayez sans risque avec notre garantie de satisfaction de 14 jours.',
+        icon: 'tabler:award',
+      },
+    ]}
+  />
+
+  <!-- Steps Widget ****************** -->
+
+  <Steps
+    title="Comment ça marche"
+    subtitle="Un processus simple en 3 étapes pour des résultats professionnels"
+    items={[
+      {
+        title: '1. <span class="font-medium">Uploadez vos selfies</span>',
+        description:
+          'Téléchargez vos meilleures photos sur la plateforme. 6 photos buste et 4 photos mi-corps pour des résultats optimaux.',
+        icon: 'tabler:upload',
+      },
+      {
+        title: '2. <span class="font-medium">L\'IA génère vos portraits</span>',
+        description:
+          'Nous créons un modèle IA individuel avec votre image numérique. Le processus prend 1-2 heures.',
+        icon: 'tabler:robot',
+      },
+      {
+        title: '3. <span class="font-medium">Téléchargez vos favoris</span>',
+        description:
+          'Vous recevez différents arrière-plans, poses et styles. Attendez-vous à 40-200 photos selon votre formule.',
+        icon: 'tabler:download',
+      },
+      {
+        title: 'Utilisez partout !',
+        icon: 'tabler:check',
+      },
+    ]}
+    image={{
+      src: 'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      alt: 'Processus de génération IA',
+    }}
+  />
+
+  <!-- Features2 Widget - Outfits & Backgrounds ************** -->
+
+  <Features2
+    title="Arrière-plans et tenues variés"
+    subtitle="Une grande sélection d'arrière-plans et de tenues business modernes qui vous correspondent parfaitement"
+    tagline="Personnalisation"
+    items={[
+      {
+        title: 'Arrière-plans Studio',
+        description: 'Blanc, noir, bleu, bureau moderne - tous les classiques du portrait professionnel.',
+        icon: 'tabler:photo',
+      },
+      {
+        title: 'Environnements d\'affaires',
+        description: 'Bureau, bibliothèque, ville, bâtiment - pour un contexte professionnel authentique.',
+        icon: 'tabler:building',
+      },
+      {
+        title: 'Costumes classiques',
+        description: 'Costume noir, gris, bleu marine - la garde-robe essentielle du professionnel.',
+        icon: 'tabler:tie',
+      },
+      {
+        title: 'Chemises & Blazers',
+        description: 'Chemise blanche, bleue, blazer noir, rayé - pour tous les styles business.',
+        icon: 'tabler:shirt',
+      },
+      {
+        title: 'Looks créatifs',
+        description: 'Pull noir, col roulé, polo - pour les secteurs plus décontractés.',
+        icon: 'tabler:palette',
+      },
+      {
+        title: 'Tenues féminines',
+        description: 'Blouse blanche, robe noire, blazer coloré - élégance et professionnalisme.',
+        icon: 'tabler:woman',
+      },
+    ]}
+  >
+    <Fragment slot="bg">
+      <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
+    </Fragment>
+  </Features2>
+
+  <!-- Testimonials Widget ********** -->
+
+  <Testimonials
+    title="Ce que disent nos 58.725+ clients"
+    subtitle="94% de nos clients nous recommandent"
+    testimonials={[
+      {
+        testimonial: `Dr. Headshot est impressionnant ! J'ai juste uploadé quelques photos décontractées et j'ai récupéré un headshot professionnel parfait. Idéal pour les profils LinkedIn !`,
+        name: 'Élise Lambert',
+        job: 'Directrice commerciale',
+        image: {
+          src: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+          alt: 'Élise Lambert'
+        },
+      },
+      {
+        testimonial: `Rapide et incroyable ! J'ai uploadé des selfies et l'IA les a transformés en headshot professionnel. Parfait pour les professionnels occupés qui ont besoin d'images de qualité rapidement.`,
+        name: 'Lars Svensson',
+        job: 'Journaliste',
+        image: {
+          src: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+          alt: 'Lars Svensson'
+        },
+      },
+      {
+        testimonial: `J'ai essayé HeadshotIA pour mon site web d'entreprise – fantastique et rentable ! Processus simple, et l'IA a livré un headshot professionnel. Bonus : la dépense était déductible !`,
+        name: 'Anouk Jansen',
+        job: 'Vétérinaire',
+        image: {
+          src: 'https://images.unsplash.com/photo-1494790108755-2616b612b5b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+          alt: 'Anouk Jansen'
+        },
+      },
+    ]}
+  />
+
+  <!-- Pricing Widget *************** -->
+
+  <Pricing
+    id="pricing"
+    title="Qualité premium sans prix premium"
+    subtitle="Obtenez des headshots professionnels de haute qualité sans exploser votre budget."
+    prices={[
+      {
+        title: 'Basic',
+        subtitle: 'Parfait pour débuter',
+        price: 29,
+        period: '€ • une fois',
+        items: [
+          {
+            description: '40 Headshots HD',
+          },
+          {
+            description: '4 arrière-plans uniques',
+          },
+          {
+            description: '4 tenues différentes',
+          },
+          {
+            description: 'Livraison en 3 heures',
+          },
+          {
+            description: '4 crédits de modification',
+          },
+        ],
+        callToAction: {
+          target: '_blank',
+          text: 'Générer mes headshots',
+          href: '#',
+        },
+      },
+      {
+        title: 'Professional',
+        subtitle: 'Le plus populaire',
+        price: 39,
+        period: '€ • une fois',
+        items: [
+          {
+            description: '100 Headshots HD',
+          },
+          {
+            description: '10 arrière-plans uniques',
+          },
+          {
+            description: '10 tenues différentes',
+          },
+          {
+            description: 'Livraison en 2 heures',
+          },
+          {
+            description: '8 crédits de modification',
+          },
+        ],
+        callToAction: {
+          target: '_blank',
+          text: 'Choisir Professional',
+          href: '#',
+        },
+        hasRibbon: true,
+        ribbonTitle: 'populaire',
+      },
+      {
+        title: 'Executive',
+        subtitle: 'Meilleure valeur',
+        price: 59,
+        period: '€ • une fois',
+        items: [
+          {
+            description: '200 Headshots HD',
+          },
+          {
+            description: '20 arrière-plans uniques',
+          },
+          {
+            description: '20 tenues différentes',
+          },
+          {
+            description: 'Livraison en 1 heure',
+          },
+          {
+            description: '16 crédits de modification',
+          },
+        ],
+        callToAction: {
+          target: '_blank',
+          text: 'Choisir Executive',
+          href: '#',
+        },
+      },
+    ]}
+  />
+
+  <!-- Content Widget - Security **************** -->
+
+  <Content
+    isReversed
+    tagline="Sécurité & Confidentialité"
+    title="Vos données en sécurité"
+    items={[
+      {
+        title: 'Basé dans l\'UE',
+        description: 'Entreprise européenne conforme RGPD avec les plus hauts standards de sécurité.',
+      },
+      {
+        title: 'Chiffrement entreprise',
+        description: 'Nous utilisons un chiffrement de niveau enterprise utilisé par les Fortune 500.',
+      },
+      {
+        title: 'Suppression automatique',
+        description: 'Vos photos sont supprimées automatiquement après 30 jours.',
+      },
+    ]}
+    image={{
+      src: 'https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      alt: 'Sécurité des données',
+    }}
+  >
+    <Fragment slot="content">
+      <h3 class="text-2xl font-bold tracking-tight dark:text-white sm:text-3xl mb-2">
+        🇪🇺 Conçu en Europe, conforme RGPD
+      </h3>
+      Chez HeadshotIA, la sécurité et la confidentialité sont nos priorités absolues. Vos données méritent la meilleure protection.
+    </Fragment>
+
+    <Fragment slot="bg">
+      <div class="absolute inset-0 bg-green-50 dark:bg-transparent"></div>
+    </Fragment>
+  </Content>
+
+  <!-- FAQs Widget ******************* -->
+
+  <FAQs
+    title="Questions fréquentes"
+    subtitle="Réponses aux questions les plus courantes sur notre service de headshots IA"
+    tagline="FAQ"
+    classes={{ container: 'max-w-6xl' }}
+    items={[
+      {
+        title: 'Quel type de photos dois-je fournir ?',
+        description:
+          'Il est conseillé de fournir 6 photos buste et 4 photos mi-corps. Des images de qualité optimale donnent les meilleurs résultats. Gardez le maquillage minimal et privilégiez des arrière-plans simples.',
+      },
+      {
+        title: 'Puis-je obtenir une facture pour mon achat ?',
+        description:
+          'Bien sûr ! Vous pouvez recevoir une facture après achat. Naviguez simplement vers la section facture, saisissez vos informations, puis téléchargez-la en PDF.',
+      },
+      {
+        title: 'Que deviennent mes photos après l\'entraînement ?',
+        description:
+          'Notre modèle IA est entraîné avec vos photos pour créer vos avatars. Ensuite, les photos et modèles sont supprimés de nos serveurs sous 30 jours. Vous pouvez accélérer la suppression via le bouton Supprimer.',
+      },
+      {
+        title: 'Qui détient les droits des images ?',
+        description:
+          'Les droits des images vous appartiennent. Nous vous fournissons les droits commerciaux et la propriété de vos images IA. Nous les utilisons uniquement pour l\'entraînement du modèle, puis les supprimons.',
+      },
+      {
+        title: 'Où conservez-vous mes informations ?',
+        description:
+          'Vos données sont conservées en sécurité sur des serveurs situés dans l\'UE, conformément au RGPD.',
+      },
+      {
+        title: 'Puis-je demander un remboursement ?',
+        description:
+          'Les remboursements ne peuvent être accordés que si vos images n\'ont pas encore été créées par l\'IA. Une fois les images créées, nous ne pouvons plus offrir de remboursements en raison des coûts élevés d\'entraînement. Cependant, nous offrons toujours une seconde tentative si vous n\'êtes pas satisfait.',
+      },
+    ]}
+  />
+
+  <!-- CallToAction Widget *********** -->
+
+  <CallToAction
+    actions={[
+      {
+        variant: 'primary',
+        text: 'Créer mes headshots professionnels',
+        href: '#pricing',
+        icon: 'tabler:sparkles',
+      },
+    ]}
+  >
+    <Fragment slot="title">
+      Obtenez des headshots professionnels<br class="block sm:hidden" /><span class="sm:whitespace-nowrap"> dès aujourd\'hui</span>
+    </Fragment>
+
+    <Fragment slot="subtitle">
+      Rejoignez les 58.725+ professionnels qui nous font confiance. <br class="hidden md:inline" />
+      🇪🇺 Technologie européenne • 🔒 Sécurité garantie • ⚡ Livraison en 2h
+    </Fragment>
+  </CallToAction>
+</Layout>
