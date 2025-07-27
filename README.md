@@ -2,6 +2,12 @@
 
 ## Changelog
 
+### 1.2 (iCloud Keychain Sync)
+- ✨ **NEW**: Synchronisation des credentials entre iPhone et Mac via iCloud Keychain
+- 🔐 **Sécurité**: Les credentials sont automatiquement synchronisés de manière chiffrée
+- 📱 **Multi-device**: Accédez à vos providers S3 sur tous vos appareils Apple
+- 🔄 **Automatique**: Synchronisation transparente sans intervention utilisateur
+
 ### 1.1
 - Mise à jour de la version de l'application (1.0 → 1.1)
 - Mise à jour de la version du package (1.0.0 → 1.1.0 dans package.json)
@@ -10,17 +16,38 @@ A React Native application that allows you to manage S3-compatible storage bucke
 
 ## Features
 
-- Secure credential storage with password protection
-- Support for multiple S3 providers
-- List buckets from providers
-- View and copy bucket URLs
-- Simple, single-screen interface
+- **🔐 Secure credential storage** with password protection
+- **☁️ iCloud Keychain synchronization** between iPhone and Mac
+- **🌐 Support for multiple S3 providers**
+- **📁 List buckets** from providers
+- **🔗 View and copy bucket URLs**
+- **📱 Simple, single-screen interface**
 
 ## Supported Providers
 
 - AWS S3
 - Hetzner Storage
 - Soon: Any S3-compatible service
+
+## 🔄 iCloud Keychain Synchronization
+
+Vos credentials S3 sont automatiquement synchronisés entre tous vos appareils Apple :
+
+### Fonctionnement
+- **Chiffrement de bout en bout** : Vos données sont chiffrées avant d'être stockées
+- **Synchronisation automatique** : Pas besoin d'intervention manuelle
+- **Multi-device** : iPhone, iPad, Mac - tous synchronisés
+- **Sécurité native** : Utilise le Keychain natif d'Apple
+
+### Configuration requise
+- iOS 13+ ou macOS 10.15+
+- Connexion iCloud active
+- Même Apple ID sur tous les appareils
+
+### Indicateur de statut
+L'application affiche un indicateur ☁️ pour montrer l'état de synchronisation :
+- ✅ **Vert** : Synchronisé avec iCloud Keychain
+- ⚪ **Gris** : Pas encore synchronisé
 
 ## Important Compatibility Notes
 
@@ -36,9 +63,11 @@ If you're using AWS CLI directly with Hetzner buckets, we recommend:
 
 ## Security
 
-- All provider credentials are encrypted using AES
-- Master password is stored as a hash
-- Secure storage using `expo-secure-store`
+- **AES encryption** for all provider credentials
+- **iCloud Keychain** for secure cross-device synchronization
+- **Master password** stored as a hash
+- **Secure storage** using `expo-secure-store` with native keychain
+- **Hardware-backed security** when available
 
 ## Development
 
@@ -79,6 +108,32 @@ Then run:
 ```bash
 npx eas build -p android
 npx eas build -p ios
+```
+
+### iOS Development Build (for iCloud Keychain testing)
+
+Pour tester la synchronisation iCloud Keychain, vous devez créer un development build :
+
+```bash
+# Créer un development build
+npx expo install expo-dev-client
+eas build --profile development --platform ios
+```
+
+## Technical Implementation
+
+### iCloud Keychain Integration
+
+L'application utilise les fonctionnalités natives d'iOS pour la synchronisation :
+
+- **Keychain Access Group** : `group.com.vincentventalon.universals3client.shared`
+- **Encryption** : AES avec clés gérées par le Keychain
+- **Sync tracking** : Horodatage et versioning pour détecter les changements
+
+### Architecture de sécurité
+
+```
+User Data → AES Encryption → iOS Keychain → iCloud Keychain → Autres appareils
 ```
 
 ## License
