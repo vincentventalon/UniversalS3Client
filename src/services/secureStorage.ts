@@ -1,16 +1,21 @@
 import * as SecureStore from 'expo-secure-store';
 import { S3Provider } from '../types';
 import { Alert } from 'react-native';
+import { SyncService } from './syncService';
 
 // Storage keys
 const PROVIDERS_KEY = 'universal_s3_client_providers';
 const PASSWORD_TEST_KEY = 'universal_s3_client_pwd_test';
 const KEY_VERIFICATION = 'S3_CLIENT_VERIFICATION_STRING';
 
-// SecureStore options to use native security
+// SecureStore options with iCloud Keychain synchronization enabled
 const secureStoreOptions: SecureStore.SecureStoreOptions = {
   // Utiliser les attributs de sécurité natifs
-  keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK
+  keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK,
+  // Activer la synchronisation iCloud Keychain pour partager entre appareils Apple
+  requireAuthentication: false,
+  // Groupe de partage pour app Mac/iOS (optionnel si app différente)
+  keychainAccessGroup: 'group.com.vincentventalon.universals3client.shared'
 };
 
 /**
@@ -28,7 +33,7 @@ function generateSimpleHash(input: string): string {
 }
 
 /**
- * Saves the list of providers to secure storage
+ * Saves the list of providers to secure storage with iCloud sync
  * We directly store JSON without extra encryption layer
  */
 export async function saveProviders(providers: S3Provider[], password: string): Promise<void> {
@@ -48,6 +53,11 @@ export async function saveProviders(providers: S3Provider[], password: string): 
       JSON.stringify(verification), 
       secureStoreOptions
     );
+
+    // Update sync timestamp for iCloud Keychain
+    await SyncService.updateSyncTimestamp();
+    
+    console.log('✅ Providers saved with iCloud Keychain sync enabled');
   } catch (error) {
     console.error('Failed to save providers:', error);
     Alert.alert('Error', 'Failed to save providers: ' + (error instanceof Error ? error.message : String(error)));
@@ -57,6 +67,7 @@ export async function saveProviders(providers: S3Provider[], password: string): 
 
 /**
  * Retrieves the list of providers using the master password for verification only
+ * Automatically syncs from iCloud Keychain if available
  */
 export async function getProviders(password: string): Promise<S3Provider[]> {
   try {
@@ -70,10 +81,23 @@ export async function getProviders(password: string): Promise<S3Provider[]> {
     const providersJson = await SecureStore.getItemAsync(PROVIDERS_KEY, secureStoreOptions);
     
     if (!providersJson) {
+      // Check if this might be a first time setup on a new device with iCloud sync
+      const hasSyncedData = await SyncService.checkForSyncedData();
+      if (hasSyncedData) {
+        console.log('📱 Data available from iCloud Keychain but providers not found - possible sync delay');
+      }
       return [];
     }
     
-    return JSON.parse(providersJson);
+    const providers = JSON.parse(providersJson);
+    
+    // Log sync info for debugging
+    const syncInfo = await SyncService.getLastSyncInfo();
+    if (syncInfo.timestamp) {
+      console.log(`📱 Providers loaded from iCloud Keychain (last sync: ${syncInfo.timestamp})`);
+    }
+    
+    return providers;
   } catch (error) {
     console.error('Failed to get providers:', error);
     Alert.alert('Error', 'Failed to retrieve providers: ' + (error instanceof Error ? error.message : String(error)));
