@@ -1,34 +1,34 @@
 site:
-  name: PhotoCV
-  site: 'https://photocv.fr'
+  name: Universal S3 Client
+  site: 'https://universals3client.com'
   base: '/'
   trailingSlash: false
 
-  googleSiteVerificationId: orcPxI47GSa-cRvY11tUe6iGg2IO_RPvnA1q95iEM3M
+  googleSiteVerificationId: false
 
 # Default SEO metadata
 metadata:
   title:
-    default: PhotoCV
-    template: '%s — PhotoCV'
-  description: "\U0001F680 Suitable for Startups, Small Business, Sass Websites, Professional Portfolios, Marketing Websites, Landing Pages & Blogs."
+    default: Universal S3 Client
+    template: '%s — Universal S3 Client'
+  description: "🚀 Native macOS app to manage your AWS S3, Cloudflare R2 and S3-compatible storage buckets. Intuitive interface and high performance."
   robots:
     index: true
     follow: true
   openGraph:
-    site_name: PhotoCV
+    site_name: Universal S3 Client
     images:
       - url: '~/assets/images/default.png'
         width: 1200
         height: 628
     type: website
   twitter:
-    handle: '@onwidget'
-    site: '@onwidget'
+    handle: '@universals3'
+    site: '@universals3'
     cardType: summary_large_image
 
 i18n:
-  language: fr
+  language: en
   textDirection: ltr
 
 apps:
@@ -69,4 +69,4 @@ analytics:
       id: null # or "G-XXXXXXXXXX"
 
 ui:
-  theme: 'light:only' # Values: "system" | "light" | "dark" | "light:only" | "dark:only"
+  theme: 'system' # Values: "system" | "light" | "dark" | "light:only" | "dark:only"
