@@ -494,3 +494,49 @@ export async function getSignedObjectUrl(
   });
   return getSignedUrl(client, command, { expiresIn: expireSeconds });
 } 
+
+/**
+ * Copy a single file to a new location
+ */
+export async function copyFile(
+  provider: S3Provider,
+  bucketName: string,
+  sourceKey: string,
+  targetKey: string
+): Promise<void> {
+  try {
+    const client = createS3Client(provider);
+    
+    const copyCommand = new CopyObjectCommand({
+      Bucket: bucketName,
+      CopySource: `${bucketName}/${sourceKey}`,
+      Key: targetKey,
+    });
+    
+    await client.send(copyCommand);
+  } catch (error) {
+    console.error('Error copying file:', error);
+    throw error;
+  }
+}
+
+/**
+ * Rename a single file by copying it to a new key and deleting the original
+ */
+export async function renameFile(
+  provider: S3Provider,
+  bucketName: string,
+  oldKey: string,
+  newKey: string
+): Promise<void> {
+  try {
+    // First copy the file to the new location
+    await copyFile(provider, bucketName, oldKey, newKey);
+    
+    // Then delete the original file
+    await deleteObject(provider, bucketName, oldKey);
+  } catch (error) {
+    console.error('Error renaming file:', error);
+    throw error;
+  }
+} 

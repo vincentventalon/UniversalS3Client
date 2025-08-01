@@ -16,7 +16,7 @@ import {
   Checkbox
 } from 'react-native-paper';
 import { S3Provider, S3Object } from '../types';
-import { listBucketObjects, getObjectUrl, createEmptyObject, uploadFile, deleteObject, deleteFolder, copyFolder, renameFolder } from '../services/s3Service';
+import { listBucketObjects, getObjectUrl, createEmptyObject, uploadFile, deleteObject, deleteFolder, copyFolder, renameFolder, copyFile, renameFile } from '../services/s3Service';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import ObjectDetails from './ObjectDetails';
@@ -47,10 +47,10 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   
   // États pour la copie et le renommage
-  const [copiedFolder, setCopiedFolder] = useState<S3Object | null>(null);
+  const [copiedItem, setCopiedItem] = useState<S3Object | null>(null);
   const [isRenameModalVisible, setIsRenameModalVisible] = useState(false);
-  const [folderToRename, setFolderToRename] = useState<S3Object | null>(null);
-  const [newFolderNameForRename, setNewFolderNameForRename] = useState('');
+  const [itemToRename, setItemToRename] = useState<S3Object | null>(null);
+  const [newItemNameForRename, setNewItemNameForRename] = useState('');
 
   // Extract bucket name from provider
   const bucketName = extractBucketName(provider);
@@ -249,26 +249,22 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         right={props => (
           !isMultiSelect && (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              {item.isFolder && (
-                <>
-                  <IconButton
-                    {...props}
-                    icon="pencil"
-                    iconColor="#2196F3"
-                    size={16}
-                    onPress={() => openRenameModal(item)}
-                    style={{ marginHorizontal: 0 }}
-                  />
-                  <IconButton
-                    {...props}
-                    icon="content-copy"
-                    iconColor="#FF9800"
-                    size={16}
-                    onPress={() => handleCopyFolder(item)}
-                    style={{ marginHorizontal: 0 }}
-                  />
-                </>
-              )}
+              <IconButton
+                {...props}
+                icon="pencil"
+                iconColor="#2196F3"
+                size={16}
+                onPress={() => openRenameModal(item)}
+                style={{ marginHorizontal: 0 }}
+              />
+              <IconButton
+                {...props}
+                icon="content-copy"
+                iconColor="#FF9800"
+                size={16}
+                onPress={() => handleCopyItem(item)}
+                style={{ marginHorizontal: 0 }}
+              />
               <IconButton
                 {...props}
                 icon="delete"
@@ -396,48 +392,71 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
     }
   }
 
-  // Fonctions pour la copie et le renommage de dossiers
-  function handleCopyFolder(folder: S3Object) {
-    setCopiedFolder(folder);
-    Alert.alert('Dossier copié', `Le dossier "${folder.name}" a été copié. Utilisez le bouton + pour le coller.`);
+  // Fonctions pour la copie et le renommage d'éléments (dossiers et fichiers)
+  function handleCopyItem(item: S3Object) {
+    setCopiedItem(item);
+    const itemType = item.isFolder ? 'dossier' : 'fichier';
+    Alert.alert(`${itemType.charAt(0).toUpperCase() + itemType.slice(1)} copié`, `Le ${itemType} "${item.name}" a été copié. Utilisez le bouton + pour le coller.`);
   }
 
-  async function handlePasteFolder() {
-    if (!copiedFolder) return;
+  async function handlePasteItem() {
+    if (!copiedItem) return;
 
-    const newFolderName = `${copiedFolder.name}_copy`;
-    const targetKey = currentPath ? `${currentPath}${newFolderName}/` : `${newFolderName}/`;
+    const itemType = copiedItem.isFolder ? 'dossier' : 'fichier';
+    const newItemName = `${copiedItem.name}_copy`;
+    
+    let targetKey: string;
+    if (copiedItem.isFolder) {
+      targetKey = currentPath ? `${currentPath}${newItemName}/` : `${newItemName}/`;
+    } else {
+      // For files, preserve the extension
+      const lastDotIndex = copiedItem.name.lastIndexOf('.');
+      if (lastDotIndex !== -1) {
+        const nameWithoutExt = copiedItem.name.substring(0, lastDotIndex);
+        const extension = copiedItem.name.substring(lastDotIndex);
+        const newFileName = `${nameWithoutExt}_copy${extension}`;
+        targetKey = currentPath ? `${currentPath}${newFileName}` : newFileName;
+      } else {
+        targetKey = currentPath ? `${currentPath}${newItemName}` : newItemName;
+      }
+    }
 
     try {
       setLoading(true);
-      await copyFolder(provider, bucketName, copiedFolder.key, targetKey);
+      
+      if (copiedItem.isFolder) {
+        await copyFolder(provider, bucketName, copiedItem.key, targetKey);
+      } else {
+        await copyFile(provider, bucketName, copiedItem.key, targetKey);
+      }
       
       // Rafraîchir la liste des objets
       await loadBucketObjects();
       
-      Alert.alert('Succès', `Le dossier "${copiedFolder.name}" a été collé avec succès.`);
-      setCopiedFolder(null);
+      Alert.alert('Succès', `Le ${itemType} "${copiedItem.name}" a été collé avec succès.`);
+      setCopiedItem(null);
     } catch (error) {
-      console.error('Failed to paste folder:', error);
-      Alert.alert('Erreur', 'Impossible de coller le dossier. Veuillez réessayer.');
+      console.error(`Failed to paste ${itemType}:`, error);
+      Alert.alert('Erreur', `Impossible de coller le ${itemType}. Veuillez réessayer.`);
     } finally {
       setLoading(false);
     }
   }
 
-  function openRenameModal(folder: S3Object) {
-    setFolderToRename(folder);
-    setNewFolderNameForRename(folder.name);
+  function openRenameModal(item: S3Object) {
+    setItemToRename(item);
+    setNewItemNameForRename(item.name);
     setIsRenameModalVisible(true);
   }
 
-  async function handleRenameFolder() {
-    if (!folderToRename || !newFolderNameForRename.trim()) {
-      Alert.alert('Erreur', 'Veuillez entrer un nom de dossier valide');
+  async function handleRenameItem() {
+    if (!itemToRename || !newItemNameForRename.trim()) {
+      const itemType = itemToRename?.isFolder ? 'dossier' : 'fichier';
+      Alert.alert('Erreur', `Veuillez entrer un nom de ${itemType} valide`);
       return;
     }
 
-    if (newFolderNameForRename === folderToRename.name) {
+    if (newItemNameForRename === itemToRename.name) {
       setIsRenameModalVisible(false);
       return;
     }
@@ -445,23 +464,33 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
     try {
       setLoading(true);
       
-      const oldKey = folderToRename.key;
-      const newKey = currentPath 
-        ? `${currentPath}${newFolderNameForRename}/`
-        : `${newFolderNameForRename}/`;
-
-      await renameFolder(provider, bucketName, oldKey, newKey);
+      const oldKey = itemToRename.key;
+      let newKey: string;
+      const itemType = itemToRename.isFolder ? 'dossier' : 'fichier';
+      
+      if (itemToRename.isFolder) {
+        newKey = currentPath 
+          ? `${currentPath}${newItemNameForRename}/`
+          : `${newItemNameForRename}/`;
+        await renameFolder(provider, bucketName, oldKey, newKey);
+      } else {
+        newKey = currentPath 
+          ? `${currentPath}${newItemNameForRename}`
+          : newItemNameForRename;
+        await renameFile(provider, bucketName, oldKey, newKey);
+      }
       
       // Rafraîchir la liste des objets
       await loadBucketObjects();
       
-      Alert.alert('Succès', `Le dossier a été renommé en "${newFolderNameForRename}".`);
+      Alert.alert('Succès', `Le ${itemType} a été renommé en "${newItemNameForRename}".`);
       setIsRenameModalVisible(false);
-      setFolderToRename(null);
-      setNewFolderNameForRename('');
+      setItemToRename(null);
+      setNewItemNameForRename('');
     } catch (error) {
-      console.error('Failed to rename folder:', error);
-      Alert.alert('Erreur', 'Impossible de renommer le dossier. Veuillez réessayer.');
+      const itemType = itemToRename?.isFolder ? 'dossier' : 'fichier';
+      console.error(`Failed to rename ${itemType}:`, error);
+      Alert.alert('Erreur', `Impossible de renommer le ${itemType}. Veuillez réessayer.`);
     } finally {
       setLoading(false);
     }
@@ -569,12 +598,13 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
       },
     ];
 
-    // Add paste option if a folder has been copied
-    if (copiedFolder) {
+    // Add paste option if an item has been copied
+    if (copiedItem) {
+      const itemType = copiedItem.isFolder ? 'folder' : 'file';
       actions.unshift({
         icon: 'content-paste',
-        label: `Paste "${copiedFolder.name}"`,
-        onPress: handlePasteFolder,
+        label: `Paste "${copiedItem.name}" (${itemType})`,
+        onPress: handlePasteItem,
       });
     }
 
@@ -645,25 +675,26 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
   }
 
   function renderRenameModal() {
+    const itemType = itemToRename?.isFolder ? 'Folder' : 'File';
     return (
       <Portal>
         <Modal
           visible={isRenameModalVisible}
           onDismiss={() => {
             setIsRenameModalVisible(false);
-            setFolderToRename(null);
-            setNewFolderNameForRename('');
+            setItemToRename(null);
+            setNewItemNameForRename('');
           }}
           contentContainerStyle={styles.modalContainer}
         >
           <Card>
             <Card.Content>
-              <Text style={styles.modalTitle}>Rename Folder</Text>
+              <Text style={styles.modalTitle}>Rename {itemType}</Text>
               <TextInput
                 mode="outlined"
                 label="New Name"
-                value={newFolderNameForRename}
-                onChangeText={setNewFolderNameForRename}
+                value={newItemNameForRename}
+                onChangeText={setNewItemNameForRename}
                 style={styles.input}
                 placeholder="Enter the new name"
               />
@@ -672,8 +703,8 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
                   mode="outlined"
                   onPress={() => {
                     setIsRenameModalVisible(false);
-                    setFolderToRename(null);
-                    setNewFolderNameForRename('');
+                    setItemToRename(null);
+                    setNewItemNameForRename('');
                   }}
                   style={styles.modalButton}
                 >
@@ -681,7 +712,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
                 </Button>
                 <Button
                   mode="contained"
-                  onPress={handleRenameFolder}
+                  onPress={handleRenameItem}
                   style={styles.modalButton}
                 >
                   Rename
