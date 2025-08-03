@@ -20,6 +20,10 @@
         "NSPhotoLibraryUsageDescription": "Universal S3 Client needs access to your photo library so you can select and upload images or files to your S3 storage. For example, you can choose a photo to upload to your bucket."
       }
     },
+    "macos": {
+      "bundleIdentifier": "com.vincentventalon.universals3client",
+      "category": "public.app-category.utilities"
+    },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/aws_buckets3.png",
