@@ -9,6 +9,7 @@ import ProviderForm from './src/components/ProviderForm';
 import ProviderList from './src/components/ProviderList';
 import ProviderDetails from './src/components/ProviderDetails';
 import Settings from './src/components/Settings';
+import SyncStatus from './src/components/SyncStatus';
 
 import { S3Provider, S3ProviderType } from './src/types';
 
@@ -322,6 +323,7 @@ export default function App() {
                 <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>Network error: you are offline</Text>
               </View>
             )}
+            <SyncStatus showDetails={false} />
             {renderContent()}
           </SafeAreaView>
         )}
