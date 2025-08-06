@@ -39,7 +39,7 @@ export default function Settings({ onBack, appVersion }: SettingsProps) {
   };
 
   const handleTwitterPress = () => {
-    handleOpenURL('https://x.com/10x_indie?s=21', 'Twitter');
+    handleOpenURL('https://x.com/10x vibecoding?s=21', 'Twitter');
   };
 
   const handleReviewPress = () => {

@@ -230,7 +230,7 @@ export default function App() {
         <View style={{ flex: 1, backgroundColor: '#f8f8f8' }}>
           <Settings
             onBack={() => setShowSettings(false)}
-            appVersion="1.1.0"
+            appVersion="1.1.1"
           />
         </View>
       );
