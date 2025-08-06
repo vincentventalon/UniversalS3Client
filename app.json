@@ -2,7 +2,7 @@
   "expo": {
     "name": "Universal S3 client",
     "slug": "universal-s3-client",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/aws_buckets3.png",
     "userInterfaceStyle": "light",
