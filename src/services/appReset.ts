@@ -2,8 +2,29 @@ import * as SecureStore from 'expo-secure-store';
 import { Alert } from 'react-native';
 
 // Keys used in the application
-const PROVIDERS_KEY = 'universal_s3_client_providers';
+const PROVIDERS_INDEX_KEY = 'universal_s3_client_providers_index';
 const PASSWORD_TEST_KEY = 'universal_s3_client_pwd_test';
+const OLD_PROVIDERS_KEY = 'universal_s3_client_providers'; // For cleanup of old format
+
+/**
+ * Get the list of provider IDs from the index
+ */
+async function getProviderIndex(): Promise<string[]> {
+  try {
+    const indexJson = await SecureStore.getItemAsync(PROVIDERS_INDEX_KEY);
+    return indexJson ? JSON.parse(indexJson) : [];
+  } catch (error) {
+    console.error('Failed to get provider index:', error);
+    return [];
+  }
+}
+
+/**
+ * Generate a unique storage key for a provider
+ */
+function getProviderKey(providerId: string): string {
+  return `provider_${providerId}`;
+}
 
 /**
  * Clears all stored data in the application
@@ -11,9 +32,29 @@ const PASSWORD_TEST_KEY = 'universal_s3_client_pwd_test';
  */
 export async function resetAppData(): Promise<boolean> {
   try {
-    // Delete all stored keys
-    await SecureStore.deleteItemAsync(PROVIDERS_KEY);
+    // Get all provider IDs and delete individual provider entries
+    const providerIds = await getProviderIndex();
+    
+    for (const providerId of providerIds) {
+      try {
+        await SecureStore.deleteItemAsync(getProviderKey(providerId));
+      } catch (error) {
+        console.warn(`Failed to delete provider ${providerId}:`, error);
+      }
+    }
+    
+    // Delete the provider index
+    await SecureStore.deleteItemAsync(PROVIDERS_INDEX_KEY);
+    
+    // Delete password test key
     await SecureStore.deleteItemAsync(PASSWORD_TEST_KEY);
+    
+    // Clean up old format if it exists
+    try {
+      await SecureStore.deleteItemAsync(OLD_PROVIDERS_KEY);
+    } catch (error) {
+      // Ignore errors for old key cleanup
+    }
     
     console.log('App data has been reset successfully');
     return true;
