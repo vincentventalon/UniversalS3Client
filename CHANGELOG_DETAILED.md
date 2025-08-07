@@ -45,9 +45,7 @@
 - **Cache intelligent** : Réduction des appels API redondants
 
 #### Sécurité renforcée
-- **Chiffrement AES-256** : Toutes les credentials chiffrées localement
-- **PBKDF2 avec 10k itérations** : Dérivation sécurisée des clés
-- **Stockage sécurisé Expo** : Utilisation du Keychain iOS/Android Keystore
+- **Chiffrement au repos** : Credentials protégés via Expo SecureStore (Keychain/Keystore)
 - **URLs signées temporaires** : Expiration automatique (1h)
 
 ### 🛠 Corrections et améliorations
@@ -96,10 +94,8 @@
 
 ### 🎯 Fonctionnalités de base
 
-#### Authentification et sécurité
-- **Mot de passe maître** : Protection de l'application
-- **Chiffrement local** : Stockage sécurisé des credentials
-- **Première configuration** : Setup guidé lors du premier lancement
+#### Sécurité
+- **Chiffrement local au repos** : Stockage sécurisé des credentials via Expo SecureStore
 
 #### Support initial des providers
 - **AWS S3** : Support complet avec 33 régions
@@ -157,7 +153,7 @@
 ### Sécurité et confidentialité
 - **Aucune télémétrie** : Pas de collecte de données automatique
 - **Stockage local uniquement** : Contrôle total des données utilisateur
-- **Chiffrement bout-en-bout** : Protection maximale des credentials
+- **Chiffrement au repos** : Protection des credentials via SecureStore
 
 ## Credits et remerciements
 

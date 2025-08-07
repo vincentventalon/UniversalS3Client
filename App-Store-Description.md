@@ -18,8 +18,7 @@ No more juggling multiple apps or web interfaces. Access all your cloud storage 
 
 BANK-LEVEL SECURITY
 Your privacy is our priority:
-- Master password protection
-- AES-256 encryption for all credentials
+- Expo SecureStore encryption at rest (iOS Keychain / Android Keystore)
 - Local storage only - your data never leaves your device
 - Zero data collection or tracking
 - iOS Keychain integration

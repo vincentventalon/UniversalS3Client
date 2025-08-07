@@ -9,7 +9,6 @@ import ProviderForm from './src/components/ProviderForm';
 import ProviderList from './src/components/ProviderList';
 import ProviderDetails from './src/components/ProviderDetails';
 import Settings from './src/components/Settings';
-import PasswordForm from './src/components/PasswordForm';
 
 import { S3Provider, S3ProviderType } from './src/types';
 
@@ -17,7 +16,8 @@ import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import { listBucketObjects, extractBucketName } from './src/services/s3Service';
 import { generateId } from './src/utils/idGenerator';
 import { generateEndpoint, getProviderConfig } from './src/config/providers';
-import { saveProviders, getProviders, setSessionAuthentication, isSessionAuthenticatedNow, verifyPassword } from './src/services/secureStorage';
+// Remove secureStorage auth helpers and only use simplified storage APIs
+import { saveProviders, getProviders } from './src/services/secureStorage';
 
 export default function App() {
   const [providers, setProviders] = useState<S3Provider[]>([]);
@@ -28,8 +28,8 @@ export default function App() {
   const [isOffline, setIsOffline] = useState(false);
   const [addBucketError, setAddBucketError] = useState<string | null>(null);
   
-  // Authentication state
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Remove authentication state
+  // const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const [showSettings, setShowSettings] = useState(false);
   // Champs du formulaire d'ajout de bucket (contrôlé)
@@ -47,19 +47,10 @@ export default function App() {
   const [clusterId, setClusterId] = useState('');
   const [customEndpoint, setCustomEndpoint] = useState('');
 
-  // Check if already authenticated on app start
+  // Initial app setup - load providers immediately
   useEffect(() => {
-    if (isSessionAuthenticatedNow()) {
-      setIsAuthenticated(true);
-    }
+    loadProviders();
   }, []);
-
-  // Initial app setup - check if already authenticated or load providers
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadProviders();
-    }
-  }, [isAuthenticated]);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
@@ -68,31 +59,10 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Handle successful password authentication
-  async function handlePasswordSuccess(password: string) {
-    try {
-      // Verify password and set up session
-      const isValid = await verifyPassword(password);
-      if (isValid) {
-        setSessionAuthentication(password);
-        setIsAuthenticated(true);
-      } else {
-        Alert.alert('Error', 'Password verification failed');
-      }
-    } catch (error) {
-      console.error('Authentication error:', error);
-      Alert.alert('Error', 'Authentication failed. Please try again.');
-    }
-  }
-
-
-
   async function loadProviders() {
     try {
       setLoading(true);
       setInitializing(true);
-      
-      // Use secure storage with session authentication
       const loadedProviders = await getProviders();
       setProviders(loadedProviders);
     } catch (error) {
@@ -110,7 +80,6 @@ export default function App() {
 
   async function saveProvidersSecurely(updatedProviders: S3Provider[]) {
     try {
-      // Use secure storage with session authentication
       await saveProviders(updatedProviders);
     } catch (error) {
       console.error('Failed to save providers:', error);
@@ -225,11 +194,6 @@ export default function App() {
 
   // Render the application content
   const renderContent = () => {
-    // Show password form if not authenticated
-    if (!isAuthenticated) {
-      return <PasswordForm onPasswordSuccess={handlePasswordSuccess} />;
-    }
-    
     if (initializing) {
       return (
         <View style={styles.loadingContainer}>
