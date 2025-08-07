@@ -17,7 +17,7 @@ import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import { listBucketObjects, extractBucketName } from './src/services/s3Service';
 import { generateId } from './src/utils/idGenerator';
 import { generateEndpoint, getProviderConfig } from './src/config/providers';
-import { saveProviders, getProviders } from './src/services/secureStorage';
+import { saveProviders, getProviders, setSessionAuthentication, clearSessionAuthentication, isSessionAuthenticatedNow, verifyPassword } from './src/services/secureStorage';
 
 export default function App() {
   const [providers, setProviders] = useState<S3Provider[]>([]);
@@ -28,9 +28,8 @@ export default function App() {
   const [isOffline, setIsOffline] = useState(false);
   const [addBucketError, setAddBucketError] = useState<string | null>(null);
   
-  // Password protection state
+  // Authentication state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [masterPassword, setMasterPassword] = useState<string>('');
 
   const [showSettings, setShowSettings] = useState(false);
   // Champs du formulaire d'ajout de bucket (contrôlé)
@@ -48,12 +47,19 @@ export default function App() {
   const [clusterId, setClusterId] = useState('');
   const [customEndpoint, setCustomEndpoint] = useState('');
 
-  // Initial app setup - wait for authentication first
+  // Check if already authenticated on app start
   useEffect(() => {
-    if (isAuthenticated && masterPassword) {
+    if (isSessionAuthenticatedNow()) {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  // Initial app setup - check if already authenticated or load providers
+  useEffect(() => {
+    if (isAuthenticated) {
       loadProviders();
     }
-  }, [isAuthenticated, masterPassword]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
@@ -63,9 +69,28 @@ export default function App() {
   }, []);
 
   // Handle successful password authentication
-  function handlePasswordSuccess(password: string) {
-    setMasterPassword(password);
-    setIsAuthenticated(true);
+  async function handlePasswordSuccess(password: string) {
+    try {
+      // Verify password and set up session
+      const isValid = await verifyPassword(password);
+      if (isValid) {
+        setSessionAuthentication(password);
+        setIsAuthenticated(true);
+      } else {
+        Alert.alert('Error', 'Password verification failed');
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      Alert.alert('Error', 'Authentication failed. Please try again.');
+    }
+  }
+
+  // Handle logout
+  function handleLogout() {
+    clearSessionAuthentication();
+    setIsAuthenticated(false);
+    setSelectedProvider(null);
+    setProviders([]);
   }
 
   async function loadProviders() {
@@ -73,8 +98,8 @@ export default function App() {
       setLoading(true);
       setInitializing(true);
       
-      // Use secure storage to get providers with password verification
-      const loadedProviders = await getProviders(masterPassword);
+      // Use secure storage with session authentication
+      const loadedProviders = await getProviders();
       setProviders(loadedProviders);
     } catch (error) {
       console.error('Failed to load providers:', error);
@@ -91,8 +116,8 @@ export default function App() {
 
   async function saveProvidersSecurely(updatedProviders: S3Provider[]) {
     try {
-      // Use secure storage with password protection
-      await saveProviders(updatedProviders, masterPassword);
+      // Use secure storage with session authentication
+      await saveProviders(updatedProviders);
     } catch (error) {
       console.error('Failed to save providers:', error);
       throw new Error('Failed to save providers');
@@ -253,12 +278,18 @@ export default function App() {
       <View style={styles.container}>
         <View style={styles.headerContainer}>
           <Text style={styles.header}>Universal S3 Client</Text>
-          <Appbar.Action 
-            icon="cog" 
-            onPress={() => setShowSettings(true)}
-            style={styles.settingsIcon}
-            accessibilityLabel="Settings"
-          />
+          <View style={styles.headerActions}>
+            <Appbar.Action 
+              icon="logout" 
+              onPress={handleLogout}
+              accessibilityLabel="Logout"
+            />
+            <Appbar.Action 
+              icon="cog" 
+              onPress={() => setShowSettings(true)}
+              accessibilityLabel="Settings"
+            />
+          </View>
         </View>
         <ProviderList
           providers={providers}
@@ -359,10 +390,9 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
   },
-  settingsIcon: {
-    position: 'absolute',
-    right: 0,
-    top: -8,
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   loadingContainer: {
     flex: 1,

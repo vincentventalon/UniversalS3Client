@@ -77,11 +77,40 @@ Safe migration from old weak hashes to new secure hashes:
 - Automatically migrates to secure hash on successful login
 - No data loss during security upgrade
 
-### 4. **Enforced Authentication Flow**
-- App shows password form before any functionality
-- Master password required for all operations
-- Session-based authentication state
-- Secure provider loading/saving with password verification
+### 4. **Session-Based Authentication Flow**
+- App shows password form on first access
+- Master password cached securely in memory during session
+- Once authenticated, no password required for operations within session
+- Session cleared on logout or app restart
+- Logout button available in app header for manual session termination
+
+## User Experience Improvements
+
+### Session-Based Authentication
+The authentication system now works like most modern apps:
+
+1. **First Access**: User enters password once to authenticate
+2. **Session Active**: User can perform all operations without re-entering password
+3. **Session Management**: 
+   - Password cached securely in memory only
+   - Session persists until manual logout or app restart
+   - Logout button in header for manual termination
+4. **Security Balance**: Maintains strong security while providing good UX
+
+### Authentication Flow
+```
+App Start → Check Session → If Not Authenticated → Show Password Form
+    ↓                           ↓
+Load Providers         Password Success → Set Session → Load Providers
+    ↓                           ↓
+Main App Interface     Main App Interface (with Logout option)
+```
+
+### Session Functions
+- `setSessionAuthentication(password)`: Cache password and mark as authenticated
+- `clearSessionAuthentication()`: Clear session and require re-authentication
+- `isSessionAuthenticatedNow()`: Check if currently authenticated
+- `saveProviders()` / `getProviders()`: Use cached credentials automatically
 
 ## Technical Details
 
@@ -97,9 +126,10 @@ Safe migration from old weak hashes to new secure hashes:
 
 2. **`App.tsx`**
    - Integrated PasswordForm component
-   - Added authentication state management
+   - Added session-based authentication state management
    - Replaced insecure storage calls with secure functions
-   - Added master password handling
+   - Added logout functionality with header button
+   - Session persistence within app lifecycle (clears on restart)
 
 ### Security Benefits
 - **Passwords protected against**: Rainbow table attacks, dictionary attacks, brute force attacks

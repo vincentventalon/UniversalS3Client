@@ -13,11 +13,48 @@ const PBKDF2_ITERATIONS = 100000; // 100k iterations (recommended minimum)
 const SALT_LENGTH = 32; // 32 bytes salt
 const HASH_LENGTH = 64; // 64 bytes hash
 
+// Session management - cache master password in memory
+let cachedMasterPassword: string | null = null;
+let isSessionAuthenticated: boolean = false;
+
 // SecureStore options to use native security
 const secureStoreOptions: SecureStore.SecureStoreOptions = {
   // Utiliser les attributs de sécurité natifs
   keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK
 };
+
+/**
+ * Set the session authentication state and cache the master password
+ */
+export function setSessionAuthentication(password: string): void {
+  cachedMasterPassword = password;
+  isSessionAuthenticated = true;
+}
+
+/**
+ * Clear the session authentication and cached password
+ */
+export function clearSessionAuthentication(): void {
+  cachedMasterPassword = null;
+  isSessionAuthenticated = false;
+}
+
+/**
+ * Check if user is currently authenticated in this session
+ */
+export function isSessionAuthenticatedNow(): boolean {
+  return isSessionAuthenticated && cachedMasterPassword !== null;
+}
+
+/**
+ * Get the cached master password (only if authenticated)
+ */
+function getCachedPassword(): string {
+  if (!isSessionAuthenticated || !cachedMasterPassword) {
+    throw new Error('Not authenticated - please login first');
+  }
+  return cachedMasterPassword;
+}
 
 /**
  * Generate a random salt for PBKDF2
@@ -72,10 +109,46 @@ async function migrateToSecureHash(password: string): Promise<void> {
 }
 
 /**
- * Saves the list of providers to secure storage
+ * Saves the list of providers to secure storage using session authentication
  * We directly store JSON without extra encryption layer
  */
-export async function saveProviders(providers: S3Provider[], password: string): Promise<void> {
+export async function saveProviders(providers: S3Provider[]): Promise<void> {
+  try {
+    const password = getCachedPassword(); // Use cached password from session
+    
+    // Store the providers directly - SecureStore already provides encryption
+    const providersJson = JSON.stringify(providers);
+    await SecureStore.setItemAsync(PROVIDERS_KEY, providersJson, secureStoreOptions);
+    
+    // Save a verification object to test passwords (only if not already saved)
+    const existingTest = await SecureStore.getItemAsync(PASSWORD_TEST_KEY, secureStoreOptions);
+    if (!existingTest) {
+      const salt = generateSalt();
+      const hash = generateSecureHash(password, salt);
+      const verification = {
+        key: KEY_VERIFICATION,
+        hash: hash,
+        salt: salt
+      };
+      
+      await SecureStore.setItemAsync(
+        PASSWORD_TEST_KEY, 
+        JSON.stringify(verification), 
+        secureStoreOptions
+      );
+    }
+  } catch (error) {
+    console.error('Failed to save providers:', error);
+    Alert.alert('Error', 'Failed to save providers: ' + (error instanceof Error ? error.message : String(error)));
+    throw new Error('Failed to save providers');
+  }
+}
+
+/**
+ * Saves the list of providers to secure storage with explicit password (for initial setup)
+ * This is used during the authentication process when setting up the password verification
+ */
+export async function saveProvidersWithPassword(providers: S3Provider[], password: string): Promise<void> {
   try {
     // Store the providers directly - SecureStore already provides encryption
     const providersJson = JSON.stringify(providers);
@@ -103,9 +176,34 @@ export async function saveProviders(providers: S3Provider[], password: string): 
 }
 
 /**
- * Retrieves the list of providers using the master password for verification only
+ * Retrieves the list of providers using session authentication
  */
-export async function getProviders(password: string): Promise<S3Provider[]> {
+export async function getProviders(): Promise<S3Provider[]> {
+  try {
+    // Ensure user is authenticated
+    if (!isSessionAuthenticatedNow()) {
+      throw new Error('Not authenticated - please login first');
+    }
+    
+    // Get the providers data
+    const providersJson = await SecureStore.getItemAsync(PROVIDERS_KEY, secureStoreOptions);
+    
+    if (!providersJson) {
+      return [];
+    }
+    
+    return JSON.parse(providersJson);
+  } catch (error) {
+    console.error('Failed to get providers:', error);
+    Alert.alert('Error', 'Failed to retrieve providers: ' + (error instanceof Error ? error.message : String(error)));
+    throw new Error('Failed to retrieve providers. Please re-authenticate.');
+  }
+}
+
+/**
+ * Retrieves the list of providers using explicit password verification (for authentication)
+ */
+export async function getProvidersWithPassword(password: string): Promise<S3Provider[]> {
   try {
     // First verify the password
     const isValid = await verifyPassword(password);
@@ -155,7 +253,7 @@ export async function verifyPassword(password: string): Promise<boolean> {
     if (!testValueJson) {
       // If no test value exists yet, this is first-time setup
       // Save an empty providers array and a verification string with this password
-      await saveProviders([], password);
+      await saveProvidersWithPassword([], password);
       return true;
     }
     
