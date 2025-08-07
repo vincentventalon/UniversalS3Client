@@ -9,21 +9,15 @@ import ProviderForm from './src/components/ProviderForm';
 import ProviderList from './src/components/ProviderList';
 import ProviderDetails from './src/components/ProviderDetails';
 import Settings from './src/components/Settings';
+import PasswordForm from './src/components/PasswordForm';
 
 import { S3Provider, S3ProviderType } from './src/types';
 
-import * as SecureStore from 'expo-secure-store';
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import { listBucketObjects, extractBucketName } from './src/services/s3Service';
 import { generateId } from './src/utils/idGenerator';
 import { generateEndpoint, getProviderConfig } from './src/config/providers';
-
-
-
-
-
-// Storage key for providers
-const PROVIDERS_KEY = 'universal_s3_client_providers';
+import { saveProviders, getProviders, setSessionAuthentication, isSessionAuthenticatedNow, verifyPassword } from './src/services/secureStorage';
 
 export default function App() {
   const [providers, setProviders] = useState<S3Provider[]>([]);
@@ -33,6 +27,9 @@ export default function App() {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [addBucketError, setAddBucketError] = useState<string | null>(null);
+  
+  // Authentication state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const [showSettings, setShowSettings] = useState(false);
   // Champs du formulaire d'ajout de bucket (contrôlé)
@@ -50,10 +47,19 @@ export default function App() {
   const [clusterId, setClusterId] = useState('');
   const [customEndpoint, setCustomEndpoint] = useState('');
 
-  // Initial app setup - load providers immediately
+  // Check if already authenticated on app start
   useEffect(() => {
-    loadProviders();
+    if (isSessionAuthenticatedNow()) {
+      setIsAuthenticated(true);
+    }
   }, []);
+
+  // Initial app setup - check if already authenticated or load providers
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadProviders();
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
@@ -62,21 +68,33 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // Handle successful password authentication
+  async function handlePasswordSuccess(password: string) {
+    try {
+      // Verify password and set up session
+      const isValid = await verifyPassword(password);
+      if (isValid) {
+        setSessionAuthentication(password);
+        setIsAuthenticated(true);
+      } else {
+        Alert.alert('Error', 'Password verification failed');
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      Alert.alert('Error', 'Authentication failed. Please try again.');
+    }
+  }
+
+
+
   async function loadProviders() {
     try {
       setLoading(true);
       setInitializing(true);
       
-      // Get providers from storage without password
-      const providersJson = await SecureStore.getItemAsync(PROVIDERS_KEY);
-      
-      if (providersJson) {
-        const loadedProviders = JSON.parse(providersJson);
-        setProviders(loadedProviders);
-      } else {
-        // No providers found, set empty array
-        setProviders([]);
-      }
+      // Use secure storage with session authentication
+      const loadedProviders = await getProviders();
+      setProviders(loadedProviders);
     } catch (error) {
       console.error('Failed to load providers:', error);
       Alert.alert(
@@ -90,10 +108,10 @@ export default function App() {
     }
   }
 
-  async function saveProviders(updatedProviders: S3Provider[]) {
+  async function saveProvidersSecurely(updatedProviders: S3Provider[]) {
     try {
-      const providersJson = JSON.stringify(updatedProviders);
-      await SecureStore.setItemAsync(PROVIDERS_KEY, providersJson);
+      // Use secure storage with session authentication
+      await saveProviders(updatedProviders);
     } catch (error) {
       console.error('Failed to save providers:', error);
       throw new Error('Failed to save providers');
@@ -130,7 +148,7 @@ export default function App() {
       
       // If no error, add the provider
       const updatedProviders = [...providers, newProvider];
-      await saveProviders(updatedProviders);
+      await saveProvidersSecurely(updatedProviders);
       setProviders(updatedProviders);
       setIsFormVisible(false);
       
@@ -183,7 +201,7 @@ export default function App() {
                   provider => provider.id !== providerId
                 );
                 
-                await saveProviders(updatedProviders);
+                await saveProvidersSecurely(updatedProviders);
                 setProviders(updatedProviders);
                 
                 if (selectedProvider && selectedProvider.id === providerId) {
@@ -207,6 +225,11 @@ export default function App() {
 
   // Render the application content
   const renderContent = () => {
+    // Show password form if not authenticated
+    if (!isAuthenticated) {
+      return <PasswordForm onPasswordSuccess={handlePasswordSuccess} />;
+    }
+    
     if (initializing) {
       return (
         <View style={styles.loadingContainer}>

@@ -1,11 +1,21 @@
 import * as SecureStore from 'expo-secure-store';
 import { S3Provider } from '../types';
 import { Alert } from 'react-native';
+import CryptoJS from 'crypto-js';
 
 // Storage keys
 const PROVIDERS_KEY = 'universal_s3_client_providers';
 const PASSWORD_TEST_KEY = 'universal_s3_client_pwd_test';
 const KEY_VERIFICATION = 'S3_CLIENT_VERIFICATION_STRING';
+
+// PBKDF2 configuration for strong password hashing
+const PBKDF2_ITERATIONS = 100000; // 100k iterations (recommended minimum)
+const SALT_LENGTH = 32; // 32 bytes salt
+const HASH_LENGTH = 64; // 64 bytes hash
+
+// Session management - cache master password in memory
+let cachedMasterPassword: string | null = null;
+let isSessionAuthenticated: boolean = false;
 
 // SecureStore options to use native security
 const secureStoreOptions: SecureStore.SecureStoreOptions = {
@@ -14,10 +24,55 @@ const secureStoreOptions: SecureStore.SecureStoreOptions = {
 };
 
 /**
- * Generate a simple hash for verification
- * Using a simple method to avoid crypto dependencies
+ * Set the session authentication state and cache the master password
+ * Session persists until app termination (no manual logout)
  */
-function generateSimpleHash(input: string): string {
+export function setSessionAuthentication(password: string): void {
+  cachedMasterPassword = password;
+  isSessionAuthenticated = true;
+}
+
+/**
+ * Check if user is currently authenticated in this session
+ */
+export function isSessionAuthenticatedNow(): boolean {
+  return isSessionAuthenticated && cachedMasterPassword !== null;
+}
+
+/**
+ * Get the cached master password (only if authenticated)
+ */
+function getCachedPassword(): string {
+  if (!isSessionAuthenticated || !cachedMasterPassword) {
+    throw new Error('Not authenticated - please login first');
+  }
+  return cachedMasterPassword;
+}
+
+/**
+ * Generate a random salt for PBKDF2
+ */
+function generateSalt(): string {
+  return CryptoJS.lib.WordArray.random(SALT_LENGTH).toString();
+}
+
+/**
+ * Generate a strong PBKDF2 hash for password verification
+ * This replaces the weak simple hash with cryptographically secure PBKDF2
+ */
+function generateSecureHash(password: string, salt: string): string {
+  return CryptoJS.PBKDF2(password, salt, {
+    keySize: HASH_LENGTH / 4, // keySize is in 32-bit words
+    iterations: PBKDF2_ITERATIONS,
+    hasher: CryptoJS.algo.SHA256
+  }).toString();
+}
+
+/**
+ * Legacy simple hash function for backward compatibility
+ * This should only be used for migration purposes
+ */
+function generateLegacyHash(input: string): string {
   let hash = 0;
   for (let i = 0; i < input.length; i++) {
     const char = input.charCodeAt(i);
@@ -28,19 +83,77 @@ function generateSimpleHash(input: string): string {
 }
 
 /**
- * Saves the list of providers to secure storage
+ * Migrates from legacy weak hash to secure PBKDF2 hash
+ */
+async function migrateToSecureHash(password: string): Promise<void> {
+  const salt = generateSalt();
+  const hash = generateSecureHash(password, salt);
+  const verification = {
+    key: KEY_VERIFICATION,
+    hash: hash,
+    salt: salt
+  };
+  
+  await SecureStore.setItemAsync(
+    PASSWORD_TEST_KEY, 
+    JSON.stringify(verification), 
+    secureStoreOptions
+  );
+}
+
+/**
+ * Saves the list of providers to secure storage using session authentication
  * We directly store JSON without extra encryption layer
  */
-export async function saveProviders(providers: S3Provider[], password: string): Promise<void> {
+export async function saveProviders(providers: S3Provider[]): Promise<void> {
+  try {
+    const password = getCachedPassword(); // Use cached password from session
+    
+    // Store the providers directly - SecureStore already provides encryption
+    const providersJson = JSON.stringify(providers);
+    await SecureStore.setItemAsync(PROVIDERS_KEY, providersJson, secureStoreOptions);
+    
+    // Save a verification object to test passwords (only if not already saved)
+    const existingTest = await SecureStore.getItemAsync(PASSWORD_TEST_KEY, secureStoreOptions);
+    if (!existingTest) {
+      const salt = generateSalt();
+      const hash = generateSecureHash(password, salt);
+      const verification = {
+        key: KEY_VERIFICATION,
+        hash: hash,
+        salt: salt
+      };
+      
+      await SecureStore.setItemAsync(
+        PASSWORD_TEST_KEY, 
+        JSON.stringify(verification), 
+        secureStoreOptions
+      );
+    }
+  } catch (error) {
+    console.error('Failed to save providers:', error);
+    Alert.alert('Error', 'Failed to save providers: ' + (error instanceof Error ? error.message : String(error)));
+    throw new Error('Failed to save providers');
+  }
+}
+
+/**
+ * Saves the list of providers to secure storage with explicit password (for initial setup)
+ * This is used during the authentication process when setting up the password verification
+ */
+export async function saveProvidersWithPassword(providers: S3Provider[], password: string): Promise<void> {
   try {
     // Store the providers directly - SecureStore already provides encryption
     const providersJson = JSON.stringify(providers);
     await SecureStore.setItemAsync(PROVIDERS_KEY, providersJson, secureStoreOptions);
     
     // Save a verification object to test passwords
+    const salt = generateSalt();
+    const hash = generateSecureHash(password, salt);
     const verification = {
       key: KEY_VERIFICATION,
-      hash: generateSimpleHash(password)
+      hash: hash,
+      salt: salt
     };
     
     await SecureStore.setItemAsync(
@@ -56,9 +169,34 @@ export async function saveProviders(providers: S3Provider[], password: string): 
 }
 
 /**
- * Retrieves the list of providers using the master password for verification only
+ * Retrieves the list of providers using session authentication
  */
-export async function getProviders(password: string): Promise<S3Provider[]> {
+export async function getProviders(): Promise<S3Provider[]> {
+  try {
+    // Ensure user is authenticated
+    if (!isSessionAuthenticatedNow()) {
+      throw new Error('Not authenticated - please login first');
+    }
+    
+    // Get the providers data
+    const providersJson = await SecureStore.getItemAsync(PROVIDERS_KEY, secureStoreOptions);
+    
+    if (!providersJson) {
+      return [];
+    }
+    
+    return JSON.parse(providersJson);
+  } catch (error) {
+    console.error('Failed to get providers:', error);
+    Alert.alert('Error', 'Failed to retrieve providers: ' + (error instanceof Error ? error.message : String(error)));
+    throw new Error('Failed to retrieve providers. Please re-authenticate.');
+  }
+}
+
+/**
+ * Retrieves the list of providers using explicit password verification (for authentication)
+ */
+export async function getProvidersWithPassword(password: string): Promise<S3Provider[]> {
   try {
     // First verify the password
     const isValid = await verifyPassword(password);
@@ -108,15 +246,34 @@ export async function verifyPassword(password: string): Promise<boolean> {
     if (!testValueJson) {
       // If no test value exists yet, this is first-time setup
       // Save an empty providers array and a verification string with this password
-      await saveProviders([], password);
+      await saveProvidersWithPassword([], password);
       return true;
     }
     
     // Check if the password hash matches
     try {
       const verification = JSON.parse(testValueJson);
+      
+      // Check if this is an old format (no salt) - legacy weak hash
+      if (!verification.salt) {
+        const legacyHash = generateLegacyHash(password);
+        const isLegacyValid = verification.key === KEY_VERIFICATION && 
+                              verification.hash === legacyHash;
+        
+        if (isLegacyValid) {
+          // Migrate to secure hash
+          console.log('Migrating from legacy weak hash to secure PBKDF2...');
+          await migrateToSecureHash(password);
+          return true;
+        }
+        return false;
+      }
+      
+      // New format with secure hash
+      const salt = verification.salt;
+      const hash = generateSecureHash(password, salt);
       return verification.key === KEY_VERIFICATION && 
-             verification.hash === generateSimpleHash(password);
+             verification.hash === hash;
     } catch (error) {
       console.error('Password verification failed (parsing):', error);
       return false;
