@@ -3,7 +3,7 @@ import './src/utils/polyfills';
 
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Alert, SafeAreaView, StatusBar, ActivityIndicator } from 'react-native';
-import { Provider as PaperProvider, Text, Portal, Modal, FAB, Appbar } from 'react-native-paper';
+import { Provider as PaperProvider, Text, Portal, Modal, FAB, Appbar, TextInput, Button } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import ProviderForm from './src/components/ProviderForm';
 import ProviderList from './src/components/ProviderList';
@@ -12,15 +12,64 @@ import Settings from './src/components/Settings';
 
 import { S3Provider, S3ProviderType } from './src/types';
 
-import * as SecureStore from 'expo-secure-store';
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import { listBucketObjects, extractBucketName } from './src/services/s3Service';
 import { generateId } from './src/utils/idGenerator';
 import { generateEndpoint, getProviderConfig } from './src/config/providers';
+import { 
+  getProviders as getProvidersFromStorage, 
+  saveProviders as saveProvidersToStorage, 
+  migrateFromOldStorage, 
+  isPasswordConfigured 
+} from './src/services/secureStorage';
 
+// Simple password prompt component
+interface PasswordPromptProps {
+  onSubmit: (password: string) => void;
+  onCancel: () => void;
+}
 
+function PasswordPrompt({ onSubmit, onCancel }: PasswordPromptProps) {
+  const [password, setPassword] = useState('');
 
+  const handleSubmit = () => {
+    if (password.trim()) {
+      onSubmit(password);
+      setPassword('');
+    }
+  };
 
+  const handleCancel = () => {
+    setPassword('');
+    onCancel();
+  };
+
+  return (
+    <View>
+      <Text style={styles.modalTitle}>Enter Password</Text>
+      <Text style={{ marginBottom: 16, textAlign: 'center' }}>
+        Please enter your password to access stored providers
+      </Text>
+      <TextInput
+        label="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        autoFocus
+        style={{ marginBottom: 16 }}
+        onSubmitEditing={handleSubmit}
+      />
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Button mode="outlined" onPress={handleCancel} style={{ flex: 1, marginRight: 8 }}>
+          Cancel
+        </Button>
+        <Button mode="contained" onPress={handleSubmit} style={{ flex: 1, marginLeft: 8 }}>
+          Submit
+        </Button>
+      </View>
+    </View>
+  );
+}
 
 // Storage key for providers
 const PROVIDERS_KEY = 'universal_s3_client_providers';
@@ -33,20 +82,20 @@ export default function App() {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [addBucketError, setAddBucketError] = useState<string | null>(null);
+  const [isSettingsVisible, setIsSettingsVisible] = useState(false);
+  const [appPassword, setAppPassword] = useState<string | null>(null);
+  const [isPasswordPromptVisible, setIsPasswordPromptVisible] = useState(false);
+  const [isPasswordMode, setIsPasswordMode] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
 
-  const [showSettings, setShowSettings] = useState(false);
-  // Champs du formulaire d'ajout de bucket (contrôlé)
-  
-  // Form fields for adding bucket (controlled)
-  const [bucketName, setBucketName] = useState('');
+  // Form state
   const [type, setType] = useState<S3ProviderType>('aws');
-  const [region, setRegion] = useState('');
+  const [bucketName, setBucketName] = useState('');
   const [accessKey, setAccessKey] = useState('');
   const [secretKey, setSecretKey] = useState('');
-  // Additional provider-specific fields
+  const [region, setRegion] = useState('us-east-1');
   const [accountId, setAccountId] = useState('');
   const [namespace, setNamespace] = useState('');
-  const [locationHint, setLocationHint] = useState('');
   const [clusterId, setClusterId] = useState('');
   const [customEndpoint, setCustomEndpoint] = useState('');
 
@@ -55,6 +104,14 @@ export default function App() {
     loadProviders();
   }, []);
 
+  // Load providers when password becomes available
+  useEffect(() => {
+    if (appPassword && isPasswordMode) {
+      loadProviders();
+    }
+  }, [appPassword]);
+
+  // Network state monitoring
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
       setIsOffline(!state.isConnected);
@@ -67,14 +124,35 @@ export default function App() {
       setLoading(true);
       setInitializing(true);
       
-      // Get providers from storage without password
-      const providersJson = await SecureStore.getItemAsync(PROVIDERS_KEY);
+      // Check if password is configured
+      const passwordConfigured = await isPasswordConfigured();
       
-      if (providersJson) {
-        const loadedProviders = JSON.parse(providersJson);
+      if (!passwordConfigured) {
+        // No password configured yet, start with empty providers list
+        setProviders([]);
+        setIsPasswordMode(false);
+        return;
+      }
+      
+      // Password is configured, but we don't have it yet
+      setIsPasswordMode(true);
+      
+      // Try to migrate from old storage format if needed
+      if (appPassword) {
+        try {
+          const migrated = await migrateFromOldStorage(appPassword);
+          if (migrated) {
+            console.log('Successfully migrated providers from old storage format');
+          }
+        } catch (error) {
+          console.warn('Migration failed, but continuing with new format:', error);
+        }
+        
+        // Load providers using new storage system
+        const loadedProviders = await getProvidersFromStorage(appPassword);
         setProviders(loadedProviders);
       } else {
-        // No providers found, set empty array
+        // Need password to load providers
         setProviders([]);
       }
     } catch (error) {
@@ -92,15 +170,46 @@ export default function App() {
 
   async function saveProviders(updatedProviders: S3Provider[]) {
     try {
-      const providersJson = JSON.stringify(updatedProviders);
-      await SecureStore.setItemAsync(PROVIDERS_KEY, providersJson);
+      if (!appPassword) {
+        throw new Error('Password required to save providers');
+      }
+      await saveProvidersToStorage(updatedProviders, appPassword);
     } catch (error) {
       console.error('Failed to save providers:', error);
       throw new Error('Failed to save providers');
     }
   }
 
+  function promptForPassword(action?: () => Promise<void>) {
+    setPendingAction(action || null);
+    setIsPasswordPromptVisible(true);
+  }
+
+  async function handlePasswordSubmit(password: string) {
+    try {
+      setAppPassword(password);
+      setIsPasswordPromptVisible(false);
+      
+      if (pendingAction) {
+        await pendingAction();
+        setPendingAction(null);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Invalid password or failed to perform action');
+    }
+  }
+
+  function handlePasswordCancel() {
+    setIsPasswordPromptVisible(false);
+    setPendingAction(null);
+  }
+
   async function handleAddBucket() {
+    if (!appPassword && isPasswordMode) {
+      promptForPassword(() => handleAddBucket());
+      return;
+    }
+
     setAddBucketError(null);
     try {
       setLoading(true);
@@ -119,7 +228,7 @@ export default function App() {
         region: region.trim() || undefined,
         accountId: accountId.trim() || undefined,
         namespace: namespace.trim() || undefined,
-        locationHint: locationHint.trim() || undefined,
+        // locationHint field removed - not used in current implementation
         clusterId: clusterId.trim() || undefined,
         customEndpoint: customEndpoint.trim() || undefined,
       };
@@ -156,17 +265,21 @@ export default function App() {
   function resetFormFields() {
     setBucketName('');
     setType('aws');
-    setRegion('');
+    setRegion('us-east-1');
     setAccessKey('');
     setSecretKey('');
     setAccountId('');
     setNamespace('');
-    setLocationHint('');
     setClusterId('');
     setCustomEndpoint('');
   }
 
   async function handleDeleteProvider(providerId: string) {
+    if (!appPassword && isPasswordMode) {
+      promptForPassword(() => handleDeleteProvider(providerId));
+      return;
+    }
+
     try {      
       Alert.alert(
         'Confirm Deletion',
@@ -225,11 +338,11 @@ export default function App() {
       );
     }
 
-    if (showSettings) {
+    if (isSettingsVisible) {
       return (
         <View style={{ flex: 1, backgroundColor: '#f8f8f8' }}>
           <Settings
-            onBack={() => setShowSettings(false)}
+            onBack={() => setIsSettingsVisible(false)}
             appVersion="1.1.1"
           />
         </View>
@@ -251,7 +364,7 @@ export default function App() {
           <Text style={styles.header}>Universal S3 Client</Text>
           <Appbar.Action 
             icon="cog" 
-            onPress={() => setShowSettings(true)}
+            onPress={() => setIsSettingsVisible(true)}
             style={styles.settingsIcon}
             accessibilityLabel="Settings"
           />
@@ -286,8 +399,7 @@ export default function App() {
               setAccountId={setAccountId}
               namespace={namespace}
               setNamespace={setNamespace}
-              locationHint={locationHint}
-              setLocationHint={setLocationHint}
+
               clusterId={clusterId}
               setClusterId={setClusterId}
               customEndpoint={customEndpoint}
@@ -296,6 +408,21 @@ export default function App() {
             />
           </Modal>
         </Portal>
+
+        {/* Password Prompt Modal */}
+        <Portal>
+          <Modal 
+            visible={isPasswordPromptVisible} 
+            onDismiss={handlePasswordCancel}
+            contentContainerStyle={styles.modalContainer}
+          >
+            <PasswordPrompt
+              onSubmit={handlePasswordSubmit}
+              onCancel={handlePasswordCancel}
+            />
+          </Modal>
+        </Portal>
+
         <FAB
           icon="plus"
           style={styles.fab}
@@ -309,7 +436,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <PaperProvider>
-        {showSettings ? (
+        {isSettingsVisible ? (
           <View style={styles.fullScreen}>
             <StatusBar barStyle="dark-content" backgroundColor="#f8f8f8" />
             {renderContent()}
