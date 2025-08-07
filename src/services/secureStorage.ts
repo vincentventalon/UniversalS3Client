@@ -1,11 +1,17 @@
 import * as SecureStore from 'expo-secure-store';
 import { S3Provider } from '../types';
 import { Alert } from 'react-native';
+import * as CryptoJS from 'crypto-js';
 
 // Storage keys
 const PROVIDERS_KEY = 'universal_s3_client_providers';
 const PASSWORD_TEST_KEY = 'universal_s3_client_pwd_test';
 const KEY_VERIFICATION = 'S3_CLIENT_VERIFICATION_STRING';
+
+// Security constants for PBKDF2
+const SALT = 'universal-s3-client-salt-2024';
+const ITERATIONS = 10000;
+const KEY_SIZE = 256 / 32; // 256 bits
 
 // SecureStore options to use native security
 const secureStoreOptions: SecureStore.SecureStoreOptions = {
@@ -14,17 +20,15 @@ const secureStoreOptions: SecureStore.SecureStoreOptions = {
 };
 
 /**
- * Generate a simple hash for verification
- * Using a simple method to avoid crypto dependencies
+ * Generate a secure PBKDF2 hash for password verification
+ * Uses PBKDF2 with 10,000 iterations and a fixed salt
  */
-function generateSimpleHash(input: string): string {
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) {
-    const char = input.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash.toString(16);
+function generateSecureHash(password: string): string {
+  const hash = CryptoJS.PBKDF2(password, SALT, {
+    keySize: KEY_SIZE,
+    iterations: ITERATIONS
+  });
+  return hash.toString(CryptoJS.enc.Hex);
 }
 
 /**
@@ -37,10 +41,10 @@ export async function saveProviders(providers: S3Provider[], password: string): 
     const providersJson = JSON.stringify(providers);
     await SecureStore.setItemAsync(PROVIDERS_KEY, providersJson, secureStoreOptions);
     
-    // Save a verification object to test passwords
+    // Save a verification object to test passwords using PBKDF2
     const verification = {
       key: KEY_VERIFICATION,
-      hash: generateSimpleHash(password)
+      hash: generateSecureHash(password)
     };
     
     await SecureStore.setItemAsync(
@@ -112,11 +116,12 @@ export async function verifyPassword(password: string): Promise<boolean> {
       return true;
     }
     
-    // Check if the password hash matches
+    // Check if the password hash matches using PBKDF2
     try {
       const verification = JSON.parse(testValueJson);
+      const inputHash = generateSecureHash(password);
       return verification.key === KEY_VERIFICATION && 
-             verification.hash === generateSimpleHash(password);
+             verification.hash === inputHash;
     } catch (error) {
       console.error('Password verification failed (parsing):', error);
       return false;

@@ -105,25 +105,23 @@ function createS3Client(provider: S3Provider): S3Client {
 - `getSignedObjectUrl()` - URLs temporaires
 
 ### 2. Stockage sécurisé (secureStorage.ts)
-**Chiffrement AES :**
+**Hachage sécurisé des mots de passe :**
 ```typescript
-// Génération de clé de chiffrement
-const keyMaterial = CryptoJS.PBKDF2(password, 'universal-s3-salt', {
-  keySize: 256/32,
-  iterations: 10000
-});
-
-// Chiffrement des données
-const encrypted = CryptoJS.AES.encrypt(
-  JSON.stringify(providers), 
-  keyMaterial.toString()
-).toString();
+// Génération de hash PBKDF2 pour vérification
+function generateSecureHash(password: string): string {
+  const hash = CryptoJS.PBKDF2(password, SALT, {
+    keySize: KEY_SIZE,
+    iterations: ITERATIONS
+  });
+  return hash.toString(CryptoJS.enc.Hex);
+}
 ```
 
 **Sécurité :**
-- PBKDF2 avec 10,000 itérations
-- Salt fixe pour dérivation de clé
-- Stockage dans Expo SecureStore
+- PBKDF2 avec 10,000 itérations pour hachage des mots de passe
+- Salt fixe pour dérivation sécurisée
+- Stockage des providers dans Expo SecureStore (chiffrement natif)
+- Aucun stockage du mot de passe en clair
 
 ### 3. Reset application (appReset.ts)
 **Nettoyage complet :**
@@ -258,8 +256,9 @@ const upload = new Upload({
 ## Sécurité
 
 ### 1. Stockage des credentials
-**Chiffrement local :**
-- AES-256 avec clé dérivée PBKDF2
+**Protection des mots de passe :**
+- Hachage PBKDF2 avec 10,000 itérations pour vérification
+- Salt fixe pour dérivation sécurisée
 - Aucune transmission réseau des passwords
 - Stockage Expo SecureStore (iOS Keychain/Android Keystore)
 
