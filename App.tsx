@@ -46,7 +46,7 @@ function PasswordPrompt({ onSubmit, onCancel }: PasswordPromptProps) {
 
   return (
     <View>
-      <Text style={styles.modalTitle}>Enter Password</Text>
+      <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 16, textAlign: 'center' }}>Enter Password</Text>
       <Text style={{ marginBottom: 16, textAlign: 'center' }}>
         Please enter your password to access stored providers
       </Text>
@@ -96,6 +96,7 @@ export default function App() {
   const [region, setRegion] = useState('us-east-1');
   const [accountId, setAccountId] = useState('');
   const [namespace, setNamespace] = useState('');
+  const [locationHint, setLocationHint] = useState('');
   const [clusterId, setClusterId] = useState('');
   const [customEndpoint, setCustomEndpoint] = useState('');
 
@@ -168,7 +169,7 @@ export default function App() {
     }
   }
 
-  async function saveProviders(updatedProviders: S3Provider[]) {
+  async function saveProvidersLocal(updatedProviders: S3Provider[]) {
     try {
       if (!appPassword) {
         throw new Error('Password required to save providers');
@@ -228,7 +229,7 @@ export default function App() {
         region: region.trim() || undefined,
         accountId: accountId.trim() || undefined,
         namespace: namespace.trim() || undefined,
-        // locationHint field removed - not used in current implementation
+        locationHint: locationHint.trim() || undefined,
         clusterId: clusterId.trim() || undefined,
         customEndpoint: customEndpoint.trim() || undefined,
       };
@@ -239,7 +240,7 @@ export default function App() {
       
       // If no error, add the provider
       const updatedProviders = [...providers, newProvider];
-      await saveProviders(updatedProviders);
+      await saveProvidersLocal(updatedProviders);
       setProviders(updatedProviders);
       setIsFormVisible(false);
       
@@ -270,6 +271,7 @@ export default function App() {
     setSecretKey('');
     setAccountId('');
     setNamespace('');
+    setLocationHint('');
     setClusterId('');
     setCustomEndpoint('');
   }
@@ -296,7 +298,7 @@ export default function App() {
                   provider => provider.id !== providerId
                 );
                 
-                await saveProviders(updatedProviders);
+                await saveProvidersLocal(updatedProviders);
                 setProviders(updatedProviders);
                 
                 if (selectedProvider && selectedProvider.id === providerId) {
@@ -399,7 +401,8 @@ export default function App() {
               setAccountId={setAccountId}
               namespace={namespace}
               setNamespace={setNamespace}
-
+              locationHint={locationHint}
+              setLocationHint={setLocationHint}
               clusterId={clusterId}
               setClusterId={setClusterId}
               customEndpoint={customEndpoint}
