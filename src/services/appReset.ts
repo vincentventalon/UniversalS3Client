@@ -89,7 +89,7 @@ export async function resetAppData(): Promise<boolean> {
 }
 
 /**
- * Get a count of stored providers without loading their data
+ * Get a count of stored providers without loading the full provider data
  * Useful for showing reset confirmation with context
  */
 export async function getStoredProvidersCount(): Promise<number> {
@@ -124,8 +124,8 @@ export function confirmAndResetApp(onSuccess?: () => void): void {
   // Get provider count first to show in confirmation
   getStoredProvidersCount().then(count => {
     const message = count > 0 
-      ? `This will delete ${count} stored S3 provider${count > 1 ? 's' : ''} and reset your password. Continue?`
-      : 'This will reset your password and clear all application data. Continue?';
+      ? `This will delete ${count} stored S3 provider${count > 1 ? 's' : ''} and clear all app data. Continue?`
+      : 'This will clear all application data. Continue?';
     
     Alert.alert(
       'Reset Application',

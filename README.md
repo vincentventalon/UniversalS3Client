@@ -36,9 +36,8 @@ If you're using AWS CLI directly with Hetzner buckets, we recommend:
 
 ## Security
 
-- All provider credentials are encrypted using AES
-- Master password is stored as a hash
-- Secure storage using `expo-secure-store`
+- Provider credentials are stored using Expo SecureStore (iOS Keychain/Android Keystore) and encrypted at rest
+- No master password; your data never leaves your device
 
 ## Development
 

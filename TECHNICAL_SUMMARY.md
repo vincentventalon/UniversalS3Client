@@ -24,19 +24,7 @@ const [isOffline, setIsOffline] = useState(false);
 // + états pour les champs du formulaire provider
 ```
 
-### 2. Authentification (PasswordForm.tsx)
-**Fonctionnalités :**
-- Configuration initiale du mot de passe maître
-- Vérification du mot de passe existant
-- Interface adaptative (première fois vs authentification)
-- Gestion des erreurs d'authentification
-
-**Sécurité :**
-- Hash du mot de passe pour vérification
-- Aucun stockage du mot de passe en clair
-- Validation côté client avant soumission
-
-### 3. Gestion des providers (ProviderForm.tsx)
+### 2. Gestion des providers (ProviderForm.tsx)
 **Architecture dynamique :**
 ```typescript
 // Configuration adaptée par provider
@@ -55,7 +43,7 @@ const endpoint = generateEndpoint({
 - Format des endpoints
 - Validation des credentials
 
-### 4. Navigation des buckets (ProviderDetails.tsx)
+### 3. Navigation des buckets (ProviderDetails.tsx)
 **Gestion complexe des états :**
 ```typescript
 const [currentPath, setCurrentPath] = useState('');
@@ -70,7 +58,7 @@ const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 - Upload avec progress tracking
 - Opérations batch (suppression, copie)
 
-### 5. Détails des objets (ObjectDetails.tsx)
+### 4. Détails des objets (ObjectDetails.tsx)
 **Métadonnées complètes :**
 - Informations de base (taille, date)
 - Génération d'URLs signées
@@ -105,31 +93,20 @@ function createS3Client(provider: S3Provider): S3Client {
 - `getSignedObjectUrl()` - URLs temporaires
 
 ### 2. Stockage sécurisé (secureStorage.ts)
-**Chiffrement AES :**
-```typescript
-// Génération de clé de chiffrement
-const keyMaterial = CryptoJS.PBKDF2(password, 'universal-s3-salt', {
-  keySize: 256/32,
-  iterations: 10000
-});
+**Stockage chiffré au repos :**
+- Utilisation d'Expo SecureStore (Keychain/Keystore) pour chiffrer les données au repos
+- Un enregistrement par provider avec clé `universal_s3_client_provider_<id>`
+- Liste des IDs de providers via `universal_s3_client_provider_list`
 
-// Chiffrement des données
-const encrypted = CryptoJS.AES.encrypt(
-  JSON.stringify(providers), 
-  keyMaterial.toString()
-).toString();
-```
-
-**Sécurité :**
-- PBKDF2 avec 10,000 itérations
-- Salt fixe pour dérivation de clé
-- Stockage dans Expo SecureStore
+**API principale :**
+- `saveProvider(provider)` / `getProvider(id)` / `deleteProvider(id)`
+- `saveProviders(providers)` / `getProviders()`
+- `getProviderIdList()`
 
 ### 3. Reset application (appReset.ts)
 **Nettoyage complet :**
 - Suppression de tous les providers
-- Reset du mot de passe maître
-- Nettoyage du cache Expo SecureStore
+- Nettoyage des clés SecureStore utilisées par l'app
 - Confirmation utilisateur obligatoire
 
 ## Configuration des providers
@@ -258,10 +235,10 @@ const upload = new Upload({
 ## Sécurité
 
 ### 1. Stockage des credentials
-**Chiffrement local :**
-- AES-256 avec clé dérivée PBKDF2
-- Aucune transmission réseau des passwords
-- Stockage Expo SecureStore (iOS Keychain/Android Keystore)
+**Chiffrement au repos :**
+- Expo SecureStore (Keychain/Keystore)
+- Aucune transmission réseau des credentials
+- Données locales uniquement
 
 ### 2. URLs signées
 **Sécurité temporaire :**
@@ -331,4 +308,4 @@ return await getSignedUrl(client, command, { expiresIn: 3600 });
 
 ## Conclusion technique
 
-Universal S3 Client présente une architecture robuste et extensible, avec une séparation claire des responsabilités. L'utilisation d'un SDK unifié (AWS SDK v3) pour tous les providers simplifie considérablement la maintenance tout en offrant une compatibilité maximale. La sécurité est au cœur du design avec un chiffrement local fort et aucune exposition des credentials. L'application est prête pour une montée en charge et des évolutions fonctionnelles importantes.
+Universal S3 Client présente une architecture robuste et extensible, avec une séparation claire des responsabilités. L'utilisation d'un SDK unifié (AWS SDK v3) pour tous les providers simplifie considérablement la maintenance tout en offrant une compatibilité maximale. La sécurité repose sur le chiffrement au repos via les keystores natifs (Expo SecureStore). L'application est prête pour une montée en charge et des évolutions fonctionnelles importantes.

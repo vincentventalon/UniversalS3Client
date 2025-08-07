@@ -13,8 +13,7 @@ The information you enter (credentials, access keys, etc.) is used solely to ena
 
 ## 3. Storage and Security
 
-- Your credentials and passwords are encrypted locally on your device using AES.
-- The master password is stored as a secure hash.
+- Your credentials are stored locally on your device using Expo SecureStore, which leverages the iOS Keychain and Android Keystore to encrypt data at rest.
 - No information is transmitted to our servers or to third parties.
 - We use `expo-secure-store` to ensure the security of sensitive data.
 

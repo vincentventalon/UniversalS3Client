@@ -12,8 +12,8 @@ Ce projet dispose d'une documentation exhaustive répartie dans plusieurs fichie
 
 ## 🚀 Fonctionnalités principales (Résumé)
 
-### 🔐 Sécurité et authentification
-- Mot de passe maître avec chiffrement AES-256
+### 🔐 Sécurité
+- Chiffrement des credentials au repos via Expo SecureStore (Keychain/Keystore)
 - Stockage sécurisé local (iOS Keychain/Android Keystore)
 - Aucune collecte de données distantes
 
@@ -88,7 +88,7 @@ src/
 ### ✅ Fonctionnalités implémentées
 - **100%** des TODO.md terminés
 - **14/14** providers S3 compatibles
-- **Sécurité** : Chiffrement bout-en-bout
+- **Sécurité** : Chiffrement au repos via keystores natifs
 - **UX** : Interface moderne et intuitive
 - **Performance** : Upload optimisé
 
@@ -113,9 +113,8 @@ src/
 
 1. **Installation** : `npm install --legacy-peer-deps`
 2. **Démarrage** : `npx expo start`
-3. **Configuration** : Mot de passe maître à la première ouverture
-4. **Ajout provider** : Sélection du type + credentials
-5. **Navigation** : Exploration des buckets et objets
+3. **Configuration** : Ajout d'un provider avec credentials
+4. **Navigation** : Exploration des buckets et objets
 
 ## 🤝 Contribution
 

@@ -5,18 +5,10 @@ Universal S3 Client est une application React Native qui permet de gérer des bu
 
 ## Fonctionnalités principales
 
-### 1. Gestion de l'authentification et de la sécurité
+### 1. Sécurité du stockage
 
-#### Protection par mot de passe maître
-- **Configuration initiale** : Définition d'un mot de passe maître lors du premier lancement
-- **Vérification** : Authentification requise à chaque ouverture de l'app
-- **Stockage sécurisé** : Utilisation d'`expo-secure-store` avec chiffrement AES
-- **Hash de vérification** : Le mot de passe est stocké sous forme de hash pour la sécurité
-
-#### Chiffrement des données
-- **Chiffrement AES** : Toutes les credentials des providers sont chiffrées
-- **Clé dérivée** : La clé de chiffrement est dérivée du mot de passe maître
-- **Stockage local sécurisé** : Aucune donnée sensible n'est stockée en clair
+- **Chiffrement au repos** : Les credentials (access key, secret key) sont stockées avec Expo SecureStore (Keychain/Keystore)
+- **Stockage local uniquement** : Aucune donnée sensible n'est transmise à des serveurs distants
 
 ### 2. Support multi-providers S3
 
@@ -141,7 +133,7 @@ Universal S3 Client est une application React Native qui permet de gérer des bu
 
 #### Gestion des données
 - **Stockage local** : Persistence des données utilisateur
-- **Sauvegarde sécurisée** : Export/import chiffré des configurations
+- **Sauvegarde sécurisée** : Export/import des configurations
 - **Nettoyage** : Suppression sélective des données
 
 ### 10. Fonctionnalités avancées
@@ -162,23 +154,10 @@ Universal S3 Client est une application React Native qui permet de gérer des bu
 ```
 src/
 ├── components/          # Composants React Native
-│   ├── PasswordForm.tsx     # Authentification
-│   ├── ProviderForm.tsx     # Ajout/édition providers
-│   ├── ProviderList.tsx     # Liste des providers
-│   ├── ProviderDetails.tsx  # Navigation buckets
-│   ├── ObjectDetails.tsx    # Détails objets
-│   └── Settings.tsx         # Paramètres
-├── services/           # Services métier
-│   ├── s3Service.ts        # API S3
-│   ├── secureStorage.ts    # Stockage sécurisé
-│   └── appReset.ts         # Reset application
-├── config/            # Configuration
-│   └── providers.ts        # Config providers S3
+├── services/           # Services métier (S3, stockage, etc.)
+├── config/            # Configuration providers
 ├── types/             # Types TypeScript
-│   └── index.ts           # Définitions types
 └── utils/             # Utilitaires
-    ├── idGenerator.ts     # Génération IDs
-    └── polyfills.ts       # Polyfills crypto
 ```
 
 ### Technologies utilisées
@@ -207,7 +186,7 @@ src/
 ## Sécurité et conformité
 
 ### Mesures de sécurité
-- **Chiffrement bout-en-bout** : Toutes les données sensibles chiffrées
+- **Chiffrement au repos** : Données sensibles protégées via Expo SecureStore
 - **Aucun stockage distant** : Credentials stockées uniquement localement
 - **Sessions sécurisées** : Tokens temporaires pour API
 - **Validation stricte** : Sanitisation de tous les inputs
@@ -237,4 +216,4 @@ src/
 
 ## Conclusion
 
-Universal S3 Client représente une solution complète et sécurisée pour la gestion de stockage S3 multi-providers. L'application combine simplicité d'utilisation et fonctionnalités avancées, tout en maintenant les plus hauts standards de sécurité et de performance.
+Universal S3 Client représente une solution complète et sécurisée pour la gestion de stockage S3 multi-providers. L'application combine simplicité d'utilisation et fonctionnalités avancées, tout en maintenant des standards de sécurité solides grâce à l'encryption au repos via les keystores natifs.
