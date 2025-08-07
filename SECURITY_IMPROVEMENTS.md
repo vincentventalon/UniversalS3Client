@@ -77,38 +77,36 @@ Safe migration from old weak hashes to new secure hashes:
 - Automatically migrates to secure hash on successful login
 - No data loss during security upgrade
 
-### 4. **Session-Based Authentication Flow**
-- App shows password form on first access
-- Master password cached securely in memory during session
-- Once authenticated, no password required for operations within session
-- Session cleared on logout or app restart
-- Logout button available in app header for manual session termination
+### 4. **Startup-Only Authentication Flow**
+- App shows password form only at startup
+- Master password cached securely in memory for entire app lifecycle
+- Once authenticated at startup, no password required for any operations
+- Session persists until app is completely terminated/restarted
+- No logout functionality - authentication lasts entire session
 
 ## User Experience Improvements
 
-### Session-Based Authentication
-The authentication system now works like most modern apps:
+### Startup-Only Authentication
+The authentication system is designed for maximum convenience:
 
-1. **First Access**: User enters password once to authenticate
-2. **Session Active**: User can perform all operations without re-entering password
+1. **App Startup**: User enters password once when app starts
+2. **Session Active**: User can perform all operations for entire session without re-entering password
 3. **Session Management**: 
    - Password cached securely in memory only
-   - Session persists until manual logout or app restart
-   - Logout button in header for manual termination
-4. **Security Balance**: Maintains strong security while providing good UX
+   - Session persists until app is completely closed/terminated
+   - No manual logout - authentication lasts entire app lifecycle
+4. **Security Balance**: Strong security at startup, maximum convenience during usage
 
 ### Authentication Flow
 ```
-App Start → Check Session → If Not Authenticated → Show Password Form
-    ↓                           ↓
-Load Providers         Password Success → Set Session → Load Providers
-    ↓                           ↓
-Main App Interface     Main App Interface (with Logout option)
+App Start → Show Password Form → Password Success → Set Session → Load Providers
+                                                          ↓
+                                                   Main App Interface
+                                                   (No logout needed)
 ```
 
 ### Session Functions
-- `setSessionAuthentication(password)`: Cache password and mark as authenticated
-- `clearSessionAuthentication()`: Clear session and require re-authentication
+- `setSessionAuthentication(password)`: Cache password and mark as authenticated for entire session
 - `isSessionAuthenticatedNow()`: Check if currently authenticated
 - `saveProviders()` / `getProviders()`: Use cached credentials automatically
 
@@ -126,10 +124,10 @@ Main App Interface     Main App Interface (with Logout option)
 
 2. **`App.tsx`**
    - Integrated PasswordForm component
-   - Added session-based authentication state management
+   - Added startup-only authentication state management
    - Replaced insecure storage calls with secure functions
-   - Added logout functionality with header button
-   - Session persistence within app lifecycle (clears on restart)
+   - Session persistence for entire app lifecycle until termination
+   - Simplified UX with no logout needed
 
 ### Security Benefits
 - **Passwords protected against**: Rainbow table attacks, dictionary attacks, brute force attacks

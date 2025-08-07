@@ -25,18 +25,11 @@ const secureStoreOptions: SecureStore.SecureStoreOptions = {
 
 /**
  * Set the session authentication state and cache the master password
+ * Session persists until app termination (no manual logout)
  */
 export function setSessionAuthentication(password: string): void {
   cachedMasterPassword = password;
   isSessionAuthenticated = true;
-}
-
-/**
- * Clear the session authentication and cached password
- */
-export function clearSessionAuthentication(): void {
-  cachedMasterPassword = null;
-  isSessionAuthenticated = false;
 }
 
 /**

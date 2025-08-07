@@ -17,7 +17,7 @@ import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import { listBucketObjects, extractBucketName } from './src/services/s3Service';
 import { generateId } from './src/utils/idGenerator';
 import { generateEndpoint, getProviderConfig } from './src/config/providers';
-import { saveProviders, getProviders, setSessionAuthentication, clearSessionAuthentication, isSessionAuthenticatedNow, verifyPassword } from './src/services/secureStorage';
+import { saveProviders, getProviders, setSessionAuthentication, isSessionAuthenticatedNow, verifyPassword } from './src/services/secureStorage';
 
 export default function App() {
   const [providers, setProviders] = useState<S3Provider[]>([]);
@@ -85,13 +85,7 @@ export default function App() {
     }
   }
 
-  // Handle logout
-  function handleLogout() {
-    clearSessionAuthentication();
-    setIsAuthenticated(false);
-    setSelectedProvider(null);
-    setProviders([]);
-  }
+
 
   async function loadProviders() {
     try {
@@ -278,18 +272,12 @@ export default function App() {
       <View style={styles.container}>
         <View style={styles.headerContainer}>
           <Text style={styles.header}>Universal S3 Client</Text>
-          <View style={styles.headerActions}>
-            <Appbar.Action 
-              icon="logout" 
-              onPress={handleLogout}
-              accessibilityLabel="Logout"
-            />
-            <Appbar.Action 
-              icon="cog" 
-              onPress={() => setShowSettings(true)}
-              accessibilityLabel="Settings"
-            />
-          </View>
+          <Appbar.Action 
+            icon="cog" 
+            onPress={() => setShowSettings(true)}
+            style={styles.settingsIcon}
+            accessibilityLabel="Settings"
+          />
         </View>
         <ProviderList
           providers={providers}
@@ -390,9 +378,10 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
   },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  settingsIcon: {
+    position: 'absolute',
+    right: 0,
+    top: -8,
   },
   loadingContainer: {
     flex: 1,
