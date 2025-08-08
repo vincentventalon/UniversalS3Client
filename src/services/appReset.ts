@@ -3,7 +3,6 @@ import { Alert } from 'react-native';
 
 // Keys used in the application
 const LEGACY_PROVIDERS_KEY = 'universal_s3_client_providers'; // Old key (for cleanup)
-const PASSWORD_TEST_KEY = 'universal_s3_client_pwd_test';
 const PROVIDER_LIST_KEY = 'universal_s3_client_provider_list'; // New provider list key
 const PROVIDER_PREFIX = 'universal_s3_client_provider_'; // Prefix for individual providers
 const MIGRATION_FLAG_KEY = 'universal_s3_client_migrated'; // Migration flag
@@ -38,13 +37,6 @@ export async function resetAppData(): Promise<boolean> {
     // Delete legacy providers key (if it exists)
     try {
       await SecureStore.deleteItemAsync(LEGACY_PROVIDERS_KEY);
-    } catch (error) {
-      // Ignore errors if key doesn't exist
-    }
-    
-    // Delete password test key
-    try {
-      await SecureStore.deleteItemAsync(PASSWORD_TEST_KEY);
     } catch (error) {
       // Ignore errors if key doesn't exist
     }

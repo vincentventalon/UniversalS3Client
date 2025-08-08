@@ -2,7 +2,7 @@
 
 ## Overview
 
-Successfully refactored the Expo SecureStore implementation to store individual S3 providers separately, resolving the 2KB storage limit and adding enhanced password protection. This change ensures unlimited scalability while maintaining backward compatibility through a seamless migration system.
+Successfully refactored the Expo SecureStore implementation to store individual S3 providers separately, resolving the 2KB storage limit and relying on device keystore encryption for at-rest protection. This change ensures unlimited scalability while maintaining backward compatibility through a seamless migration system.
 
 ## Key Changes
 
@@ -26,18 +26,16 @@ Old: universal_s3_client_providers → [provider1, provider2, ...]
 
 New:
 ├── universal_s3_client_provider_list → ["id1", "id2", ...]
-├── universal_s3_client_provider_id1 → encrypted(provider1_data)
-├── universal_s3_client_provider_id2 → encrypted(provider2_data)
-├── universal_s3_client_migrated → "true"
-└── universal_s3_client_pwd_test → {hash, salt, key}
+├── universal_s3_client_provider_id1 → JSON(provider1_data)
+├── universal_s3_client_provider_id2 → JSON(provider2_data)
+└── universal_s3_client_migrated → "true"
 ```
 
 ### 3. Enhanced Security Features
 
-- **Individual Provider Encryption**: Each provider is encrypted with user's password using AES
-- **PBKDF2 Password Hashing**: Replaced weak legacy hash with 100k iterations PBKDF2
-- **Salt-based Security**: Unique salts prevent rainbow table attacks
-- **Session Management**: Cached authentication prevents repeated password prompts
+- **At-rest Encryption via SecureStore**: Credentials are protected by the device keystore (iOS Keychain / Android Keystore)
+- **No Master Password**: Eliminates password prompts and reduces UX friction
+- **Reduced Crypto Surface**: No custom password hashing or session password caching
 
 ### 4. Migration System
 
@@ -57,7 +55,6 @@ New:
 #### Backward Compatibility
 - Seamless migration without user intervention
 - Preserves all existing provider configurations
-- Maintains existing password authentication
 
 ### 5. New API Functions
 
@@ -98,10 +95,9 @@ getProviders(): Promise<S3Provider[]>
 - **Faster Operations**: Individual provider CRUD operations are more efficient
 
 ### 🔒 Security Enhancements
-- **Individual Encryption**: Each provider encrypted separately with user password
-- **Key Isolation**: Compromise of one provider doesn't affect others
-- **Strong Hashing**: PBKDF2 with 100k iterations replaces weak legacy hash
-- **Salt Protection**: Unique salts prevent precomputed attack vectors
+- **At-rest Encryption via SecureStore**: Credentials protected by device keystore
+- **Key Isolation**: SecureStore isolates app data per app/sandbox
+- **No Password Handling**: No PBKDF2, salts, or in-memory password caching
 
 ### 📈 Scalability Solutions
 - **No Size Limits**: Each provider stored in separate SecureStore entry
@@ -138,7 +134,7 @@ Overhead per provider: ~22 bytes
 - Replaced `PROVIDERS_KEY` with individual provider keys
 - Added migration detection and execution logic
 - Enhanced error handling and fault tolerance
-- Implemented AES encryption for provider data
+- Leveraged Expo SecureStore for at-rest encryption
 - Added comprehensive reset functionality
 
 ## Backward Compatibility
@@ -152,10 +148,10 @@ The refactor maintains complete backward compatibility:
 
 ## Security Considerations
 
-- **Encryption Keys**: User password used as encryption key (not stored)
-- **Session Security**: Password cached in memory only during session
-- **Salt Storage**: Unique salts stored with hashes for security
-- **Legacy Migration**: Secure transition from weak to strong hashing
+- **At-rest Encryption**: Credentials encrypted via system keystore (Expo SecureStore)
+- **No Master Password**: No password hashing or secret caching required
+- **Local-only Data**: Credentials never leave the device
+- **Legacy Migration**: Secure cleanup of legacy keys during reset
 
 ## Next Steps
 
