@@ -47,8 +47,6 @@ export interface S3Object {
 }
 
 export interface AppState {
-  isLocked: boolean;
-  userPassword: string | null;
   providers: S3Provider[];
   selectedProvider: S3Provider | null;
   buckets: Bucket[];
