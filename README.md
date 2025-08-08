@@ -1,84 +1,106 @@
 # Universal S3 Client
 
-## Changelog
+A React Native mobile app to manage S3‑compatible object storage across multiple cloud providers from a single, secure interface.
 
-### 1.1
-- Mise à jour de la version de l'application (1.0 → 1.1)
-- Mise à jour de la version du package (1.0.0 → 1.1.0 dans package.json)
+## What this app is for
 
-A React Native application that allows you to manage S3-compatible storage buckets from different providers like AWS, Cloudflare, Hetzner, and more.
+- Manage multiple S3 connections (AWS and 13+ S3‑compatible providers)
+- Browse buckets and objects with a clean, mobile‑first UI
+- Upload files from your device, copy/rename/delete objects and folders
+- Generate signed URLs for secure, time‑limited sharing
 
-## Features
+## Why the app is secure
 
-- Secure credential storage with password protection
-- Support for multiple S3 providers
-- List buckets from providers
-- View and copy bucket URLs
-- Simple, single-screen interface
+- **On‑device encryption at rest**: Credentials are stored with Expo SecureStore (iOS Keychain / Android Keystore)
+- **No backend, no data exfiltration**: Your access keys never leave your device
+- **Principle of least privilege**: Use IAM keys scoped to the minimal permissions required
+- **Ephemeral access**: Signed URLs include expiration and are never stored permanently
+- **Full reset**: Built‑in reset clears all SecureStore entries used by the app
 
-## Supported Providers
+See `PrivacyPolicy.md` for more details. There is no analytics and no master password prompt; protection relies on the device keystore.
 
-- AWS S3
-- Hetzner Storage
-- Soon: Any S3-compatible service
+## Supported providers
 
-## Important Compatibility Notes
+Out of the box, 14 S3‑compatible providers are supported:
 
-### Hetzner S3 Compatibility
+- AWS S3 (33 regions)
+- Hetzner Storage Box (3 locations)
+- Cloudflare R2 (account ID + location hints)
+- DigitalOcean Spaces (5 regions)
+- Wasabi (6 regions)
+- Backblaze B2 (3 regions)
+- Scaleway Object Storage (3 regions)
+- Vultr Object Storage (multiple regions)
+- Linode Object Storage (3 regions)
+- Oracle Cloud Infrastructure (11 regions, namespace)
+- IBM Cloud Object Storage (cross/regional)
+- Google Cloud Storage
+- Azure Blob Storage
+- MinIO (custom endpoints)
 
-This application uses AWS SDK version 3.188.0, which is compatible with Hetzner's S3 implementation. 
+Note on compatibility: the app pins AWS SDK v3.188.0 for best compatibility (e.g., Hetzner requires ≤ v3.188.0 due to checksum changes in later versions).
 
-**IMPORTANT**: File/data uploads to Hetzner Buckets will fail with AWS SDK v3.200.0 or later. This is because newer AWS SDK versions adopt default integrity protections that require an additional checksum on all PUT calls, which Hetzner does not support.
+## Key functionalities
 
-If you're using AWS CLI directly with Hetzner buckets, we recommend:
-- Installing AWS CLI v2.22.35 or below
-- Or disabling checksums with: `aws configure set default.s3.payload_signing_enabled false`
+- **Provider management**: add/edit/delete providers with provider‑specific fields (e.g., account ID, namespace, cluster ID, custom endpoint)
+- **Bucket/object browser**: breadcrumb navigation, pagination, pull‑to‑refresh
+- **File operations**: upload (multipart, progress), copy, rename, recursive delete
+- **Selection tools**: multi‑select for batch actions
+- **Signed URLs**: create time‑limited links for secure sharing
+- **Resilience**: network offline detection and contextual error handling
+- **Modern UI**: React Native Paper components with a clean, responsive layout
 
-## Security
+## Quick start
 
-- Provider credentials are stored using Expo SecureStore (iOS Keychain/Android Keystore) and encrypted at rest
-- No master password; your data never leaves your device
-
-## Development
-
-### Prerequisites
-
-- Node.js (v14+)
+Prerequisites:
+- Node.js 18+
 - npm or yarn
 - Expo CLI
-- iOS Simulator or Android Emulator (for testing)
 
-### Setup
-
-1. Clone the repository
-2. Install dependencies:
+Install and run:
 
 ```bash
 npm install --legacy-peer-deps
-```
-
-3. Start the development server:
-
-```bash
 npx expo start
 ```
 
-4. Follow the instructions to open the app in a simulator or on your physical device.
+Add your first provider in the app, then browse your buckets and objects.
 
-## Building for Production
+## Build for production
 
-To create a production build, make sure you have EAS CLI installed:
+Install EAS CLI if not already installed:
 
 ```bash
 npm install -g eas-cli
 ```
 
-Then run:
+Create builds:
 
 ```bash
 npx eas build -p android
 npx eas build -p ios
 ```
+
+## Platform and versions
+
+- React Native 0.76.9 + TypeScript
+- Expo SDK 52.x
+- AWS SDK v3.188.0 (client, lib‑storage, presigner)
+- iOS 13+ / Android 5.0+ (API 21+)
+
+## Important compatibility note (Hetzner)
+
+Hetzner’s S3 implementation can fail uploads with newer AWS SDKs that enforce checksums by default. If you use AWS CLI directly with Hetzner buckets:
+
+- Use AWS CLI v2.22.35 or below, or
+- Disable payload checksums: `aws configure set default.s3.payload_signing_enabled false`
+
+The app remains compatible by pinning to AWS SDK v3.188.0.
+
+## Development
+
+- Scripts: `npm run start`, `npm run android`, `npm run ios`
+- Source: `src/` (components, services, config, types, utils)
 
 ## License
 
