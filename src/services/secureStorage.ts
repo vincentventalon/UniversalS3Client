@@ -37,11 +37,28 @@ async function updateProviderIds(providerIds: string[]): Promise<void> {
  */
 async function needsMigration(): Promise<boolean> {
   try {
-    const migrationFlag = await SecureStore.getItemAsync(MIGRATION_FLAG_KEY, secureStoreOptions);
     const legacyData = await SecureStore.getItemAsync(LEGACY_PROVIDERS_KEY, secureStoreOptions);
     
-    // Need migration if we have legacy data but no migration flag
-    return !migrationFlag && !!legacyData;
+    // If we have legacy data, we need migration regardless of the flag
+    if (legacyData) {
+      console.log('Legacy data detected, migration needed');
+      return true;
+    }
+    
+    // If no legacy data but migration flag is set, check if we actually have migrated data
+    const migrationFlag = await SecureStore.getItemAsync(MIGRATION_FLAG_KEY, secureStoreOptions);
+    if (migrationFlag) {
+      // Verify that we actually have provider data in the new format
+      const providerList = await SecureStore.getItemAsync(PROVIDER_LIST_KEY, secureStoreOptions);
+      if (!providerList) {
+        console.log('Migration flag set but no provider list found, clearing flag');
+        // Clear the incorrect migration flag
+        await SecureStore.deleteItemAsync(MIGRATION_FLAG_KEY);
+        return false;
+      }
+    }
+    
+    return false;
   } catch (error) {
     console.error('Error checking migration status:', error);
     return false;
@@ -208,3 +225,45 @@ export async function getProviderIdList(): Promise<string[]> {
     return [];
   }
 }
+
+/**
+ * Force recovery of legacy data regardless of migration status
+ * This is useful for users who may have been caught between migrations
+ */
+export async function attemptLegacyDataRecovery(): Promise<S3Provider[]> {
+  try {
+    console.log('Attempting legacy data recovery...');
+    
+    // First, try to get legacy data
+    const legacyProvidersJson = await SecureStore.getItemAsync(LEGACY_PROVIDERS_KEY, secureStoreOptions);
+    if (legacyProvidersJson) {
+      try {
+        const legacyProviders: S3Provider[] = JSON.parse(legacyProvidersJson);
+        console.log(`Found ${legacyProviders.length} providers in legacy storage`);
+        
+        // Perform migration
+        await migrateFromLegacyStorage();
+        
+        return legacyProviders;
+      } catch (error) {
+        console.error('Failed to parse legacy data:', error);
+      }
+    }
+    
+    // If no legacy data, check if we have data in new format
+    const providers = await getProviders();
+    if (providers.length > 0) {
+      console.log(`Found ${providers.length} providers in new storage format`);
+      return providers;
+    }
+    
+    console.log('No provider data found in either format');
+    return [];
+  } catch (error) {
+    console.error('Legacy data recovery failed:', error);
+    return [];
+  }
+}
+
+// Export the function for debugging purposes
+export { needsMigration, migrateFromLegacyStorage };
