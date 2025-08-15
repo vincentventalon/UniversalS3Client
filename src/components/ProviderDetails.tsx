@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { StyleSheet, View, FlatList, RefreshControl, TouchableOpacity, Alert, Linking } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import { 
   Card, 
   Text, 
@@ -241,6 +242,26 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
       console.log(`Item selection toggled for ${item.key}. New selected keys:`, newKeys);
       return newKeys;
     });
+  }
+
+  async function copyCurrentPath() {
+    try {
+      // Format the path - remove trailing slash and handle root directory
+      const cleanPath = currentPath.replace(/\/$/, '');
+      const fullPath = cleanPath 
+        ? `s3://${bucketName}/${cleanPath}/`
+        : `s3://${bucketName}/`;
+      
+      await Clipboard.setStringAsync(fullPath);
+      Alert.alert(
+        'Path Copied', 
+        `Current folder path copied to clipboard:\n${fullPath}`,
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      console.error('Failed to copy path:', error);
+      Alert.alert('Error', 'Failed to copy path to clipboard');
+    }
   }
 
   function renderItem({ item }: { item: S3Object }) {
@@ -966,6 +987,14 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         <Text style={styles.sectionTitle}>{bucketName}</Text>
         
         <View style={styles.headerRightActions}>
+          {/* Copy current path button */}
+          <IconButton
+            icon="content-copy"
+            size={20}
+            onPress={copyCurrentPath}
+            style={styles.copyPathButton}
+          />
+          
           {/* View mode toggle buttons */}
           <IconButton
             icon="view-list"
@@ -1229,6 +1258,10 @@ const styles = StyleSheet.create({
   },
   selectedViewButton: {
     backgroundColor: '#E3F2FD',
+  },
+  copyPathButton: {
+    margin: 0,
+    marginRight: 8,
   },
 });
 
