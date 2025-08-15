@@ -21,6 +21,8 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import ObjectDetails from './ObjectDetails';
 import ProviderForm from './ProviderForm';
+import { ImageThumbnail } from './ImageThumbnail';
+import { isImageFile } from '../utils/fileUtils';
 
 interface ProviderDetailsProps {
   provider: S3Provider;
@@ -243,7 +245,20 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
               }}
             />
           ) : (
-            <List.Icon {...props} icon={item.isFolder ? 'folder' : 'file'} color={item.isFolder ? '#FFC107' : '#2196F3'} />
+            // Show image thumbnail for image files, otherwise show generic icon
+            item.isFolder ? (
+              <List.Icon {...props} icon="folder" color="#FFC107" />
+            ) : isImageFile(item.name) ? (
+              <ImageThumbnail 
+                item={item} 
+                provider={provider} 
+                bucketName={bucketName}
+                color="#2196F3" 
+                size={24} 
+              />
+            ) : (
+              <List.Icon {...props} icon="file" color="#2196F3" />
+            )
           )
         )}
         right={props => (
