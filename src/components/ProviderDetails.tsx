@@ -985,8 +985,6 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
       </View>
       
       <View style={styles.bucketContentHeader}>
-        <Text style={styles.sectionTitle}>{bucketName}</Text>
-        
         <View style={styles.headerRightActions}>
           {/* Copy current path button */}
           <IconButton
@@ -1122,7 +1120,8 @@ const styles = StyleSheet.create({
   bucketContentHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
+    marginBottom: 8,
   },
   sectionTitle: {
     fontSize: 18,
