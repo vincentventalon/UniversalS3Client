@@ -15,6 +15,7 @@ interface GridFileItemProps {
   onSelect?: () => void;
   size: 'small' | 'large'; // 'small' for 3x3, 'large' for 2x2
   showTitle?: boolean;
+  itemWidth: number; // Width calculated by parent component
 }
 
 export function GridFileItem({ 
@@ -26,10 +27,12 @@ export function GridFileItem({
   onPress, 
   onSelect,
   size,
-  showTitle = true
+  showTitle = true,
+  itemWidth
 }: GridFileItemProps) {
-  const itemSize = size === 'large' ? 120 : 80;
-  const iconSize = size === 'large' ? 64 : 48;
+  // Use itemWidth for both width and height to make square items
+  const itemSize = itemWidth;
+  const iconSize = size === 'large' ? itemWidth * 0.4 : itemWidth * 0.5;
   
   const handlePress = () => {
     if (isMultiSelect && onSelect) {
@@ -137,7 +140,7 @@ const styles = StyleSheet.create({
   gridItem: {
     backgroundColor: '#f8f9fa',
     borderRadius: 8,
-    margin: 4,
+    marginVertical: 1, // Minimal vertical margin
     position: 'relative',
     borderWidth: 1,
     borderColor: '#e0e0e0',
