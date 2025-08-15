@@ -14,6 +14,7 @@ interface GridFileItemProps {
   onPress?: () => void;
   onSelect?: () => void;
   size: 'small' | 'large'; // 'small' for 3x3, 'large' for 2x2
+  showTitle?: boolean;
 }
 
 export function GridFileItem({ 
@@ -24,7 +25,8 @@ export function GridFileItem({
   isMultiSelect = false, 
   onPress, 
   onSelect,
-  size 
+  size,
+  showTitle = true
 }: GridFileItemProps) {
   const itemSize = size === 'large' ? 120 : 80;
   const iconSize = size === 'large' ? 48 : 32;
@@ -86,27 +88,31 @@ export function GridFileItem({
         </View>
       )}
       
-      <View style={styles.iconContainer}>
+      <View style={[styles.iconContainer, !showTitle && styles.iconContainerNoTitle]}>
         {renderIcon()}
       </View>
       
-      <View style={styles.titleContainer}>
-        <Text 
-          style={[
-            styles.title, 
-            size === 'small' && styles.smallTitle
-          ]} 
-          numberOfLines={2}
-          ellipsizeMode="middle"
-        >
-          {item.name}
-        </Text>
-      </View>
-      
-      {!item.isFolder && (
-        <Text style={styles.subtitle} numberOfLines={1}>
-          {formatSize(item.size)}
-        </Text>
+      {showTitle && (
+        <>
+          <View style={styles.titleContainer}>
+            <Text 
+              style={[
+                styles.title, 
+                size === 'small' && styles.smallTitle
+              ]} 
+              numberOfLines={2}
+              ellipsizeMode="middle"
+            >
+              {item.name}
+            </Text>
+          </View>
+          
+          {!item.isFolder && (
+            <Text style={styles.subtitle} numberOfLines={1}>
+              {formatSize(item.size)}
+            </Text>
+          )}
+        </>
       )}
     </TouchableOpacity>
   );
@@ -148,6 +154,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 8,
+  },
+  iconContainerNoTitle: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 0,
   },
   titleContainer: {
     paddingHorizontal: 4,

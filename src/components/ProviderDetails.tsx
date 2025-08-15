@@ -52,6 +52,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
   
   // États pour la vue (liste ou grille)
   const [viewMode, setViewMode] = useState<'list' | 'grid2' | 'grid3'>('list');
+  const [showTitlesInGrid, setShowTitlesInGrid] = useState(true);
   
   // États pour la copie et le renommage
   const [copiedItem, setCopiedItem] = useState<S3Object | null>(null);
@@ -1018,6 +1019,16 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
             style={[styles.viewToggleButton, viewMode === 'grid3' && styles.selectedViewButton]}
           />
           
+          {/* Title visibility toggle for grid view */}
+          {(viewMode === 'grid2' || viewMode === 'grid3') && (
+            <IconButton
+              icon={showTitlesInGrid ? "eye" : "eye-off"}
+              size={20}
+              onPress={() => setShowTitlesInGrid(!showTitlesInGrid)}
+              style={styles.titleToggleButton}
+            />
+          )}
+          
           {currentPath && (
             <IconButton 
               icon="arrow-up" 
@@ -1072,6 +1083,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
             selectedKeys={selectedKeys}
             isMultiSelect={isMultiSelect}
             viewMode={viewMode}
+            showTitles={showTitlesInGrid}
             refreshing={refreshing}
             onItemPress={handleItemPress}
             onItemSelect={handleItemSelect}
@@ -1262,6 +1274,10 @@ const styles = StyleSheet.create({
   copyPathButton: {
     margin: 0,
     marginRight: 8,
+  },
+  titleToggleButton: {
+    margin: 0,
+    marginHorizontal: 4,
   },
 });
 

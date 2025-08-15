@@ -10,6 +10,7 @@ interface GridViewProps {
   selectedKeys: string[];
   isMultiSelect: boolean;
   viewMode: 'grid2' | 'grid3';
+  showTitles?: boolean;
   refreshing?: boolean;
   onItemPress: (item: S3Object) => void;
   onItemSelect: (item: S3Object) => void;
@@ -23,6 +24,7 @@ export function GridView({
   selectedKeys,
   isMultiSelect,
   viewMode,
+  showTitles = true,
   refreshing = false,
   onItemPress,
   onItemSelect,
@@ -46,6 +48,7 @@ export function GridView({
       isSelected={selectedKeys.includes(item.key)}
       isMultiSelect={isMultiSelect}
       size={itemSize}
+      showTitle={showTitles}
       onPress={() => onItemPress(item)}
       onSelect={() => onItemSelect(item)}
     />
