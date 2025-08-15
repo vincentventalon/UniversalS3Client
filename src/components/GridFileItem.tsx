@@ -101,7 +101,8 @@ export function GridFileItem({
         </View>
       )}
       
-      {showTitle && (
+      {/* Always show titles for folders and non-image files, or when showTitle is true for images */}
+      {(showTitle || item.isFolder || !isImageFile(item.name)) && (
         <View style={styles.overlayContainer}>
           <View style={styles.textOverlay}>
             <Text 
