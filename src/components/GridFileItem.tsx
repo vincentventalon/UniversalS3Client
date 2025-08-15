@@ -15,6 +15,7 @@ interface GridFileItemProps {
   onSelect?: () => void;
   size: 'small' | 'large'; // 'small' for 3x3, 'large' for 2x2
   showTitle?: boolean;
+  itemWidth: number; // Width calculated by parent component
 }
 
 export function GridFileItem({ 
@@ -26,10 +27,12 @@ export function GridFileItem({
   onPress, 
   onSelect,
   size,
-  showTitle = true
+  showTitle = true,
+  itemWidth
 }: GridFileItemProps) {
-  const itemSize = size === 'large' ? 120 : 80;
-  const iconSize = size === 'large' ? 48 : 32;
+  // Use itemWidth for both width and height to make square items
+  const itemSize = itemWidth;
+  const iconSize = size === 'large' ? itemWidth * 0.4 : itemWidth * 0.5;
   
   const handlePress = () => {
     if (isMultiSelect && onSelect) {
@@ -39,14 +42,16 @@ export function GridFileItem({
     }
   };
 
-  const renderIcon = () => {
+  const renderBackgroundContent = () => {
     if (item.isFolder) {
       return (
-        <List.Icon 
-          icon="folder" 
-          color="#FFC107" 
-          style={{ alignSelf: 'center' }}
-        />
+        <View style={styles.backgroundIconContainer}>
+          <List.Icon 
+            icon="folder" 
+            color="rgba(255, 193, 7, 0.8)" 
+            size={iconSize}
+          />
+        </View>
       );
     } else if (isImageFile(item.name)) {
       return (
@@ -54,17 +59,19 @@ export function GridFileItem({
           item={item} 
           provider={provider} 
           bucketName={bucketName}
-          color="#2196F3" 
-          size={iconSize} 
+          size={itemSize}
+          fillContainer={true}
         />
       );
     } else {
       return (
-        <List.Icon 
-          icon="file" 
-          color="#2196F3" 
-          style={{ alignSelf: 'center' }}
-        />
+        <View style={styles.backgroundIconContainer}>
+          <List.Icon 
+            icon="file" 
+            color="rgba(33, 150, 243, 0.8)" 
+            size={iconSize}
+          />
+        </View>
       );
     }
   };
@@ -79,6 +86,12 @@ export function GridFileItem({
       onPress={handlePress}
       activeOpacity={0.7}
     >
+      {/* Background content (image/icon) fills entire container */}
+      <View style={styles.backgroundContainer}>
+        {renderBackgroundContent()}
+      </View>
+
+      {/* Overlay content */}
       {isMultiSelect && (
         <View style={styles.checkboxContainer}>
           <Checkbox
@@ -88,31 +101,28 @@ export function GridFileItem({
         </View>
       )}
       
-      <View style={[styles.iconContainer, !showTitle && styles.iconContainerNoTitle]}>
-        {renderIcon()}
-      </View>
-      
-      {showTitle && (
-        <>
-          <View style={styles.titleContainer}>
+      {/* Always show titles for folders and non-image files, or when showTitle is true for images */}
+      {(showTitle || item.isFolder || !isImageFile(item.name)) && (
+        <View style={styles.overlayContainer}>
+          <View style={styles.textOverlay}>
             <Text 
               style={[
-                styles.title, 
-                size === 'small' && styles.smallTitle
+                styles.overlayTitle, 
+                size === 'small' && styles.smallOverlayTitle
               ]} 
               numberOfLines={2}
               ellipsizeMode="middle"
             >
               {item.name}
             </Text>
+            
+            {!item.isFolder && (
+              <Text style={styles.overlaySubtitle} numberOfLines={1}>
+                {formatSize(item.size)}
+              </Text>
+            )}
           </View>
-          
-          {!item.isFolder && (
-            <Text style={styles.subtitle} numberOfLines={1}>
-              {formatSize(item.size)}
-            </Text>
-          )}
-        </>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -131,58 +141,74 @@ const styles = StyleSheet.create({
   gridItem: {
     backgroundColor: '#f8f9fa',
     borderRadius: 8,
-    padding: 8,
-    margin: 4,
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    marginVertical: 1, // Minimal vertical margin
     position: 'relative',
     borderWidth: 1,
     borderColor: '#e0e0e0',
+    overflow: 'hidden', // Ensures content doesn't overflow rounded corners
   },
   selectedItem: {
     backgroundColor: '#E3F2FD',
     borderColor: '#2196F3',
+    borderWidth: 2,
+  },
+  backgroundContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backgroundIconContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
   },
   checkboxContainer: {
     position: 'absolute',
     top: 4,
     right: 4,
+    zIndex: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 12,
+  },
+  overlayContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     zIndex: 1,
   },
-  iconContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 8,
+  textOverlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    borderBottomLeftRadius: 6,
+    borderBottomRightRadius: 6,
   },
-  iconContainerNoTitle: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 0,
-  },
-  titleContainer: {
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 4,
-    marginTop: 4,
-    minHeight: 28,
-    justifyContent: 'center',
-  },
-  title: {
+  overlayTitle: {
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: '600',
     textAlign: 'center',
-    color: '#333',
+    color: '#ffffff',
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
-  smallTitle: {
+  smallOverlayTitle: {
     fontSize: 9,
   },
-  subtitle: {
+  overlaySubtitle: {
     fontSize: 9,
-    color: '#666',
-    marginTop: 2,
+    color: '#e0e0e0',
+    marginTop: 1,
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
 });

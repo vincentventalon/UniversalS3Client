@@ -34,11 +34,12 @@ export function GridView({
   const numColumns = viewMode === 'grid2' ? 2 : 3;
   const itemSize = viewMode === 'grid2' ? 'large' : 'small';
   
-  // Calculate item width based on screen width and number of columns
-  const padding = 16; // Container padding
-  const spacing = 8; // Space between items
-  const availableWidth = screenWidth - (padding * 2);
-  const itemWidth = (availableWidth - (spacing * (numColumns - 1))) / numColumns;
+  // Calculate item width with minimal spacing
+  const containerPadding = 4; // Minimal container padding
+  const itemSpacing = 2; // Minimal space between items
+  const availableWidth = screenWidth - (containerPadding * 2);
+  const totalSpacing = itemSpacing * (numColumns - 1);
+  const itemWidth = (availableWidth - totalSpacing) / numColumns;
 
   const renderItem = ({ item }: { item: S3Object }) => (
     <GridFileItem
@@ -49,6 +50,7 @@ export function GridView({
       isMultiSelect={isMultiSelect}
       size={itemSize}
       showTitle={showTitles}
+      itemWidth={itemWidth}
       onPress={() => onItemPress(item)}
       onSelect={() => onItemSelect(item)}
     />
@@ -61,10 +63,13 @@ export function GridView({
       numColumns={numColumns}
       key={`${viewMode}-${numColumns}`} // Force re-render when changing columns
       contentContainerStyle={{ 
-        padding: 8,
+        padding: containerPadding,
         paddingBottom: 80, // Extra space for FAB
       }}
-      columnWrapperStyle={numColumns > 1 ? { justifyContent: 'space-around' } : undefined}
+      columnWrapperStyle={numColumns > 1 ? { 
+        justifyContent: 'space-between',
+        paddingHorizontal: 0,
+      } : undefined}
       showsVerticalScrollIndicator={false}
       refreshControl={
         onRefresh ? (
