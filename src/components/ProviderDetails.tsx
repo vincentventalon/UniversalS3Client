@@ -23,6 +23,7 @@ import ObjectDetails from './ObjectDetails';
 import ProviderForm from './ProviderForm';
 import { ImageThumbnail } from './ImageThumbnail';
 import { isImageFile } from '../utils/fileUtils';
+import { GridView } from './GridView';
 
 interface ProviderDetailsProps {
   provider: S3Provider;
@@ -47,6 +48,9 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
   const [selectedObject, setSelectedObject] = useState<S3Object | null>(null);
   const [isMultiSelect, setIsMultiSelect] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  
+  // États pour la vue (liste ou grille)
+  const [viewMode, setViewMode] = useState<'list' | 'grid2' | 'grid3'>('list');
   
   // États pour la copie et le renommage
   const [copiedItem, setCopiedItem] = useState<S3Object | null>(null);
@@ -221,6 +225,24 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
     );
   }
 
+  function handleItemPress(item: S3Object) {
+    if (isMultiSelect) {
+      handleItemSelect(item);
+    } else {
+      item.isFolder ? navigateToFolder(item) : setSelectedObject(item);
+    }
+  }
+
+  function handleItemSelect(item: S3Object) {
+    setSelectedKeys(keys => {
+      const newKeys = keys.includes(item.key)
+        ? keys.filter(k => k !== item.key)
+        : [...keys, item.key];
+      console.log(`Item selection toggled for ${item.key}. New selected keys:`, newKeys);
+      return newKeys;
+    });
+  }
+
   function renderItem({ item }: { item: S3Object }) {
     return (
       <List.Item
@@ -234,15 +256,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
           isMultiSelect ? (
             <Checkbox
               status={selectedKeys.includes(item.key) ? 'checked' : 'unchecked'}
-              onPress={() => {
-                setSelectedKeys(keys => {
-                  const newKeys = keys.includes(item.key)
-                    ? keys.filter(k => k !== item.key)
-                    : [...keys, item.key];
-                  console.log(`Checkbox toggled for ${item.key}. New selected keys:`, newKeys);
-                  return newKeys;
-                });
-              }}
+              onPress={() => handleItemSelect(item)}
             />
           ) : (
             // Show image thumbnail for image files, otherwise show generic icon
@@ -293,19 +307,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
             </View>
           )
         )}
-        onPress={() => {
-          if (isMultiSelect) {
-            setSelectedKeys(keys => {
-              const newKeys = keys.includes(item.key)
-                ? keys.filter(k => k !== item.key)
-                : [...keys, item.key];
-              console.log(`List item pressed for ${item.key}. New selected keys:`, newKeys);
-              return newKeys;
-            });
-          } else {
-            item.isFolder ? navigateToFolder(item) : setSelectedObject(item);
-          }
-        }}
+        onPress={() => handleItemPress(item)}
         style={styles.listItem}
       />
     );
@@ -963,14 +965,39 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
       <View style={styles.bucketContentHeader}>
         <Text style={styles.sectionTitle}>{bucketName}</Text>
         
-        {currentPath && (
-          <IconButton 
-            icon="arrow-up" 
-            size={24} 
-            onPress={navigateBack}
-            style={styles.upButton}
+        <View style={styles.headerRightActions}>
+          {/* View mode toggle buttons */}
+          <IconButton
+            icon="view-list"
+            size={20}
+            selected={viewMode === 'list'}
+            onPress={() => setViewMode('list')}
+            style={[styles.viewToggleButton, viewMode === 'list' && styles.selectedViewButton]}
           />
-        )}
+          <IconButton
+            icon="view-grid"
+            size={20}
+            selected={viewMode === 'grid2'}
+            onPress={() => setViewMode('grid2')}
+            style={[styles.viewToggleButton, viewMode === 'grid2' && styles.selectedViewButton]}
+          />
+          <IconButton
+            icon="apps"
+            size={20}
+            selected={viewMode === 'grid3'}
+            onPress={() => setViewMode('grid3')}
+            style={[styles.viewToggleButton, viewMode === 'grid3' && styles.selectedViewButton]}
+          />
+          
+          {currentPath && (
+            <IconButton 
+              icon="arrow-up" 
+              size={24} 
+              onPress={navigateBack}
+              style={styles.upButton}
+            />
+          )}
+        </View>
       </View>
       
       {renderPathBreadcrumb()}
@@ -998,15 +1025,30 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
           </Card.Content>
         </Card>
       ) : (
-        <FlatList
-          data={objects}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.key}
-          contentContainerStyle={styles.list}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          }
-        />
+        viewMode === 'list' ? (
+          <FlatList
+            data={objects}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.key}
+            contentContainerStyle={styles.list}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+            }
+          />
+        ) : (
+          <GridView
+            data={objects}
+            provider={provider}
+            bucketName={bucketName}
+            selectedKeys={selectedKeys}
+            isMultiSelect={isMultiSelect}
+            viewMode={viewMode}
+            refreshing={refreshing}
+            onItemPress={handleItemPress}
+            onItemSelect={handleItemSelect}
+            onRefresh={handleRefresh}
+          />
+        )
       )}
       
       {renderCreateFolderModal()}
@@ -1176,6 +1218,17 @@ const styles = StyleSheet.create({
   },
   homeButton: {
     marginLeft: 8,
+  },
+  headerRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  viewToggleButton: {
+    margin: 0,
+    marginHorizontal: 2,
+  },
+  selectedViewButton: {
+    backgroundColor: '#E3F2FD',
   },
 });
 
