@@ -576,30 +576,30 @@ export async function copyFileCrossBucket(
       throw new Error('Failed to retrieve source object');
     }
 
-    // Convert the response body to a buffer
-    const chunks: Uint8Array[] = [];
-    const reader = sourceResponse.Body.getReader();
+    // Convert the response body to a buffer for React Native
+    let bodyData: Uint8Array;
     
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      chunks.push(value);
-    }
-    
-    // Combine all chunks into a single Uint8Array
-    const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
-    const combinedArray = new Uint8Array(totalLength);
-    let offset = 0;
-    for (const chunk of chunks) {
-      combinedArray.set(chunk, offset);
-      offset += chunk.length;
+    if (sourceResponse.Body instanceof Uint8Array) {
+      bodyData = sourceResponse.Body;
+    } else if (sourceResponse.Body && typeof sourceResponse.Body.transformToByteArray === 'function') {
+      bodyData = await sourceResponse.Body.transformToByteArray();
+    } else {
+      // Fallback: convert stream to buffer
+      const chunks: Buffer[] = [];
+      const stream = sourceResponse.Body as any;
+      
+      for await (const chunk of stream) {
+        chunks.push(chunk);
+      }
+      
+      bodyData = new Uint8Array(Buffer.concat(chunks));
     }
 
     // Upload to target location
     const putCommand = new PutObjectCommand({
       Bucket: targetBucket,
       Key: targetKey,
-      Body: combinedArray,
+      Body: bodyData,
       ContentType: sourceResponse.ContentType,
       Metadata: sourceResponse.Metadata,
     });
@@ -680,49 +680,3 @@ export async function copyFolderCrossBucket(
     throw error;
   }
 }
-
-/**
- * Move a file from one bucket to another (cross-bucket move)
- */
-export async function moveFileCrossBucket(
-  sourceProvider: S3Provider,
-  sourceBucket: string,
-  sourceKey: string,
-  targetProvider: S3Provider,
-  targetBucket: string,
-  targetKey: string
-): Promise<void> {
-  try {
-    // First copy the file to the target location
-    await copyFileCrossBucket(sourceProvider, sourceBucket, sourceKey, targetProvider, targetBucket, targetKey);
-    
-    // Then delete the original file
-    await deleteObject(sourceProvider, sourceBucket, sourceKey);
-  } catch (error) {
-    console.error('Error moving file cross-bucket:', error);
-    throw error;
-  }
-}
-
-/**
- * Move a folder from one bucket to another (cross-bucket move)
- */
-export async function moveFolderCrossBucket(
-  sourceProvider: S3Provider,
-  sourceBucket: string,
-  sourceFolderKey: string,
-  targetProvider: S3Provider,
-  targetBucket: string,
-  targetFolderKey: string
-): Promise<void> {
-  try {
-    // First copy the folder to the target location
-    await copyFolderCrossBucket(sourceProvider, sourceBucket, sourceFolderKey, targetProvider, targetBucket, targetFolderKey);
-    
-    // Then delete the original folder
-    await deleteFolder(sourceProvider, sourceBucket, sourceFolderKey);
-  } catch (error) {
-    console.error('Error moving folder cross-bucket:', error);
-    throw error;
-  }
-} 

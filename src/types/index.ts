@@ -56,7 +56,6 @@ export interface CrossBucketClipboard {
   item: S3Object;
   sourceProvider: S3Provider;
   sourceBucket: string;
-  operation: 'copy' | 'cut';
 }
 
 // Provider configuration for regions and endpoints

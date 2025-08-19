@@ -17,7 +17,7 @@ import {
   Checkbox
 } from 'react-native-paper';
 import { S3Provider, S3Object } from '../types';
-import { listBucketObjects, getObjectUrl, createEmptyObject, uploadFile, deleteObject, deleteFolder, copyFolder, renameFolder, copyFile, renameFile, copyFileCrossBucket, copyFolderCrossBucket, moveFileCrossBucket, moveFolderCrossBucket } from '../services/s3Service';
+import { listBucketObjects, getObjectUrl, createEmptyObject, uploadFile, deleteObject, deleteFolder, copyFolder, renameFolder, copyFile, renameFile, copyFileCrossBucket, copyFolderCrossBucket } from '../services/s3Service';
 import { useClipboard } from '../context/ClipboardContext';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
@@ -270,12 +270,6 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
   }
 
   function renderItem({ item }: { item: S3Object }) {
-    // Check if this item is currently cut (in clipboard for move operation)
-    const isItemCut = clipboardData?.operation === 'cut' && 
-                      clipboardData?.item.key === item.key &&
-                      clipboardData?.sourceProvider.id === provider.id &&
-                      clipboardData?.sourceBucket === bucketName;
-    
     return (
       <List.Item
         title={item.name}
@@ -328,14 +322,6 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
               />
               <IconButton
                 {...props}
-                icon="content-cut"
-                iconColor="#9C27B0"
-                size={16}
-                onPress={() => handleCutItem(item)}
-                style={{ marginHorizontal: 0 }}
-              />
-              <IconButton
-                {...props}
                 icon="delete"
                 iconColor="#FF5252"
                 size={20}
@@ -348,7 +334,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
           )
         )}
         onPress={() => handleItemPress(item)}
-        style={[styles.listItem, isItemCut && styles.cutItem]}
+        style={styles.listItem}
       />
     );
   }
@@ -456,31 +442,13 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
     setClipboardData({
       item,
       sourceProvider: provider,
-      sourceBucket: bucketName,
-      operation: 'copy'
+      sourceBucket: bucketName
     });
     
     const itemType = item.isFolder ? 'dossier' : 'fichier';
     Alert.alert(
       `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} copié`, 
       `Le ${itemType} "${item.name}" a été copié et peut être collé dans n'importe quel bucket.`
-    );
-  }
-
-  function handleCutItem(item: S3Object) {
-    // Clear local clipboard and set global clipboard for cut operation
-    setCopiedItem(null);
-    setClipboardData({
-      item,
-      sourceProvider: provider,
-      sourceBucket: bucketName,
-      operation: 'cut'
-    });
-    
-    const itemType = item.isFolder ? 'dossier' : 'fichier';
-    Alert.alert(
-      `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} coupé`, 
-      `Le ${itemType} "${item.name}" a été coupé et peut être déplacé vers n'importe quel bucket.`
     );
   }
 
@@ -516,58 +484,32 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
           (clipboardData.sourceProvider.id !== provider.id || 
            clipboardData.sourceBucket !== bucketName)) {
         
-        // Cross-bucket operation
+        // Cross-bucket copy operation
         const sourceProvider = clipboardData.sourceProvider;
         const sourceBucket = clipboardData.sourceBucket;
         
         if (itemToPaste.isFolder) {
-          if (clipboardData.operation === 'copy') {
-            await copyFolderCrossBucket(
-              sourceProvider,
-              sourceBucket,
-              itemToPaste.key,
-              provider,
-              bucketName,
-              targetKey
-            );
-          } else {
-            await moveFolderCrossBucket(
-              sourceProvider,
-              sourceBucket,
-              itemToPaste.key,
-              provider,
-              bucketName,
-              targetKey
-            );
-          }
+          await copyFolderCrossBucket(
+            sourceProvider,
+            sourceBucket,
+            itemToPaste.key,
+            provider,
+            bucketName,
+            targetKey
+          );
         } else {
-          if (clipboardData.operation === 'copy') {
-            await copyFileCrossBucket(
-              sourceProvider,
-              sourceBucket,
-              itemToPaste.key,
-              provider,
-              bucketName,
-              targetKey
-            );
-          } else {
-            await moveFileCrossBucket(
-              sourceProvider,
-              sourceBucket,
-              itemToPaste.key,
-              provider,
-              bucketName,
-              targetKey
-            );
-          }
+          await copyFileCrossBucket(
+            sourceProvider,
+            sourceBucket,
+            itemToPaste.key,
+            provider,
+            bucketName,
+            targetKey
+          );
         }
         
-        // Clear global clipboard after cross-bucket operation
-        clearClipboard();
-        
-        const operation = clipboardData.operation === 'copy' ? 'copié' : 'déplacé';
         const sourceInfo = `depuis ${sourceProvider.name}`;
-        Alert.alert('Succès', `Le ${itemType} "${itemToPaste.name}" a été ${operation} ${sourceInfo} avec succès.`);
+        Alert.alert('Succès', `Le ${itemType} "${itemToPaste.name}" a été copié ${sourceInfo} avec succès.`);
         
       } else {
         // Local operation (same bucket) - use existing logic
@@ -755,12 +697,11 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         (clipboardData.sourceProvider.id !== provider.id || 
          clipboardData.sourceBucket !== bucketName);
       
-      const operation = clipboardData?.operation === 'cut' ? 'Move' : 'Paste';
       const sourceInfo = isCrossBucket ? ` from ${clipboardData!.sourceProvider.name}` : '';
       
       actions.unshift({
-        icon: clipboardData?.operation === 'cut' ? 'content-cut' : 'content-paste',
-        label: `${operation} "${itemToPaste.name}" (${itemType})${sourceInfo}`,
+        icon: 'content-paste',
+        label: `Paste "${itemToPaste.name}" (${itemType})${sourceInfo}`,
         onPress: handlePasteItem,
       });
     }
