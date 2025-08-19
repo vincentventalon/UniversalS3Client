@@ -1,219 +1,219 @@
-# Universal S3 Client - Documentation complète des fonctionnalités
+# Universal S3 Client - Complete Feature Documentation
 
-## Vue d'ensemble
-Universal S3 Client est une application React Native qui permet de gérer des buckets de stockage compatibles S3 de différents fournisseurs cloud. L'application offre une interface unifiée pour accéder, gérer et manipuler des objets stockés dans des services de stockage S3-compatibles.
+## Overview
+Universal S3 Client is a React Native application that allows managing S3-compatible storage buckets from different cloud providers. The application offers a unified interface to access, manage, and manipulate objects stored in S3-compatible storage services.
 
-## Fonctionnalités principales
+## Main Features
 
-### 1. Sécurité du stockage
+### 1. Storage Security
 
-- **Chiffrement au repos** : Les credentials (access key, secret key) sont stockées avec Expo SecureStore (Keychain/Keystore)
-- **Stockage local uniquement** : Aucune donnée sensible n'est transmise à des serveurs distants
+- **Encryption at Rest**: Credentials (access key, secret key) are stored with Expo SecureStore (Keychain/Keystore)
+- **Local Storage Only**: No sensitive data is transmitted to remote servers
 
-### 2. Support multi-providers S3
+### 2. Multi-provider S3 Support
 
-#### 14 providers supportés
-1. **AWS S3** - 33 régions mondiales
+#### 14 Supported Providers
+1. **AWS S3** - 33 global regions
 2. **Hetzner Storage Box** - 3 locations (Falkenstein, Helsinki, Ashburn)
-3. **Cloudflare R2** - Région automatique + hints de localisation
-4. **DigitalOcean Spaces** - 5 régions
-5. **Wasabi** - 6 régions
-6. **Backblaze B2** - 3 régions
-7. **Scaleway Object Storage** - 3 régions
-8. **Vultr Object Storage** - 6 régions
-9. **Linode Object Storage** - 3 régions
-10. **Oracle Cloud Infrastructure** - 11 régions
-11. **IBM Cloud Object Storage** - 9 régions
-12. **Google Cloud Storage** - Regions globales
-13. **Azure Blob Storage** - Régions Azure
-14. **MinIO** - Endpoints personnalisés
+3. **Cloudflare R2** - Automatic region + location hints
+4. **DigitalOcean Spaces** - 5 regions
+5. **Wasabi** - 6 regions
+6. **Backblaze B2** - 3 regions
+7. **Scaleway Object Storage** - 3 regions
+8. **Vultr Object Storage** - 6 regions
+9. **Linode Object Storage** - 3 regions
+10. **Oracle Cloud Infrastructure** - 11 regions
+11. **IBM Cloud Object Storage** - 9 regions
+12. **Google Cloud Storage** - Global regions
+13. **Azure Blob Storage** - Azure regions
+14. **MinIO** - Custom endpoints
 
-#### Configuration spécifique par provider
+#### Provider-specific Configuration
 - **Account ID** (Cloudflare R2)
 - **Namespace** (Oracle OCI)
 - **Location Hints** (Cloudflare R2)
 - **Cluster ID** (Linode)
 - **Custom Endpoints** (MinIO)
 
-### 3. Gestion des providers
+### 3. Provider Management
 
-#### Ajout de providers
-- **Formulaire dynamique** : Interface adaptée selon le provider sélectionné
-- **Validation en temps réel** : Vérification des champs obligatoires
-- **Aperçu endpoint** : Génération automatique de l'URL d'endpoint
-- **Test de connexion** : Validation des credentials avant sauvegarde
+#### Adding Providers
+- **Dynamic Form**: Interface adapted according to selected provider
+- **Real-time Validation**: Verification of required fields
+- **Endpoint Preview**: Automatic generation of endpoint URL
+- **Connection Test**: Credential validation before saving
 
-#### Liste des providers
-- **Affichage organisé** : Vue en liste avec informations essentielles
-- **Extraction automatique** : Nom du bucket extrait du nom du provider
-- **Gestion des erreurs** : Affichage des erreurs de connexion
-- **Actions rapides** : Suppression directe depuis la liste
+#### Provider List
+- **Organized Display**: List view with essential information
+- **Automatic Extraction**: Bucket name extracted from provider name
+- **Error Handling**: Display of connection errors
+- **Quick Actions**: Direct deletion from list
 
-#### Modification des providers
-- **Édition complète** : Modification de tous les paramètres
-- **Pré-remplissage sécurisé** : Masquage des mots de passe existants
-- **Validation** : Vérification des nouvelles credentials
+#### Provider Modification
+- **Complete Editing**: Modification of all parameters
+- **Secure Pre-filling**: Masking of existing passwords
+- **Validation**: Verification of new credentials
 
-### 4. Navigation et exploration des buckets
+### 4. Bucket Navigation and Exploration
 
-#### Interface de navigation
-- **Navigation hiérarchique** : Support des dossiers et sous-dossiers
-- **Breadcrumb navigation** : Historique de navigation avec retour niveau par niveau
-- **Indicateurs visuels** : Distinction claire entre dossiers et fichiers
-- **Gestion des chemins** : Support des chemins complexes avec caractères spéciaux
+#### Navigation Interface
+- **Hierarchical Navigation**: Support for folders and subfolders
+- **Breadcrumb Navigation**: Navigation history with level-by-level return
+- **Visual Indicators**: Clear distinction between folders and files
+- **Path Management**: Support for complex paths with special characters
 
-#### Affichage des objets
-- **Liste détaillée** : Nom, taille, date de modification
-- **Icônes distinctives** : Différenciation visuelle dossiers/fichiers
-- **Tri intelligent** : Dossiers en premier, puis fichiers par nom
-- **Actualisation** : Pull-to-refresh pour synchroniser les données
+#### Object Display
+- **Detailed List**: Name, size, modification date
+- **Distinctive Icons**: Visual differentiation of folders/files
+- **Smart Sorting**: Folders first, then files by name
+- **Refresh**: Pull-to-refresh to synchronize data
 
-### 5. Gestion des fichiers et dossiers
+### 5. File and Folder Management
 
-#### Upload de fichiers
-- **Multi-sources** : Documents, images depuis la galerie ou appareil photo
-- **Barre de progression** : Suivi en temps réel de l'upload
-- **Support de gros fichiers** : Utilisation d'Upload multipart pour les gros fichiers
-- **Gestion d'erreurs** : Retry automatique et messages d'erreur détaillés
+#### File Upload
+- **Multi-sources**: Documents, images from gallery or camera
+- **Progress Bar**: Real-time upload tracking
+- **Large File Support**: Use of multipart upload for large files
+- **Error Handling**: Automatic retry and detailed error messages
 
-#### Création de dossiers
-- **Interface modale** : Création rapide avec validation du nom
-- **Validation** : Vérification des caractères autorisés
-- **Création immédiate** : Ajout instantané à la liste
+#### Folder Creation
+- **Modal Interface**: Quick creation with name validation
+- **Validation**: Verification of allowed characters
+- **Immediate Creation**: Instant addition to list
 
-#### Opérations sur les objets
-- **Suppression** : Fichiers individuels ou dossiers complets avec récursion
-- **Copie de dossiers** : Duplication complète avec préservation de la structure
-- **Renommage** : Modification du nom avec validation
-- **Sélection multiple** : Mode multi-sélection pour opérations en lot
+#### Object Operations
+- **Deletion**: Individual files or complete folders with recursion
+- **Folder Copy**: Complete duplication with structure preservation
+- **Renaming**: Name modification with validation
+- **Multiple Selection**: Multi-selection mode for batch operations
 
-### 6. Détails des objets
+### 6. Object Details
 
-#### Informations complètes
-- **Métadonnées** : Taille, date de modification, chemin complet
-- **URL signée** : Génération de liens de partage temporaires
-- **Actions rapides** : Copie du chemin, partage, suppression
+#### Complete Information
+- **Metadata**: Size, modification date, full path
+- **Signed URL**: Generation of temporary sharing links
+- **Quick Actions**: Path copy, sharing, deletion
 
-#### Partage et liens
-- **URL signées** : Génération d'URLs avec expiration pour partage sécurisé
-- **Copie vers presse-papier** : Actions de copie rapide
-- **Partage natif** : Intégration avec le système de partage de l'OS
+#### Sharing and Links
+- **Signed URLs**: Generation of URLs with expiration for secure sharing
+- **Clipboard Copy**: Quick copy actions
+- **Native Sharing**: Integration with OS sharing system
 
-### 7. Interface utilisateur
+### 7. User Interface
 
-#### Design moderne
-- **Material Design** : Interface basée sur React Native Paper
-- **Thème cohérent** : Couleurs et typographie harmonieuses
-- **Animations fluides** : Transitions et feedback visuels
-- **Responsive** : Adaptation aux différentes tailles d'écran
+#### Modern Design
+- **Material Design**: Interface based on React Native Paper
+- **Consistent Theme**: Harmonious colors and typography
+- **Smooth Animations**: Transitions and visual feedback
+- **Responsive**: Adaptation to different screen sizes
 
-#### Navigation intuitive
-- **FAB (Floating Action Button)** : Actions principales accessibles rapidement
-- **Menu contextuel** : Options spécifiques par contexte
-- **Boutons d'action** : Placement logique et accessible
+#### Intuitive Navigation
+- **FAB (Floating Action Button)**: Main actions quickly accessible
+- **Contextual Menu**: Context-specific options
+- **Action Buttons**: Logical and accessible placement
 
-### 8. Gestion des erreurs et états
+### 8. Error Handling and States
 
-#### Détection de connectivité
-- **État hors ligne** : Détection automatique et notification
-- **Retry intelligent** : Tentatives automatiques lors du retour de connexion
-- **Messages contextuels** : Erreurs spécifiques selon le problème
+#### Connectivity Detection
+- **Offline State**: Automatic detection and notification
+- **Smart Retry**: Automatic attempts when connection returns
+- **Contextual Messages**: Specific errors according to problem
 
-#### Gestion des erreurs S3
-- **Erreurs d'authentification** : Messages clairs pour les credentials invalides
-- **Erreurs de permissions** : Information sur les droits insuffisants
-- **Timeouts** : Gestion des délais d'attente réseau
+#### S3 Error Handling
+- **Authentication Errors**: Clear messages for invalid credentials
+- **Permission Errors**: Information about insufficient rights
+- **Timeouts**: Network timeout handling
 
-### 9. Configuration et paramètres
+### 9. Configuration and Settings
 
-#### Écran de paramètres
-- **Informations application** : Version, credits, liens
-- **Reset complet** : Remise à zéro avec confirmation
-- **Liens externes** : GitHub, réseaux sociaux, stores
+#### Settings Screen
+- **Application Information**: Version, credits, links
+- **Complete Reset**: Reset with confirmation
+- **External Links**: GitHub, social networks, stores
 
-#### Gestion des données
-- **Stockage local** : Persistence des données utilisateur
-- **Sauvegarde sécurisée** : Export/import des configurations
-- **Nettoyage** : Suppression sélective des données
+#### Data Management
+- **Local Storage**: User data persistence
+- **Secure Backup**: Configuration export/import
+- **Cleanup**: Selective data deletion
 
-### 10. Fonctionnalités avancées
+### 10. Advanced Features
 
-#### Compatibilité AWS SDK
-- **Version fixe** : AWS SDK v3.188.0 pour compatibilité Hetzner
-- **Path-style URLs** : Support des providers non-AWS
-- **Multipart upload** : Gestion optimisée des gros fichiers
+#### AWS SDK Compatibility
+- **Fixed Version**: AWS SDK v3.188.0 for Hetzner compatibility
+- **Path-style URLs**: Support for non-AWS providers
+- **Multipart Upload**: Optimized handling of large files
 
-#### Optimisations performance
-- **Chargement asynchrone** : Pagination automatique des listes d'objets
-- **Cache intelligent** : Mise en cache des métadonnées fréquemment utilisées
-- **Lazy loading** : Chargement à la demande des ressources
+#### Performance Optimizations
+- **Asynchronous Loading**: Automatic pagination of object lists
+- **Smart Cache**: Caching of frequently used metadata
+- **Lazy Loading**: On-demand resource loading
 
-## Architecture technique
+## Technical Architecture
 
-### Structure du code
+### Code Structure
 ```
 src/
-├── components/          # Composants React Native
-├── services/           # Services métier (S3, stockage, etc.)
-├── config/            # Configuration providers
-├── types/             # Types TypeScript
-└── utils/             # Utilitaires
+├── components/          # React Native components
+├── services/           # Business services (S3, storage, etc.)
+├── config/            # Provider configuration
+├── types/             # TypeScript types
+└── utils/             # Utilities
 ```
 
-### Technologies utilisées
-- **React Native** 0.76.9 - Framework mobile
-- **TypeScript** - Typage statique
-- **React Native Paper** - Composants Material Design
-- **AWS SDK v3** - Client S3
-- **Expo** - Plateforme de développement
-- **Expo Secure Store** - Stockage sécurisé
+### Technologies Used
+- **React Native** 0.76.9 - Mobile framework
+- **TypeScript** - Static typing
+- **React Native Paper** - Material Design components
+- **AWS SDK v3** - S3 client
+- **Expo** - Development platform
+- **Expo Secure Store** - Secure storage
 
-## Roadmap et améliorations futures
+## Roadmap and Future Improvements
 
-### Fonctionnalités prévues
-- **Synchronisation** : Sync bidirectionnelle avec stockage local
-- **Recherche avancée** : Recherche globale dans tous les buckets
-- **Prévisualisation** : Aperçu des images et documents
-- **Notifications** : Alerts pour uploads/downloads terminés
-- **Partage collaboratif** : Liens de partage avec permissions
+### Planned Features
+- **Synchronization**: Bidirectional sync with local storage
+- **Advanced Search**: Global search across all buckets
+- **Preview**: Preview of images and documents
+- **Notifications**: Alerts for completed uploads/downloads
+- **Collaborative Sharing**: Sharing links with permissions
 
-### Optimisations techniques
-- **Compression** : Compression automatique avant upload
-- **Parallélisation** : Uploads/downloads simultanés
-- **Delta sync** : Synchronisation différentielle
-- **Offline mode** : Mode hors ligne avec queue d'actions
+### Technical Optimizations
+- **Compression**: Automatic compression before upload
+- **Parallelization**: Simultaneous uploads/downloads
+- **Delta Sync**: Differential synchronization
+- **Offline Mode**: Offline mode with action queue
 
-## Sécurité et conformité
+## Security and Compliance
 
-### Mesures de sécurité
-- **Chiffrement au repos** : Données sensibles protégées via Expo SecureStore
-- **Aucun stockage distant** : Credentials stockées uniquement localement
-- **Sessions sécurisées** : Tokens temporaires pour API
-- **Validation stricte** : Sanitisation de tous les inputs
+### Security Measures
+- **Encryption at Rest**: Sensitive data protected via Expo SecureStore
+- **No Remote Storage**: Credentials stored locally only
+- **Secure Sessions**: Temporary tokens for API
+- **Strict Validation**: Sanitization of all inputs
 
-### Conformité
-- **RGPD** : Respect de la vie privée, aucune collecte de données
-- **Stockage local** : Contrôle total des données par l'utilisateur
-- **Open source** : Code source disponible pour audit
+### Compliance
+- **GDPR**: Privacy respect, no data collection
+- **Local Storage**: Complete user control of data
+- **Open Source**: Source code available for audit
 
-## Support et maintenance
+## Support and Maintenance
 
-### Versions supportées
-- **iOS** : 13.0+
-- **Android** : API 21+ (Android 5.0)
-- **Expo SDK** : 52.x
+### Supported Versions
+- **iOS**: 13.0+
+- **Android**: API 21+ (Android 5.0)
+- **Expo SDK**: 52.x
 
-### Compatibility matrix
+### Compatibility Matrix
 | Provider | Upload | Download | Delete | Rename | Copy |
 |----------|--------|----------|--------|--------|------|
 | AWS S3 | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Hetzner | ✅* | ✅ | ✅ | ✅ | ✅ |
 | Cloudflare R2 | ✅ | ✅ | ✅ | ✅ | ✅ |
 | DigitalOcean | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Autres | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Others | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 *Requires AWS SDK v3.188.0 or lower for Hetzner compatibility
 
 ## Conclusion
 
-Universal S3 Client représente une solution complète et sécurisée pour la gestion de stockage S3 multi-providers. L'application combine simplicité d'utilisation et fonctionnalités avancées, tout en maintenant des standards de sécurité solides grâce à l'encryption au repos via les keystores natifs.
+Universal S3 Client represents a complete and secure solution for multi-provider S3 storage management. The application combines ease of use with advanced features while maintaining solid security standards through encryption at rest via native keystores.

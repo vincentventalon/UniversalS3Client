@@ -3,8 +3,8 @@ import { S3Client, ListBucketsCommand, ListObjectsV2Command, PutObjectCommand, D
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
-// Nous n'avons plus besoin du polyfill manuel, car nous utilisons 
-// react-native-get-random-values qui est importé dans src/utils/polyfills.ts
+// We no longer need the manual polyfill, as we use 
+// react-native-get-random-values which is imported in src/utils/polyfills.ts
 
 /**
  * Create a simple ID generator
@@ -36,18 +36,18 @@ function createS3Client(provider: S3Provider): S3Client {
 }
 
 /**
- * Liste les buckets du fournisseur S3
+ * List buckets from S3 provider
  */
 export async function listBuckets(provider: S3Provider): Promise<Bucket[]> {
   try {
-    // Pour un usage réel, lister les buckets via SDK
+    // For real usage, list buckets via SDK
     const client = createS3Client(provider);
     const command = new ListBucketsCommand({});
     
     const response = await client.send(command);
     
     if (!response.Buckets || response.Buckets.length === 0) {
-      // Si aucun bucket trouvé, renvoyer le bucket par défaut
+      // If no bucket found, return the default bucket
       const defaultBucket = extractBucketName(provider);
       return [{
         name: defaultBucket,
@@ -66,7 +66,7 @@ export async function listBuckets(provider: S3Provider): Promise<Bucket[]> {
   } catch (error) {
     console.error('Error listing buckets:', error);
     
-    // En cas d'erreur, renvoyer un bucket par défaut
+    // In case of error, return a default bucket
     const defaultBucket = extractBucketName(provider);
     return [{
       name: defaultBucket,
@@ -78,7 +78,7 @@ export async function listBuckets(provider: S3Provider): Promise<Bucket[]> {
 }
 
 /**
- * Liste les objets dans un bucket
+ * List objects in a bucket
  */
 export async function listBucketObjects(
   provider: S3Provider,
@@ -99,7 +99,7 @@ export async function listBucketObjects(
     const response = await client.send(command);
     const objects: S3Object[] = [];
     
-    // Traiter les dossiers (CommonPrefixes)
+    // Process folders (CommonPrefixes)
     if (response.CommonPrefixes) {
       for (const commonPrefix of response.CommonPrefixes) {
         if (commonPrefix.Prefix) {
@@ -120,18 +120,18 @@ export async function listBucketObjects(
       }
     }
     
-    // Traiter les fichiers (Contents)
+    // Process files (Contents)
     if (response.Contents) {
       for (const content of response.Contents) {
         if (content.Key && content.Key !== prefix) {
           const fileName = content.Key.replace(prefix, '');
           
-          // Ignorer les fichiers vides ou qui font partie des dossiers déjà traités
+          // Ignore empty files or those that are part of already processed folders
           if (!fileName || objects.some(o => o.isFolder && content.Key?.startsWith(o.key))) {
             continue;
           }
           
-          // Si le nom se termine par '/', c'est un dossier
+          // If the name ends with '/', it's a folder
           if (fileName.endsWith('/')) {
             const folderName = fileName.slice(0, -1);
             objects.push({
@@ -334,7 +334,7 @@ export async function deleteFolder(provider: S3Provider, bucketName: string, fol
 }
 
 /**
- * Lister tous les objets dans un dossier de façon récursive (sans délimiteur)
+ * List all objects in a folder recursively (without delimiter)
  */
 async function listAllObjectsRecursively(
   provider: S3Provider,
@@ -350,7 +350,7 @@ async function listAllObjectsRecursively(
       const command = new ListObjectsV2Command({
         Bucket: bucketName,
         Prefix: prefix,
-        // Pas de délimiteur pour avoir tous les objets récursivement
+        // No delimiter to get all objects recursively
         ContinuationToken: continuationToken
       });
       
@@ -362,7 +362,7 @@ async function listAllObjectsRecursively(
             const key = content.Key;
             const name = key.split('/').pop() || key;
             
-            // Si le nom se termine par '/', c'est un dossier
+            // If the name ends with '/', it's a folder
             if (key.endsWith('/')) {
               objects.push({
                 key: key,
@@ -397,7 +397,7 @@ async function listAllObjectsRecursively(
 }
 
 /**
- * Copier un dossier et tout son contenu de façon récursive
+ * Copy a folder and all its content recursively
  */
 export async function copyFolder(
   provider: S3Provider,
@@ -459,7 +459,7 @@ export async function copyFolder(
 }
 
 /**
- * Renommer un dossier et tout son contenu de façon récursive
+ * Rename a folder and all its content recursively
  */
 export async function renameFolder(
   provider: S3Provider,
@@ -481,7 +481,7 @@ export async function renameFolder(
 }
 
 /**
- * Générer une URL signée pour un objet (AWS ou Hetzner)
+ * Generate a signed URL for an object (AWS or Hetzner)
  */
 export async function getSignedObjectUrl(
   provider: S3Provider,
