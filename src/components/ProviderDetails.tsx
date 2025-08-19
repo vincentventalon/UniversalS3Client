@@ -51,14 +51,14 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
   const [isMultiSelect, setIsMultiSelect] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   
-  // États pour la vue (liste ou grille)
+  // States for view (list or grid)
   const [viewMode, setViewMode] = useState<'list' | 'grid2' | 'grid3'>('list');
   const [showTitlesInGrid, setShowTitlesInGrid] = useState(true);
   
   // Use global clipboard context for cross-bucket functionality
   const { clipboardData, setClipboardData, clearClipboard, hasClipboardData } = useClipboard();
   
-  // États pour la copie et le renommage
+  // States for copying and renaming
   const [copiedItem, setCopiedItem] = useState<S3Object | null>(null);
   const [isRenameModalVisible, setIsRenameModalVisible] = useState(false);
   const [itemToRename, setItemToRename] = useState<S3Object | null>(null);
@@ -178,7 +178,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
   }
 
   function renderPathBreadcrumb() {
-    // Créer un tableau des segments du chemin
+    // Create an array of path segments
     const pathSegments = currentPath ? currentPath.split('/').filter(segment => segment !== '') : [];
     
     return (
@@ -194,7 +194,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         </TouchableOpacity>
         
         {pathSegments.map((segment, index) => {
-          // Calculer le chemin jusqu'à ce segment
+          // Calculate the path up to this segment
           const pathToSegment = pathSegments.slice(0, index + 1).join('/') + '/';
           
           return (
@@ -202,11 +202,11 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
               <Text style={styles.breadcrumbSeparator}>/</Text>
               <TouchableOpacity 
                 onPress={() => {
-                  // Naviguer vers ce segment du chemin
+                  // Navigate to this path segment
                   const newPathHistory = [];
                   let tempPath = '';
                   
-                  // Reconstruire l'historique jusqu'à ce segment
+                  // Rebuild history up to this segment
                   for (let i = 0; i < index; i++) {
                     newPathHistory.push(tempPath);
                     tempPath = tempPath ? `${tempPath}${pathSegments[i]}/` : `${pathSegments[i]}/`;
@@ -435,7 +435,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
     }
   }
 
-  // Fonctions pour la copie et le renommage d'éléments (dossiers et fichiers)
+  // Functions for copying and renaming elements (folders and files)
   async function handleCopyItem(item: S3Object) {
     // Set both local and global clipboard for cross-bucket functionality
     setCopiedItem(item);
@@ -452,10 +452,10 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
       console.error('Error copying path to clipboard:', error);
     }
     
-    const itemType = item.isFolder ? 'dossier' : 'fichier';
+    const itemType = item.isFolder ? 'folder' : 'file';
     Alert.alert(
-      `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} copié`, 
-      `Le ${itemType} "${item.name}" a été copié et peut être collé dans n'importe quel bucket. Le chemin a aussi été copié dans le presse-papiers.`
+      `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} copied`, 
+      `The ${itemType} "${item.name}" has been copied and can be pasted in any bucket. The path has also been copied to the clipboard.`
     );
   }
 
@@ -464,7 +464,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
     const itemToPaste = clipboardData?.item || copiedItem;
     if (!itemToPaste) return;
 
-    const itemType = itemToPaste.isFolder ? 'dossier' : 'fichier';
+    const itemType = itemToPaste.isFolder ? 'folder' : 'file';
     const newItemName = `${itemToPaste.name}_copy`;
     
     let targetKey: string;
@@ -515,8 +515,8 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
           );
         }
         
-        const sourceInfo = `depuis ${sourceProvider.name}`;
-        Alert.alert('Succès', `Le ${itemType} "${itemToPaste.name}" a été copié ${sourceInfo} avec succès.`);
+        const sourceInfo = `from ${sourceProvider.name}`;
+        Alert.alert('Success', `The ${itemType} "${itemToPaste.name}" has been copied ${sourceInfo} successfully.`);
         
       } else {
         // Local operation (same bucket) - use existing logic
@@ -526,16 +526,16 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
           await copyFile(provider, bucketName, itemToPaste.key, targetKey);
         }
         
-        Alert.alert('Succès', `Le ${itemType} "${itemToPaste.name}" a été collé avec succès.`);
+        Alert.alert('Success', `The ${itemType} "${itemToPaste.name}" has been pasted successfully.`);
         setCopiedItem(null);
       }
       
-      // Rafraîchir la liste des objets
+      // Refresh the object list
       await loadBucketObjects();
       
     } catch (error) {
       console.error(`Failed to paste ${itemType}:`, error);
-      Alert.alert('Erreur', `Impossible de coller le ${itemType}. Veuillez réessayer.`);
+      Alert.alert('Error', `Unable to paste the ${itemType}. Please try again.`);
     } finally {
       setLoading(false);
     }
@@ -549,8 +549,8 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
 
   async function handleRenameItem() {
     if (!itemToRename || !newItemNameForRename.trim()) {
-      const itemType = itemToRename?.isFolder ? 'dossier' : 'fichier';
-      Alert.alert('Erreur', `Veuillez entrer un nom de ${itemType} valide`);
+      const itemType = itemToRename?.isFolder ? 'folder' : 'file';
+      Alert.alert('Error', `Please enter a valid ${itemType} name`);
       return;
     }
 
@@ -564,7 +564,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
       
       const oldKey = itemToRename.key;
       let newKey: string;
-      const itemType = itemToRename.isFolder ? 'dossier' : 'fichier';
+      const itemType = itemToRename.isFolder ? 'folder' : 'file';
       
       if (itemToRename.isFolder) {
         newKey = currentPath 
@@ -578,17 +578,17 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         await renameFile(provider, bucketName, oldKey, newKey);
       }
       
-      // Rafraîchir la liste des objets
+      // Refresh the object list
       await loadBucketObjects();
       
-      Alert.alert('Succès', `Le ${itemType} a été renommé en "${newItemNameForRename}".`);
+      Alert.alert('Success', `The ${itemType} has been renamed to "${newItemNameForRename}".`);
       setIsRenameModalVisible(false);
       setItemToRename(null);
       setNewItemNameForRename('');
     } catch (error) {
-      const itemType = itemToRename?.isFolder ? 'dossier' : 'fichier';
+      const itemType = itemToRename?.isFolder ? 'folder' : 'file';
       console.error(`Failed to rename ${itemType}:`, error);
-      Alert.alert('Erreur', `Impossible de renommer le ${itemType}. Veuillez réessayer.`);
+      Alert.alert('Error', `Unable to rename the ${itemType}. Please try again.`);
     } finally {
       setLoading(false);
     }

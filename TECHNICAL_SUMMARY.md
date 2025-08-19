@@ -1,33 +1,33 @@
-# Universal S3 Client - Résumé technique détaillé
+# Universal S3 Client - Detailed Technical Summary
 
-## Analyse de l'architecture
+## Architecture Analysis
 
-### Vue d'ensemble technique
-Universal S3 Client est une application React Native développée avec TypeScript qui utilise l'AWS SDK v3 pour interagir avec 14 providers de stockage S3-compatibles. L'architecture suit les principes de séparation des responsabilités avec une structure modulaire claire.
+### Technical Overview
+Universal S3 Client is a React Native application developed with TypeScript that uses AWS SDK v3 to interact with 14 S3-compatible storage providers. The architecture follows separation of concerns principles with a clear modular structure.
 
-## Structure des composants
+## Component Structure
 
-### 1. Composant principal (App.tsx)
-**Responsabilités :**
-- Gestion de l'état global de l'application
-- Orchestration des différents écrans et modales
-- Gestion de la connectivité réseau
-- Coordination des opérations CRUD sur les providers
+### 1. Main Component (App.tsx)
+**Responsibilities:**
+- Global application state management
+- Orchestration of different screens and modals
+- Network connectivity management
+- Coordination of CRUD operations on providers
 
-**États gérés :**
+**Managed States:**
 ```typescript
 const [providers, setProviders] = useState<S3Provider[]>([]);
 const [selectedProvider, setSelectedProvider] = useState<S3Provider | null>(null);
 const [loading, setLoading] = useState(false);
 const [isFormVisible, setIsFormVisible] = useState(false);
 const [isOffline, setIsOffline] = useState(false);
-// + états pour les champs du formulaire provider
+// + states for provider form fields
 ```
 
-### 2. Gestion des providers (ProviderForm.tsx)
-**Architecture dynamique :**
+### 2. Provider Management (ProviderForm.tsx)
+**Dynamic Architecture:**
 ```typescript
-// Configuration adaptée par provider
+// Configuration adapted per provider
 const config = getProviderConfig(type);
 const endpoint = generateEndpoint({
   type,
@@ -38,13 +38,13 @@ const endpoint = generateEndpoint({
 });
 ```
 
-**Validation en temps réel :**
-- Champs obligatoires selon le provider
-- Format des endpoints
-- Validation des credentials
+**Real-time Validation:**
+- Required fields according to provider
+- Endpoint format validation
+- Credential validation
 
-### 3. Navigation des buckets (ProviderDetails.tsx)
-**Gestion complexe des états :**
+### 3. Bucket Navigation (ProviderDetails.tsx)
+**Complex State Management:**
 ```typescript
 const [currentPath, setCurrentPath] = useState('');
 const [pathHistory, setPathHistory] = useState<string[]>([]);
@@ -52,23 +52,23 @@ const [isMultiSelect, setIsMultiSelect] = useState(false);
 const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 ```
 
-**Fonctionnalités avancées :**
-- Navigation breadcrumb avec historique
-- Sélection multiple d'objets
-- Upload avec progress tracking
-- Opérations batch (suppression, copie)
+**Advanced Features:**
+- Breadcrumb navigation with history
+- Multiple object selection
+- Upload with progress tracking
+- Batch operations (deletion, copy)
 
-### 4. Détails des objets (ObjectDetails.tsx)
-**Métadonnées complètes :**
-- Informations de base (taille, date)
-- Génération d'URLs signées
-- Actions de partage multi-plateforme
-- Gestion des permissions
+### 4. Object Details (ObjectDetails.tsx)
+**Complete Metadata:**
+- Basic information (size, date)
+- Signed URL generation
+- Multi-platform sharing actions
+- Permission management
 
-## Services et logique métier
+## Services and Business Logic
 
-### 1. Service S3 (s3Service.ts)
-**Client S3 unifié :**
+### 1. S3 Service (s3Service.ts)
+**Unified S3 Client:**
 ```typescript
 function createS3Client(provider: S3Provider): S3Client {
   return new S3Client({
@@ -83,36 +83,36 @@ function createS3Client(provider: S3Provider): S3Client {
 }
 ```
 
-**Opérations supportées :**
-- `listBuckets()` - Liste des buckets
-- `listBucketObjects()` - Contenu avec pagination
-- `uploadFile()` - Upload multipart avec progress
-- `deleteObject/deleteFolder()` - Suppression récursive
-- `copyFolder()` - Copie avec préservation structure
-- `renameFolder()` - Renommage via copie/suppression
-- `getSignedObjectUrl()` - URLs temporaires
+**Supported Operations:**
+- `listBuckets()` - Bucket listing
+- `listBucketObjects()` - Content with pagination
+- `uploadFile()` - Multipart upload with progress
+- `deleteObject/deleteFolder()` - Recursive deletion
+- `copyFolder()` - Copy with structure preservation
+- `renameFolder()` - Rename via copy/deletion
+- `getSignedObjectUrl()` - Temporary URLs
 
-### 2. Stockage sécurisé (secureStorage.ts)
-**Stockage chiffré au repos :**
-- Utilisation d'Expo SecureStore (Keychain/Keystore) pour chiffrer les données au repos
-- Un enregistrement par provider avec clé `universal_s3_client_provider_<id>`
-- Liste des IDs de providers via `universal_s3_client_provider_list`
+### 2. Secure Storage (secureStorage.ts)
+**Encrypted Storage at Rest:**
+- Uses Expo SecureStore (Keychain/Keystore) to encrypt data at rest
+- One record per provider with key `universal_s3_client_provider_<id>`
+- Provider ID list via `universal_s3_client_provider_list`
 
-**API principale :**
+**Main API:**
 - `saveProvider(provider)` / `getProvider(id)` / `deleteProvider(id)`
 - `saveProviders(providers)` / `getProviders()`
 - `getProviderIdList()`
 
-### 3. Reset application (appReset.ts)
-**Nettoyage complet :**
-- Suppression de tous les providers
-- Nettoyage des clés SecureStore utilisées par l'app
-- Confirmation utilisateur obligatoire
+### 3. Application Reset (appReset.ts)
+**Complete Cleanup:**
+- Deletion of all providers
+- Cleanup of SecureStore keys used by the app
+- Mandatory user confirmation
 
-## Configuration des providers
+## Provider Configuration
 
-### 1. Définition des providers (config/providers.ts)
-**Structure type :**
+### 1. Provider Definition (config/providers.ts)
+**Type Structure:**
 ```typescript
 export interface ProviderConfig {
   name: string;
@@ -121,11 +121,11 @@ export interface ProviderConfig {
   endpointPattern: string;
   requiresAccountId?: boolean;
   requiresNamespace?: boolean;
-  // ... autres options spécifiques
+  // ... other specific options
 }
 ```
 
-**Génération d'endpoints :**
+**Endpoint Generation:**
 ```typescript
 export function generateEndpoint({
   type, region, accountId, namespace, clusterId
@@ -133,7 +133,7 @@ export function generateEndpoint({
   const config = getProviderConfig(type);
   let endpoint = config.endpointPattern;
   
-  // Substitutions selon le provider
+  // Substitutions according to provider
   endpoint = endpoint.replace('{region}', region);
   if (accountId) endpoint = endpoint.replace('{accountId}', accountId);
   if (namespace) endpoint = endpoint.replace('{namespace}', namespace);
@@ -142,9 +142,9 @@ export function generateEndpoint({
 }
 ```
 
-## Types et interfaces
+## Types and Interfaces
 
-### 1. Types principaux (types/index.ts)
+### 1. Main Types (types/index.ts)
 ```typescript
 export type S3ProviderType = 
   | 'aws' | 'hetzner' | 'cloudflare' | 'digitalocean'
@@ -160,7 +160,7 @@ export interface S3Provider {
   accessKey: string;
   secretKey: string;
   region?: string;
-  // Champs spécifiques par provider
+  // Provider-specific fields
   accountId?: string;
   namespace?: string;
   locationHint?: string;
@@ -169,51 +169,51 @@ export interface S3Provider {
 }
 ```
 
-## Gestion des erreurs
+## Error Handling
 
-### 1. Stratégies par type d'erreur
-**Erreurs réseau :**
-- Détection automatique via NetInfo
-- Messages contextuels selon l'état
-- Retry automatique possible
+### 1. Strategies by Error Type
+**Network Errors:**
+- Automatic detection via NetInfo
+- Contextual messages according to state
+- Automatic retry possible
 
-**Erreurs d'authentification :**
-- Codes d'erreur S3 spécifiques
-- Messages utilisateur clarifiés
-- Redirection vers édition provider
+**Authentication Errors:**
+- Specific S3 error codes
+- Clarified user messages
+- Redirection to provider editing
 
-**Erreurs de validation :**
-- Validation côté client en temps réel
-- Feedback visuel immédiat
-- Empêche la soumission invalide
+**Validation Errors:**
+- Real-time client-side validation
+- Immediate visual feedback
+- Prevents invalid submission
 
-### 2. Logging et debugging
-**Console logging :**
+### 2. Logging and Debugging
+**Console Logging:**
 ```typescript
 console.log(`Loading objects for bucket: ${bucketName} with prefix: ${currentPath}`);
 console.error('Error extracting bucket name:', e);
 ```
 
-**Gestion graceful :**
-- Fallbacks pour extraction bucket name
-- Valeurs par défaut pour configurations manquantes
-- Recovery automatique quand possible
+**Graceful Handling:**
+- Fallbacks for bucket name extraction
+- Default values for missing configurations
+- Automatic recovery when possible
 
-## Performance et optimisations
+## Performance and Optimizations
 
-### 1. Chargement des données
-**Pagination automatique :**
-- `ListObjectsV2Command` avec `MaxKeys`
-- Continuation tokens pour grandes listes
-- Chargement à la demande
+### 1. Data Loading
+**Automatic Pagination:**
+- `ListObjectsV2Command` with `MaxKeys`
+- Continuation tokens for large lists
+- On-demand loading
 
-**Cache et mémoire :**
-- États locaux pour réduire re-renders
-- Memoization des calculs coûteux
-- Cleanup automatique des états
+**Cache and Memory:**
+- Local states to reduce re-renders
+- Memoization of expensive calculations
+- Automatic state cleanup
 
-### 2. Upload optimisé
-**Multipart upload :**
+### 2. Optimized Upload
+**Multipart Upload:**
 ```typescript
 const upload = new Upload({
   client,
@@ -227,21 +227,21 @@ const upload = new Upload({
 });
 ```
 
-**Progress tracking :**
-- Callback de progression en temps réel
-- Affichage pourcentage utilisateur
-- Gestion des erreurs d'upload
+**Progress Tracking:**
+- Real-time progress callback
+- User percentage display
+- Upload error handling
 
-## Sécurité
+## Security
 
-### 1. Stockage des credentials
-**Chiffrement au repos :**
+### 1. Credential Storage
+**Encryption at Rest:**
 - Expo SecureStore (Keychain/Keystore)
-- Aucune transmission réseau des credentials
-- Données locales uniquement
+- No network transmission of credentials
+- Local data only
 
-### 2. URLs signées
-**Sécurité temporaire :**
+### 2. Signed URLs
+**Temporary Security:**
 ```typescript
 const command = new GetObjectCommand({
   Bucket: bucketName,
@@ -250,62 +250,62 @@ const command = new GetObjectCommand({
 return await getSignedUrl(client, command, { expiresIn: 3600 });
 ```
 
-**Contrôle d'accès :**
-- Expiration automatique (1h)
-- Pas de stockage permanent des URLs
-- Régénération à la demande
+**Access Control:**
+- Automatic expiration (1h)
+- No permanent URL storage
+- On-demand regeneration
 
-## Compatibilité et testing
+## Compatibility and Testing
 
-### 1. Compatibilité providers
-**Stratégies d'adaptation :**
-- Path-style URLs pour non-AWS
-- Gestion des différences d'API
-- Fallbacks pour fonctionnalités manquantes
+### 1. Provider Compatibility
+**Adaptation Strategies:**
+- Path-style URLs for non-AWS
+- API difference handling
+- Fallbacks for missing features
 
-### 2. Versions et dépendances
-**Contraintes importantes :**
-- AWS SDK v3.188.0 (max pour Hetzner)
+### 2. Versions and Dependencies
+**Important Constraints:**
+- AWS SDK v3.188.0 (max for Hetzner)
 - React Native 0.76.9
 - Expo SDK 52.x
 - iOS 13.0+, Android API 21+
 
-## Métriques et monitoring
+## Metrics and Monitoring
 
-### 1. Points de mesure
-**Performance :**
-- Temps de chargement des listes
-- Durée des uploads/downloads
-- Latence des opérations S3
+### 1. Measurement Points
+**Performance:**
+- List loading times
+- Upload/download duration
+- S3 operation latency
 
-**Utilisation :**
-- Nombre de providers configurés
-- Fréquence d'utilisation par provider
-- Types d'opérations les plus fréquentes
+**Usage:**
+- Number of configured providers
+- Usage frequency per provider
+- Most frequent operation types
 
-### 2. Analytics potentiels
-**Données collectables (opt-in) :**
-- Providers les plus utilisés
-- Tailles moyennes des fichiers
-- Patterns d'usage géographiques
+### 2. Potential Analytics
+**Collectable Data (opt-in):**
+- Most used providers
+- Average file sizes
+- Geographic usage patterns
 
-## Roadmap technique
+## Technical Roadmap
 
-### 1. Améliorations court terme
-- **Cache intelligent** : Mise en cache des métadonnées
-- **Compression** : Compression automatique avant upload
-- **Retry logic** : Retry automatique avec backoff
+### 1. Short-term Improvements
+- **Smart Cache**: Metadata caching
+- **Compression**: Automatic compression before upload
+- **Retry Logic**: Automatic retry with backoff
 
-### 2. Évolutions moyen terme
-- **Offline mode** : Queue d'opérations hors ligne
-- **Sync bidirectionnelle** : Synchronisation avec stockage local
-- **Background uploads** : Uploads en arrière-plan
+### 2. Medium-term Evolution
+- **Offline Mode**: Offline operation queue
+- **Bidirectional Sync**: Synchronization with local storage
+- **Background Uploads**: Background uploads
 
-### 3. Architecture future
-- **Microservices** : Séparation des services S3 par provider
-- **Plugin system** : Architecture extensible pour nouveaux providers
-- **API Gateway** : Proxy unifié pour tous les providers
+### 3. Future Architecture
+- **Microservices**: Separation of S3 services per provider
+- **Plugin System**: Extensible architecture for new providers
+- **API Gateway**: Unified proxy for all providers
 
-## Conclusion technique
+## Technical Conclusion
 
-Universal S3 Client présente une architecture robuste et extensible, avec une séparation claire des responsabilités. L'utilisation d'un SDK unifié (AWS SDK v3) pour tous les providers simplifie considérablement la maintenance tout en offrant une compatibilité maximale. La sécurité repose sur le chiffrement au repos via les keystores natifs (Expo SecureStore). L'application est prête pour une montée en charge et des évolutions fonctionnelles importantes.
+Universal S3 Client presents a robust and extensible architecture with clear separation of responsibilities. The use of a unified SDK (AWS SDK v3) for all providers considerably simplifies maintenance while offering maximum compatibility. Security relies on encryption at rest via native keystores (Expo SecureStore). The application is ready for scaling and significant functional evolution.

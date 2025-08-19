@@ -1,131 +1,125 @@
-# Universal S3 Client - Index des fonctionnalités
+# Universal S3 Client - Features Index
 
-## 📖 Documentation complète
+## 📖 Complete Documentation
 
-Ce projet dispose d'une documentation exhaustive répartie dans plusieurs fichiers :
+This project has comprehensive documentation distributed across several files:
 
-- **[FEATURES_DOCUMENTATION.md](./FEATURES_DOCUMENTATION.md)** - Documentation complète de toutes les fonctionnalités
-- **[TECHNICAL_SUMMARY.md](./TECHNICAL_SUMMARY.md)** - Analyse technique détaillée de l'architecture  
-- **[CHANGELOG_DETAILED.md](./CHANGELOG_DETAILED.md)** - Historique détaillé des versions
-- **[README.md](./README.md)** - Guide d'installation et utilisation
-- **[TODO.md](./TODO.md)** - Tâches terminées et futures
+- **[FEATURES_DOCUMENTATION.md](./FEATURES_DOCUMENTATION.md)** - Complete documentation of all features
+- **[TECHNICAL_SUMMARY.md](./TECHNICAL_SUMMARY.md)** - Detailed technical analysis of the architecture  
+- **[CHANGELOG_DETAILED.md](./CHANGELOG_DETAILED.md)** - Detailed version history
+- **[README.md](./README.md)** - Installation and usage guide
+- **[TODO.md](./TODO.md)** - Completed and future tasks
 
-## 🚀 Fonctionnalités principales (Résumé)
+## 🚀 Main Features (Summary)
 
-### 🔐 Sécurité
-- Chiffrement des credentials au repos via Expo SecureStore (Keychain/Keystore)
-- Stockage sécurisé local (iOS Keychain/Android Keystore)
-- Aucune collecte de données distantes
+### 🔐 Security
+- Credential encryption at rest via Expo SecureStore (Keychain/Keystore)
+- Local secure storage (iOS Keychain/Android Keystore)
+- No remote data collection
 
-### 🌐 Support multi-providers (14 providers)
-- **AWS S3** (33 régions)
+### 🌐 Multi-provider support (14 providers)
+- **AWS S3** (33 regions)
 - **Hetzner Storage Box** (3 locations) 
-- **Cloudflare R2** (avec account ID)
-- **DigitalOcean Spaces** (5 régions)
-- **Wasabi** (6 régions)
-- **Backblaze B2** (3 régions)
-- **Scaleway Object Storage** (3 régions)
-- **Vultr Object Storage** (6 régions)
-- **Linode Object Storage** (3 régions)
-- **Oracle Cloud Infrastructure** (11 régions)
-- **IBM Cloud Object Storage** (9 régions)
+- **Cloudflare R2** (with account ID)
+- **DigitalOcean Spaces** (5 regions)
+- **Wasabi** (6 regions)
+- **Backblaze B2** (3 regions)
+- **Scaleway Object Storage** (3 regions)
+- **Vultr Object Storage** (6 regions)
+- **Linode Object Storage** (3 regions)
+- **Oracle Cloud Infrastructure** (11 regions)
+- **IBM Cloud Object Storage** (9 regions)
 - **Google Cloud Storage**
 - **Azure Blob Storage**
-- **MinIO** (endpoints personnalisés)
+- **MinIO** (custom endpoints)
 
-### 📱 Gestion des fichiers et dossiers
-- Upload de fichiers (documents, images, photos)
-- Navigation hiérarchique avec breadcrumb
-- Sélection multiple pour opérations batch
-- Copie, renommage et suppression récursive
-- URLs signées pour partage temporaire
+### 📱 File and folder management
+- File upload (documents, images, photos)
+- Hierarchical navigation with breadcrumb
+- Multiple selection for batch operations
+- Copy, rename and recursive deletion
+- Signed URLs for temporary sharing
 
-### 🎨 Interface utilisateur moderne
-- Design Material avec React Native Paper
-- Navigation intuitive avec FAB et menus contextuels
-- Animations fluides et feedback visuel
-- Gestion des erreurs contextuelles
-- Support hors ligne avec détection réseau
+### 🎨 Modern user interface
+- Material Design with React Native Paper
+- Intuitive navigation with FAB and contextual menus
+- Smooth animations and visual feedback
+- Contextual error handling
+- Offline support with network detection
 
-### ⚡ Performance et optimisation
-- Upload multipart pour gros fichiers
-- Pagination automatique des listes
-- Cache intelligent des métadonnées
-- Progress tracking en temps réel
+### ⚡ Performance and optimization
+- Multipart upload for large files
+- Intelligent caching and pagination
+- Real-time progress tracking
+- Cross-bucket operations
+- Background processing
 
-## 🏗 Architecture technique
+### 🔄 Cross-bucket operations
+- Copy/paste between different buckets
+- Copy between different providers
+- Global clipboard for cross-bucket functionality
+- Seamless provider switching
 
-### 📁 Structure du code
-```
-src/
-├── components/          # Composants React Native
-├── services/           # Services métier (S3, stockage, etc.)
-├── config/            # Configuration providers
-├── types/             # Types TypeScript
-└── utils/             # Utilitaires
-```
+### 🛠️ Technical architecture
+- **React Native** with TypeScript
+- **Expo** for mobile development
+- **React Native Paper** for interface
+- **AWS SDK v3** unified for all providers
+- **Expo SecureStore** for security
+- Path-style URL support for non-AWS providers
+- Robust fallbacks for error recovery
 
-### 🛠 Technologies
-- **React Native** 0.76.9 + **TypeScript**
-- **AWS SDK v3.188.0** (compatibilité Hetzner)
-- **Expo** pour le développement mobile
-- **React Native Paper** pour l'interface
+## 📋 Complete feature list
 
-### 🔄 Compatibilité
-- **iOS** 13.0+ / **Android** API 21+
-- Support path-style URLs pour providers non-AWS
-- Fallbacks robustes pour récupération d'erreurs
+### ✅ Core Features
+- **Multi-provider**: 14 S3-compatible storage providers
+- **Security**: Encryption at rest via native keystores
+- **Cross-platform**: iOS and Android support
+- **Offline**: Works without internet connection
+- **Open source**: MIT license, transparent code
 
-## 📊 Métriques du projet
+### ✅ File Operations
+- Upload, download, delete, copy, rename
+- Folder creation and recursive operations
+- Multiple file selection
+- Progress tracking and cancellation
+- Signed URL generation for sharing
 
-### 📈 Statistiques du code
-- **~15,000** lignes de code TypeScript/React Native
-- **6** composants principaux React Native
-- **3** services métier
-- **14** providers S3 supportés
-- **100+** régions disponibles
+### ✅ User Experience
+- Intuitive Material Design interface
+- Real-time network status
+- Contextual error messages
+- Smooth navigation and animations
+- Multiple view modes (list/grid)
 
-### ✅ Fonctionnalités implémentées
-- **100%** des TODO.md terminés
-- **14/14** providers S3 compatibles
-- **Sécurité** : Chiffrement au repos via keystores natifs
-- **UX** : Interface moderne et intuitive
-- **Performance** : Upload optimisé
+## 🔧 Development and Contributions
 
-## 🎯 Roadmap
+### 📦 Technology Stack
+- **React Native** + TypeScript
+- **Expo** development platform
+- **AWS SDK v3** for S3 operations
+- **React Native Paper** for UI components
 
-### Version 1.2.0 (Q1 2025)
-- Recherche globale multi-buckets
-- Synchronisation bidirectionnelle
-- Prévisualisation des médias
+### 🤝 Contributions
+- 🐛 Bug reports via GitHub Issues
+- 💡 Feature requests welcome
+- 🔧 Pull requests for improvements
+- 📚 Documentation improvements
+- 🌐 Translations and internationalization
 
-### Version 1.3.0 (Q2 2025)  
-- Mode hors ligne avec queue
-- Compression automatique
-- Uploads parallèles
+### 📄 License and Privacy
+- **Open Source**: MIT License
+- **Privacy**: No data collection or telemetry
+- **Documentation**: Detailed .md files
+- **Transparency**: Complete source code available
 
-### Version 2.0.0 (Q3 2025)
-- API publique
-- Architecture plugin
-- Interface web companion
+## 🎯 Target Use Cases
 
-## 📋 Quick Start
+- **Personal cloud storage** management
+- **Multi-provider** file synchronization
+- **Developer tools** for S3 testing
+- **Backup management** across providers
+- **File sharing** with signed URLs
+- **Cross-platform** mobile storage access
 
-1. **Installation** : `npm install --legacy-peer-deps`
-2. **Démarrage** : `npx expo start`
-3. **Configuration** : Ajout d'un provider avec credentials
-4. **Navigation** : Exploration des buckets et objets
-
-## 🤝 Contribution
-
-Le projet est open source et accueille les contributions :
-- 🐛 Rapports de bugs
-- 💡 Suggestions de fonctionnalités  
-- 🔧 Pull requests pour améliorations
-- 📚 Améliorations de documentation
-
-## 📞 Support
-
-- **GitHub** : Issues et discussions
-- **Documentation** : Fichiers .md détaillés
-- **Code source** : Architecture modulaire et commentée
+This application represents a complete and secure solution for multi-provider S3 storage management, combining ease of use with advanced features while maintaining solid security standards through encryption at rest via native keystores.
