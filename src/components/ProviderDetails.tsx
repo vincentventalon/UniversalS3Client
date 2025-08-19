@@ -436,7 +436,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
   }
 
   // Fonctions pour la copie et le renommage d'éléments (dossiers et fichiers)
-  function handleCopyItem(item: S3Object) {
+  async function handleCopyItem(item: S3Object) {
     // Set both local and global clipboard for cross-bucket functionality
     setCopiedItem(item);
     setClipboardData({
@@ -445,10 +445,17 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
       sourceBucket: bucketName
     });
     
+    // Also copy the object key (path) to system clipboard
+    try {
+      await Clipboard.setStringAsync(item.fullPath || item.key);
+    } catch (error) {
+      console.error('Error copying path to clipboard:', error);
+    }
+    
     const itemType = item.isFolder ? 'dossier' : 'fichier';
     Alert.alert(
       `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} copié`, 
-      `Le ${itemType} "${item.name}" a été copié et peut être collé dans n'importe quel bucket.`
+      `Le ${itemType} "${item.name}" a été copié et peut être collé dans n'importe quel bucket. Le chemin a aussi été copié dans le presse-papiers.`
     );
   }
 
