@@ -1,6 +1,136 @@
-# Changelog détaillé - Universal S3 Client
+# Detailed Changelog - Universal S3 Client
 
-## Version 1.1.0 - Expansion Multi-Providers (Décembre 2024)
+## Version 25.8.0 - Advanced File Management & Cross-Provider Operations (August 2025)
+
+### 🚀 Major New Features
+
+#### Cross-Bucket Copy & Paste Operations
+- **Advanced Clipboard System**: Complete implementation of cross-provider file operations
+  - Copy files from any S3 provider and paste to any other provider
+  - Intelligent context management with provider and bucket information
+  - Support for single file and multiple file operations
+  - Smart handling of file conflicts and overwrites
+
+- **Enhanced S3 Service Operations**: Extended S3 service with cross-provider capabilities
+  - New `copyObjectCrossBucket` method for cross-provider transfers
+  - Improved error handling for different provider types
+  - Optimized transfer performance with direct S3-to-S3 operations
+  - Support for metadata preservation during transfers
+
+- **Clipboard Context Management**: Dedicated context system for clipboard operations
+  - `ClipboardContext.tsx` for managing clipboard state across components
+  - Type-safe clipboard operations with full TypeScript support
+  - Integration with React Native's clipboard API
+  - Visual feedback for clipboard operations
+
+#### Enhanced Image Preview System
+- **Universal Image Compatibility**: Improved image handling across all S3-compatible providers
+  - Consistent signed URL generation for secure image access
+  - Better compatibility with non-AWS providers (Hetzner, Cloudflare R2, DigitalOcean, etc.)
+  - Enhanced error handling with graceful fallbacks
+  - Improved loading performance and caching
+
+- **Advanced Image Thumbnail Component**: Enhanced `ImageThumbnail.tsx` with robust features
+  - Smart signed URL usage for private buckets
+  - Automatic fallback to generic icons on load failure
+  - Better error boundary implementation
+  - Optimized image loading with progressive enhancement
+
+#### Grid View System Enhancements
+- **Improved Visual Design**: Enhanced grid layout with better aesthetics
+  - Dynamic overlay text positioning on grid item images
+  - Optimized item sizing with minimal spacing for better screen utilization
+  - Smart title display logic (folders and non-image files show titles by default)
+  - Enhanced visual styling with consistent Material Design principles
+
+- **Better User Experience**: Improved interaction patterns
+  - Enhanced touch feedback and selection states
+  - Better visual hierarchy and information density
+  - Improved accessibility with proper contrast and sizing
+  - Responsive design that adapts to different screen sizes
+
+#### Legacy Migration & Compatibility
+- **Automatic Migration System**: Seamless upgrade path for existing users
+  - Automatic detection and migration of legacy S3 provider configurations
+  - Backward compatibility preservation for existing setups
+  - Comprehensive migration guide documentation
+  - Safe migration with rollback capabilities
+
+- **Storage Format Evolution**: Enhanced storage format with better structure
+  - Improved data organization for better performance
+  - Enhanced security with better credential management
+  - Future-proof storage format for upcoming features
+
+### 🔧 Technical Improvements
+
+#### Security Enhancements
+- **Native Keystore Integration**: Enhanced secure storage implementation
+  - Removed custom encryption in favor of native device keystore
+  - Better integration with iOS Keychain and Android Keystore
+  - Simplified security model with improved performance
+  - Reduced dependencies and improved reliability
+
+- **Improved Credential Management**: Enhanced security practices
+  - Better separation of sensitive data
+  - Improved access patterns for credentials
+  - Enhanced error handling for security operations
+
+#### Performance Optimizations
+- **Dependency Management**: Streamlined dependencies for better performance
+  - Upgraded `react-native-safe-area-context` to version 5.6.0
+  - Removed unnecessary dependencies from security refactoring
+  - Better tree-shaking and bundle size optimization
+  - Improved startup performance
+
+- **Code Quality Improvements**: Enhanced codebase maintainability
+  - Complete translation of French documentation to English
+  - Improved code comments and developer documentation
+  - Better TypeScript type definitions
+  - Enhanced error handling and logging
+
+### 🛠 Developer Experience
+
+#### Documentation & Localization
+- **Complete English Translation**: Comprehensive documentation update
+  - All French documentation translated to English
+  - Updated technical documentation and feature guides
+  - Improved code comments and inline documentation
+  - Comprehensive feature index and technical summaries
+
+- **Enhanced Developer Resources**: Better development experience
+  - Improved migration guides and setup instructions
+  - Better API documentation and examples
+  - Enhanced troubleshooting guides
+  - Comprehensive feature documentation
+
+#### Code Organization
+- **Improved Component Structure**: Better separation of concerns
+  - Enhanced modular component architecture
+  - Better prop interfaces and type definitions
+  - Improved component reusability and maintainability
+  - Better error boundaries and error handling
+
+- **Service Layer Enhancements**: Improved service architecture
+  - Better separation between UI and business logic
+  - Enhanced error handling and retry mechanisms
+  - Improved logging and debugging capabilities
+  - Better testability and maintainability
+
+### 🔄 Migration Notes
+
+#### From Previous Versions
+- **Automatic Migration**: Users upgrading from previous versions will experience automatic migration
+- **Configuration Preservation**: All existing provider configurations are preserved
+- **Feature Compatibility**: All existing features remain fully functional
+- **Performance Improvements**: Users will see improved performance and reliability
+
+#### New Features Available
+- **Cross-Provider Operations**: Users can now copy files between different S3 providers
+- **Enhanced Image Previews**: Better image handling across all supported providers
+- **Improved Grid Views**: Better visual experience with enhanced grid layouts
+- **Better Documentation**: All documentation is now available in English
+
+## Version 1.1.0 - Multi-Provider Expansion (December 2024)
 
 ### 🚀 Nouvelles fonctionnalités majeures
 
