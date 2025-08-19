@@ -1,4 +1,4 @@
-import { Bucket, S3Provider, S3Object } from '../types';
+import { Bucket, S3Provider, S3Object, CrossBucketClipboard } from '../types';
 import { S3Client, ListBucketsCommand, ListObjectsV2Command, PutObjectCommand, DeleteObjectCommand, GetObjectCommand, CopyObjectCommand } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
@@ -541,4 +541,142 @@ export async function renameFile(
     console.error('Error renaming file:', error);
     throw error;
   }
-} 
+}
+
+/**
+ * Copy a file from one bucket to another (cross-bucket copy)
+ */
+export async function copyFileCrossBucket(
+  sourceProvider: S3Provider,
+  sourceBucket: string,
+  sourceKey: string,
+  targetProvider: S3Provider,
+  targetBucket: string,
+  targetKey: string
+): Promise<void> {
+  try {
+    // If it's the same provider and bucket, use regular copy
+    if (sourceProvider.id === targetProvider.id && sourceBucket === targetBucket) {
+      return copyFile(sourceProvider, sourceBucket, sourceKey, targetKey);
+    }
+
+    // For cross-bucket or cross-provider copy, we need to download and re-upload
+    const sourceClient = createS3Client(sourceProvider);
+    const targetClient = createS3Client(targetProvider);
+
+    // Get the object from source
+    const getCommand = new GetObjectCommand({
+      Bucket: sourceBucket,
+      Key: sourceKey,
+    });
+    
+    const sourceResponse = await sourceClient.send(getCommand);
+    
+    if (!sourceResponse.Body) {
+      throw new Error('Failed to retrieve source object');
+    }
+
+    // Convert the response body to a buffer for React Native
+    let bodyData: Uint8Array;
+    
+    if (sourceResponse.Body instanceof Uint8Array) {
+      bodyData = sourceResponse.Body;
+    } else if (sourceResponse.Body && typeof sourceResponse.Body.transformToByteArray === 'function') {
+      bodyData = await sourceResponse.Body.transformToByteArray();
+    } else {
+      // Fallback: convert stream to buffer
+      const chunks: Buffer[] = [];
+      const stream = sourceResponse.Body as any;
+      
+      for await (const chunk of stream) {
+        chunks.push(chunk);
+      }
+      
+      bodyData = new Uint8Array(Buffer.concat(chunks));
+    }
+
+    // Upload to target location
+    const putCommand = new PutObjectCommand({
+      Bucket: targetBucket,
+      Key: targetKey,
+      Body: bodyData,
+      ContentType: sourceResponse.ContentType,
+      Metadata: sourceResponse.Metadata,
+    });
+
+    await targetClient.send(putCommand);
+  } catch (error) {
+    console.error('Error copying file cross-bucket:', error);
+    throw error;
+  }
+}
+
+/**
+ * Copy a folder from one bucket to another (cross-bucket copy)
+ */
+export async function copyFolderCrossBucket(
+  sourceProvider: S3Provider,
+  sourceBucket: string,
+  sourceFolderKey: string,
+  targetProvider: S3Provider,
+  targetBucket: string,
+  targetFolderKey: string
+): Promise<void> {
+  try {
+    // If it's the same provider and bucket, use regular copy
+    if (sourceProvider.id === targetProvider.id && sourceBucket === targetBucket) {
+      return copyFolder(sourceProvider, sourceBucket, sourceFolderKey, targetFolderKey);
+    }
+
+    // Ensure the folder keys end with a forward slash
+    const normalizedSourceKey = sourceFolderKey.endsWith('/') ? sourceFolderKey : `${sourceFolderKey}/`;
+    const normalizedTargetKey = targetFolderKey.endsWith('/') ? targetFolderKey : `${targetFolderKey}/`;
+    
+    // List all objects in the source folder recursively
+    const objects = await listAllObjectsRecursively(sourceProvider, sourceBucket, normalizedSourceKey);
+    
+    console.log(`Found ${objects.length} objects to copy cross-bucket recursively`);
+    
+    // Copy all objects including nested folders
+    for (const object of objects) {
+      // Calculate the relative path within the source folder
+      const relativePath = object.key.substring(normalizedSourceKey.length);
+      const targetKey = normalizedTargetKey + relativePath;
+      
+      if (object.isFolder) {
+        // For folders, create an empty object to mark the folder
+        const targetClient = createS3Client(targetProvider);
+        const putCommand = new PutObjectCommand({
+          Bucket: targetBucket,
+          Key: targetKey,
+          Body: '',
+        });
+        await targetClient.send(putCommand);
+      } else {
+        // Copy the file using cross-bucket copy
+        await copyFileCrossBucket(
+          sourceProvider,
+          sourceBucket,
+          object.key,
+          targetProvider,
+          targetBucket,
+          targetKey
+        );
+      }
+    }
+    
+    // Create the target folder marker if it doesn't exist
+    const targetClient = createS3Client(targetProvider);
+    const putCommand = new PutObjectCommand({
+      Bucket: targetBucket,
+      Key: normalizedTargetKey,
+      Body: '',
+    });
+    
+    await targetClient.send(putCommand);
+    
+  } catch (error) {
+    console.error('Error copying folder cross-bucket:', error);
+    throw error;
+  }
+}

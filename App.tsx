@@ -18,6 +18,7 @@ import { generateId } from './src/utils/idGenerator';
 import { generateEndpoint, getProviderConfig } from './src/config/providers';
 // Remove secureStorage auth helpers and only use simplified storage APIs
 import { saveProviders, getProviders } from './src/services/secureStorage';
+import { ClipboardProvider } from './src/context/ClipboardContext';
 
 export default function App() {
   const [providers, setProviders] = useState<S3Provider[]>([]);
@@ -296,22 +297,24 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <PaperProvider>
-        {showSettings ? (
-          <View style={styles.fullScreen}>
-            <StatusBar barStyle="dark-content" backgroundColor="#f8f8f8" />
-            {renderContent()}
-          </View>
-        ) : (
-          <SafeAreaView style={styles.safeArea}>
-            <StatusBar barStyle="dark-content" />
-            {isOffline && (
-              <View style={{ backgroundColor: '#ff5252', padding: 8 }}>
-                <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>Network error: you are offline</Text>
-              </View>
-            )}
-            {renderContent()}
-          </SafeAreaView>
-        )}
+        <ClipboardProvider>
+          {showSettings ? (
+            <View style={styles.fullScreen}>
+              <StatusBar barStyle="dark-content" backgroundColor="#f8f8f8" />
+              {renderContent()}
+            </View>
+          ) : (
+            <SafeAreaView style={styles.safeArea}>
+              <StatusBar barStyle="dark-content" />
+              {isOffline && (
+                <View style={{ backgroundColor: '#ff5252', padding: 8 }}>
+                  <Text style={{ color: 'white', textAlign: 'center', fontWeight: 'bold' }}>Network error: you are offline</Text>
+                </View>
+              )}
+              {renderContent()}
+            </SafeAreaView>
+          )}
+        </ClipboardProvider>
       </PaperProvider>
     </SafeAreaProvider>
   );

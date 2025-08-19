@@ -52,6 +52,12 @@ export interface AppState {
   buckets: Bucket[];
 }
 
+export interface CrossBucketClipboard {
+  item: S3Object;
+  sourceProvider: S3Provider;
+  sourceBucket: string;
+}
+
 // Provider configuration for regions and endpoints
 export interface ProviderConfig {
   name: string;
