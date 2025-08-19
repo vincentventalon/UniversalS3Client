@@ -36,21 +36,14 @@ export function ImageThumbnail({
       try {
         setLoading(true);
         
-        // For AWS S3, we can try direct URL first (for public buckets)
-        // For other providers, we always use signed URLs
-        if (provider.type === 'aws') {
-          // Try direct URL first for AWS (backward compatibility)
-          const directUrl = `${provider.endpoint}/${bucketName}/${item.key}`;
-          setImageUrl(directUrl);
-        } else {
-          // For S3-compatible providers like Hetzner, always use signed URLs
-          const signedUrl = await getSignedObjectUrl(provider, bucketName, item.key, 3600); // 1 hour expiry
-          if (isMounted) {
-            setImageUrl(signedUrl);
-          }
+        // Use signed URLs for all providers (AWS and S3-compatible)
+        // This ensures authentication works for both public and private buckets
+        const signedUrl = await getSignedObjectUrl(provider, bucketName, item.key, 3600); // 1 hour expiry
+        if (isMounted) {
+          setImageUrl(signedUrl);
         }
       } catch (error) {
-        console.error('Error generating image URL:', error);
+        console.error('Error generating signed image URL:', error);
         if (isMounted) {
           setImageError(true);
         }
@@ -92,17 +85,9 @@ export function ImageThumbnail({
     return <List.Icon icon="file" color={color} />;
   }
 
-  const handleImageError = async () => {
-    // If direct URL failed for AWS, try signed URL as fallback
-    if (provider.type === 'aws' && imageUrl?.includes(provider.endpoint)) {
-      try {
-        const signedUrl = await getSignedObjectUrl(provider, bucketName, item.key, 3600);
-        setImageUrl(signedUrl);
-        return; // Don't set error state, try the signed URL
-      } catch (error) {
-        console.error('Error generating signed URL fallback:', error);
-      }
-    }
+  const handleImageError = () => {
+    // Since we're already using signed URLs, if there's an error, 
+    // it's likely the image doesn't exist or there's a real network issue
     setImageError(true);
   };
 
