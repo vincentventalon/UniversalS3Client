@@ -17,7 +17,8 @@ import {
   Checkbox
 } from 'react-native-paper';
 import { S3Provider, S3Object } from '../types';
-import { listBucketObjects, getObjectUrl, createEmptyObject, uploadFile, deleteObject, deleteFolder, copyFolder, renameFolder, copyFile, renameFile } from '../services/s3Service';
+import { listBucketObjects, getObjectUrl, createEmptyObject, uploadFile, deleteObject, deleteFolder, copyFolder, renameFolder, copyFile, renameFile, copyFileCrossBucket, copyFolderCrossBucket, moveFileCrossBucket, moveFolderCrossBucket } from '../services/s3Service';
+import { useClipboard } from '../context/ClipboardContext';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import ObjectDetails from './ObjectDetails';
