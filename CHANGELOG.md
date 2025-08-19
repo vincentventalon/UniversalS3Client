@@ -66,6 +66,46 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M.MICRO).
   - Proper interface definitions for props
   - Enhanced error handling
 
+- **Cross-Bucket Copy & Paste**: Advanced clipboard functionality for copying files between different buckets and providers
+  - Copy files from one S3 provider and paste to another
+  - Intelligent context handling with provider and bucket information
+  - Enhanced S3 operations for cross-provider file transfers
+  - Streamlined clipboard management with dedicated context system
+
+- **Enhanced Image Preview**: Improved image handling across all S3-compatible providers
+  - Consistent signed URL usage for secure image thumbnails
+  - Better compatibility with non-AWS S3 providers (Hetzner, Cloudflare R2, etc.)
+  - Improved error handling and fallback mechanisms
+  - Enhanced image loading performance and reliability
+
+- **Grid View Enhancements**:
+  - Improved overlay text positioning on grid item images
+  - Dynamic item sizing with optimized spacing
+  - Smart title display logic (folders and non-image files show titles by default)
+  - Better visual styling and layout consistency
+  - Enhanced touch feedback and selection states
+
+- **Enhanced Clipboard Path Copy**: Extended functionality for copying current folder paths
+  - Improved integration with existing copy operations
+  - Better path formatting and validation
+  - Enhanced user feedback and confirmation dialogs
+
+- **Legacy Migration Support**: Automatic migration system for legacy S3 provider configurations
+  - Seamless upgrade path from older storage formats
+  - Comprehensive migration guide documentation
+  - Backward compatibility preservation
+
+- **Security Improvements**: Enhanced secure storage implementation
+  - Removed custom encryption in favor of native device keystore
+  - Simplified security model with better performance
+  - Reduced dependencies and improved reliability
+
+- **Documentation & Localization**:
+  - Complete translation of French documentation to English
+  - Updated technical documentation and feature guides
+  - Improved code comments and developer documentation
+  - Comprehensive feature index and technical summaries
+
 ### Changed
 - Switched to Calendar Versioning (CalVer) format: YY.M.MICRO
 - Improved header layout and organization
@@ -75,6 +115,8 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M.MICRO).
 ### Dependencies
 - Added `expo-clipboard` integration for path copying functionality
 - Enhanced usage of existing React Native Paper components
+- Upgraded `react-native-safe-area-context` to version 5.6.0
+- Streamlined dependencies with security-focused refactoring
 
 ---
 
