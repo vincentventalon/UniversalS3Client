@@ -191,6 +191,8 @@ export function extractBucketName(provider: S3Provider): string {
 
 /**
  * Get URL for downloading or viewing an object
+ * Note: This function returns direct URLs which may not work for private buckets.
+ * For authenticated access, use getSignedObjectUrl instead.
  */
 export function getObjectUrl(provider: S3Provider, bucketName: string, key: string): string {
   // Most S3-compatible providers use path-style URLs
