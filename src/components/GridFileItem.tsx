@@ -49,7 +49,6 @@ export function GridFileItem({
           <List.Icon 
             icon="folder" 
             color="rgba(255, 193, 7, 0.8)" 
-            size={iconSize}
           />
         </View>
       );
@@ -69,7 +68,6 @@ export function GridFileItem({
           <List.Icon 
             icon="file" 
             color="rgba(33, 150, 243, 0.8)" 
-            size={iconSize}
           />
         </View>
       );

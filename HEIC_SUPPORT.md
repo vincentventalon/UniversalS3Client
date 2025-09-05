@@ -60,15 +60,19 @@ logFileInfo('photo.heic', 2048000);
 
 #### Conversion manuelle
 ```typescript
-import { convertHeicFromUrl, createBlobUrl } from './src/utils/heicConverter';
+import { convertHeicFromUrl, convertHeicToThumbnail, createBlobUrl } from './src/utils/heicConverter';
 
-// Convertir une image HEIC depuis une URL
+// Convertir une image HEIC depuis une URL (qualité normale)
 const convertedBlob = await convertHeicFromUrl(heicUrl, {
   toType: 'image/jpeg',
   quality: 0.8
 });
 
+// Convertir spécifiquement pour un thumbnail (optimisé)
+const thumbnailBlob = await convertHeicToThumbnail(heicUrl);
+
 const displayUrl = createBlobUrl(convertedBlob as Blob);
+const thumbnailUrl = createBlobUrl(thumbnailBlob);
 ```
 
 ## Configuration
@@ -83,7 +87,8 @@ interface HeicConversionOptions {
 ```
 
 ### Paramètres recommandés
-- **Qualité** : 0.8 (bon équilibre qualité/taille)
+- **Qualité thumbnails** : 0.5 (compression agressive pour les miniatures)
+- **Qualité pleine taille** : 0.8 (bon équilibre qualité/taille)
 - **Format de sortie** : JPEG (meilleur support navigateur)
 - **Timeout** : La conversion peut prendre quelques secondes sur mobile
 
@@ -92,14 +97,17 @@ interface HeicConversionOptions {
 ### Considérations
 - **Taille de la bibliothèque** : heic2any ajoute ~2.7MB à l'application
 - **Temps de conversion** : 
+  - **Thumbnails** : 1-3 secondes (compression agressive)
   - Images 1-3MB : 2-5 secondes sur mobile
   - Images >5MB : 5-15 secondes
 - **Mémoire** : Utilisation temporaire élevée pendant la conversion
 
 ### Optimisations implémentées
+- **Compression agressive pour thumbnails** : Qualité 0.5 pour des miniatures rapides
 - **Lazy loading** : La bibliothèque n'est chargée que si nécessaire
 - **Cleanup automatique** : Les URLs blob sont automatiquement nettoyées
 - **Fallback** : En cas d'échec, tentative d'affichage de l'original
+- **Conversion optimisée** : Fonction spécialisée `convertHeicToThumbnail()` pour les miniatures
 
 ## Compatibilité
 

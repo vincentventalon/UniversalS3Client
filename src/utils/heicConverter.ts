@@ -33,7 +33,7 @@ export async function convertHeicToImage(
       blob: heicBlob,
       toType,
       quality,
-      multiple
+      ...(multiple && { multiple: true })
     });
 
     return result as Blob | Blob[];
@@ -83,6 +83,37 @@ export function createBlobUrl(blob: Blob): string {
  */
 export function revokeBlobUrl(blobUrl: string): void {
   URL.revokeObjectURL(blobUrl);
+}
+
+/**
+ * Converts a HEIC image specifically optimized for thumbnail display
+ * Uses aggressive compression and smaller dimensions for faster processing
+ * @param heicUrl The URL of the HEIC image to convert
+ * @returns Promise that resolves to the converted thumbnail blob
+ */
+export async function convertHeicToThumbnail(heicUrl: string): Promise<Blob> {
+  try {
+    // Fetch the HEIC image
+    const response = await fetch(heicUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch HEIC image: ${response.status} ${response.statusText}`);
+    }
+
+    const heicBlob = await response.blob();
+    
+    // Convert with thumbnail-optimized settings
+    const result = await heic2any({
+      blob: heicBlob,
+      toType: 'image/jpeg',
+      quality: 0.5  // Aggressive compression for thumbnails
+      // multiple omitted to get only the first image
+    });
+
+    return result as Blob;
+  } catch (error) {
+    console.error('Error converting HEIC to thumbnail:', error);
+    throw new Error(`Failed to convert HEIC to thumbnail: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 /**

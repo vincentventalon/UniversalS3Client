@@ -4,7 +4,7 @@ import { List } from 'react-native-paper';
 import { S3Object, S3Provider } from '../types';
 import { getSignedObjectUrl } from '../services/s3Service';
 import { isHeicFile } from '../utils/fileUtils';
-import { convertHeicFromUrl, createBlobUrl, revokeBlobUrl, isHeicConversionSupported } from '../utils/heicConverter';
+import { convertHeicFromUrl, convertHeicToThumbnail, createBlobUrl, revokeBlobUrl, isHeicConversionSupported } from '../utils/heicConverter';
 
 interface ImageThumbnailProps {
   item: S3Object;
@@ -56,16 +56,13 @@ export function ImageThumbnail({
             setIsConverting(true);
             console.log('Converting HEIC image:', item.name);
             
-            // Convert HEIC to JPEG
-            const convertedBlob = await convertHeicFromUrl(signedUrl, {
-              toType: 'image/jpeg',
-              quality: 0.8
-            });
+            // Convert HEIC to JPEG thumbnail with optimized compression
+            const convertedBlob = await convertHeicToThumbnail(signedUrl);
             
             if (!isMounted) return;
             
-            // Create a blob URL for the converted image
-            const blobUrl = createBlobUrl(convertedBlob as Blob);
+            // Create a blob URL for the converted thumbnail
+            const blobUrl = createBlobUrl(convertedBlob);
             currentBlobUrl = blobUrl;
             setImageUrl(blobUrl);
             
@@ -114,7 +111,7 @@ export function ImageThumbnail({
     if (fillContainer) {
       return (
         <View style={styles.fullContainer}>
-          <List.Icon icon={loadingIcon} color="rgba(33, 150, 243, 0.8)" size={size * 0.6} />
+          <List.Icon icon={loadingIcon} color="rgba(33, 150, 243, 0.8)" />
         </View>
       );
     }
@@ -126,7 +123,7 @@ export function ImageThumbnail({
     if (fillContainer) {
       return (
         <View style={styles.fullContainer}>
-          <List.Icon icon="file" color="rgba(33, 150, 243, 0.8)" size={size * 0.6} />
+          <List.Icon icon="file" color="rgba(33, 150, 243, 0.8)" />
         </View>
       );
     }
