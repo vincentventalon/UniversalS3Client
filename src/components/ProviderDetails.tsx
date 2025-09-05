@@ -1037,6 +1037,52 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
     );
   }
 
+  async function handleCopySelected() {
+    if (selectedKeys.length === 0) return;
+    
+    try {
+      // Find the selected objects
+      const selectedObjects = objects.filter(obj => selectedKeys.includes(obj.key));
+      
+      if (selectedObjects.length === 0) {
+        Alert.alert('Error', 'No valid objects found to copy');
+        return;
+      }
+      
+      // Copy paths to system clipboard (for single item, copy the path; for multiple items, copy all paths)
+      let clipboardContent = '';
+      if (selectedObjects.length === 1) {
+        clipboardContent = selectedObjects[0].fullPath || selectedObjects[0].key;
+      } else {
+        clipboardContent = selectedObjects.map(obj => obj.fullPath || obj.key).join('\n');
+      }
+      
+      await Clipboard.setStringAsync(clipboardContent);
+      
+      // Also set the first item in the app's internal clipboard for cross-bucket operations
+      if (selectedObjects.length > 0) {
+        setCopiedItem(selectedObjects[0]);
+        setClipboardData({
+          item: selectedObjects[0],
+          sourceProvider: provider,
+          sourceBucket: bucketName
+        });
+      }
+      
+      const itemText = selectedObjects.length === 1 ? 'item' : 'items';
+      Alert.alert(
+        `${selectedObjects.length} ${itemText} copied`,
+        selectedObjects.length === 1 
+          ? `The ${selectedObjects[0].isFolder ? 'folder' : 'file'} "${selectedObjects[0].name}" has been copied and can be pasted in any bucket. The path has also been copied to the clipboard.`
+          : `${selectedObjects.length} items have been copied. The first item can be pasted in any bucket, and all paths have been copied to the clipboard.`
+      );
+      
+    } catch (error) {
+      console.error('Error copying selected items:', error);
+      Alert.alert('Error', 'Failed to copy selected items');
+    }
+  }
+
   if (selectedObject) {
     return (
       <ObjectDetails
@@ -1078,17 +1124,30 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
           {isMultiSelect ? 'Cancel Selection' : 'Multiple Selection'}
         </Button>
         {isMultiSelect && (
-          <Button
-            mode="contained"
-            onPress={() => {
-              console.log(`Delete button pressed with ${selectedKeys.length} selected items:`, selectedKeys);
-              handleDeleteSelected();
-            }}
-            disabled={selectedKeys.length === 0}
-            style={{ marginLeft: 8, backgroundColor: '#FF5252' }}
-          >
-            Delete Selection ({selectedKeys.length})
-          </Button>
+          <>
+            <Button
+              mode="contained"
+              onPress={() => {
+                console.log(`Copy button pressed with ${selectedKeys.length} selected items:`, selectedKeys);
+                handleCopySelected();
+              }}
+              disabled={selectedKeys.length === 0}
+              style={{ marginLeft: 8, backgroundColor: '#4CAF50' }}
+            >
+              Copy Selection ({selectedKeys.length})
+            </Button>
+            <Button
+              mode="contained"
+              onPress={() => {
+                console.log(`Delete button pressed with ${selectedKeys.length} selected items:`, selectedKeys);
+                handleDeleteSelected();
+              }}
+              disabled={selectedKeys.length === 0}
+              style={{ marginLeft: 8, backgroundColor: '#FF5252' }}
+            >
+              Delete Selection ({selectedKeys.length})
+            </Button>
+          </>
         )}
       </View>
       
