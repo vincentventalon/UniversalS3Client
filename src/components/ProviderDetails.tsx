@@ -51,6 +51,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
   const [isMultiSelect, setIsMultiSelect] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   
+  
   // States for view (list or grid)
   const [viewMode, setViewMode] = useState<'list' | 'grid2' | 'grid3'>('list');
   const [showTitlesInGrid, setShowTitlesInGrid] = useState(true);
@@ -599,17 +600,18 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
       const result = await DocumentPicker.getDocumentAsync({
         type: '*/*',
         copyToCacheDirectory: true,
-        multiple: false
+        multiple: true // Permettre la sélection multiple
       });
 
       if (result.canceled) {
         return;
       }
 
-      await uploadSelectedFile(result.assets[0]);
+      // Upload tous les fichiers sélectionnés
+      await uploadSelectedFiles(result.assets);
     } catch (err) {
       console.error('File selection error:', err);
-      Alert.alert('Error', 'Failed to select file. Please try again.');
+      Alert.alert('Error', 'Failed to select files. Please try again.');
     }
   }
 
@@ -627,55 +629,93 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         mediaTypes: 'images',
         allowsEditing: false,
         quality: 1,
+        allowsMultipleSelection: true, // Permettre la sélection multiple
       });
 
       if (result.canceled) {
         return;
       }
 
-      const asset = result.assets[0];
-      await uploadSelectedFile({
+      // Convertir les assets en format compatible avec uploadSelectedFiles
+      const files = result.assets.map(asset => ({
         uri: asset.uri,
         name: asset.uri.split('/').pop() || `photo-${Date.now()}.jpg`,
         mimeType: 'image/jpeg',
-        size: 0, // Size will be determined when reading the file
-      });
+        size: asset.fileSize || 0,
+      }));
+
+      await uploadSelectedFiles(files);
     } catch (err) {
       console.error('Photo selection error:', err);
-      Alert.alert('Error', 'Failed to select photo. Please try again.');
+      Alert.alert('Error', 'Failed to select photos. Please try again.');
     }
   }
 
-  async function uploadSelectedFile(file: DocumentPicker.DocumentPickerAsset) {
-    if (!file || !bucketName) return;
+  async function uploadSelectedFiles(files: DocumentPicker.DocumentPickerAsset[]) {
+    if (!files || files.length === 0 || !bucketName) return;
 
     try {
       setIsUploading(true);
       setUploadProgress(0);
 
-      // Construct the full path by combining current path and file name
-      const fullPath = currentPath ? `${currentPath}${file.name}` : file.name;
+      let successCount = 0;
+      let failedCount = 0;
+      const totalFiles = files.length;
 
-      await uploadFile(
-        provider,
-        bucketName,
-        fullPath,
-        file.uri,
-        (progress) => setUploadProgress(progress)
-      );
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        try {
+          // Construct the full path by combining current path and file name
+          const fullPath = currentPath ? `${currentPath}${file.name}` : file.name;
 
-      // Refresh the file list after successful upload
+          // Update progress based on file index
+          const baseProgress = (i / totalFiles) * 100;
+          
+          await uploadFile(
+            provider,
+            bucketName,
+            fullPath,
+            file.uri,
+            (fileProgress) => {
+              // Calculate overall progress
+              const overallProgress = baseProgress + (fileProgress / totalFiles);
+              setUploadProgress(Math.round(overallProgress));
+            }
+          );
+
+          successCount++;
+        } catch (error) {
+          console.error(`Error uploading file ${file.name}:`, error);
+          failedCount++;
+        }
+      }
+
+      // Refresh the file list after upload attempts
       await loadBucketObjects();
       setIsUploading(false);
       setUploadProgress(0);
-      Alert.alert('Success', 'File uploaded successfully');
+
+      // Show appropriate success/error message
+      if (failedCount === 0) {
+        Alert.alert('Success', `${successCount} file${successCount > 1 ? 's' : ''} uploaded successfully`);
+      } else if (successCount > 0) {
+        Alert.alert('Partial Success', `${successCount} file${successCount > 1 ? 's' : ''} uploaded successfully, ${failedCount} failed`);
+      } else {
+        Alert.alert('Error', 'Failed to upload files');
+      }
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error('Error uploading files:', error);
       setIsUploading(false);
       setUploadProgress(0);
-      Alert.alert('Error', 'Failed to upload file');
+      Alert.alert('Error', 'Failed to upload files');
     }
   }
+
+  async function uploadSelectedFile(file: DocumentPicker.DocumentPickerAsset) {
+    // Wrapper function for single file upload using the multiple files function
+    await uploadSelectedFiles([file]);
+  }
+
 
   function renderActionButton() {
     const actions = [
@@ -686,12 +726,12 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
       },
       {
         icon: 'file-upload',
-        label: 'Upload File',
+        label: 'Upload Files',
         onPress: handleFileUpload,
       },
       {
         icon: 'image',
-        label: 'Upload Photo',
+        label: 'Upload Photos',
         onPress: handlePhotoUpload,
       },
     ];
@@ -779,6 +819,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
     );
   }
 
+
   function renderRenameModal() {
     const itemType = itemToRename?.isFolder ? 'Folder' : 'File';
     return (
@@ -842,9 +883,10 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         >
           <Card>
             <Card.Content>
-              <Text style={styles.modalTitle}>Uploading File...</Text>
+              <Text style={styles.modalTitle}>Uploading Files...</Text>
               <ProgressBar progress={uploadProgress / 100} color="#2196F3" style={styles.progressBar} />
               <Text style={styles.progressText}>{uploadProgress}%</Text>
+              <Text style={styles.progressSubtext}>Please wait while files are being uploaded</Text>
             </Card.Content>
           </Card>
         </Modal>
@@ -1311,6 +1353,12 @@ const styles = StyleSheet.create({
   progressText: {
     textAlign: 'center',
     marginTop: 8,
+  },
+  progressSubtext: {
+    textAlign: 'center',
+    marginTop: 4,
+    fontSize: 12,
+    opacity: 0.7,
   },
   modalText: {
     marginBottom: 20,
