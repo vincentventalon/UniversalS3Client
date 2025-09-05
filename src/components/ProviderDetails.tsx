@@ -51,6 +51,10 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
   const [isMultiSelect, setIsMultiSelect] = useState(false);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   
+  // States for folder upload
+  const [isFolderUploadModalOpen, setIsFolderUploadModalOpen] = useState(false);
+  const [folderName, setFolderName] = useState('');
+  
   // States for view (list or grid)
   const [viewMode, setViewMode] = useState<'list' | 'grid2' | 'grid3'>('list');
   const [showTitlesInGrid, setShowTitlesInGrid] = useState(true);
@@ -715,6 +719,62 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
     await uploadSelectedFiles([file]);
   }
 
+  async function handleFolderUpload() {
+    setIsFolderUploadModalOpen(true);
+  }
+
+  async function uploadFolderContent() {
+    if (!folderName.trim()) {
+      Alert.alert('Error', 'Please enter a folder name');
+      return;
+    }
+
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: '*/*',
+        copyToCacheDirectory: true,
+        multiple: true // Permettre la sélection multiple pour simuler le contenu d'un dossier
+      });
+
+      if (result.canceled) {
+        setIsFolderUploadModalOpen(false);
+        setFolderName('');
+        return;
+      }
+
+      // Créer les fichiers avec le préfixe du dossier
+      const folderPath = folderName.trim().endsWith('/') ? folderName.trim() : `${folderName.trim()}/`;
+      const filesWithFolderPath = result.assets.map(file => {
+        // Préserver la structure de sous-dossiers si le nom du fichier contient déjà des chemins
+        const fileName = file.name;
+        const finalPath = `${folderPath}${fileName}`;
+        
+        return {
+          ...file,
+          name: finalPath
+        };
+      });
+
+      // Fermer la modal
+      setIsFolderUploadModalOpen(false);
+      setFolderName('');
+
+      // Montrer une alerte avec le nombre de fichiers sélectionnés
+      Alert.alert(
+        'Upload Started', 
+        `Uploading ${filesWithFolderPath.length} file${filesWithFolderPath.length > 1 ? 's' : ''} to folder "${folderName.trim()}"`
+      );
+
+      // Upload tous les fichiers avec leur nouveau nom incluant le dossier
+      await uploadSelectedFiles(filesWithFolderPath);
+    } catch (err) {
+      console.error('Folder upload error:', err);
+      Alert.alert('Error', 'Failed to upload folder contents. Please try again.');
+      setIsFolderUploadModalOpen(false);
+      setFolderName('');
+    }
+  }
+
   function renderActionButton() {
     const actions = [
       {
@@ -731,6 +791,11 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         icon: 'image',
         label: 'Upload Photos',
         onPress: handlePhotoUpload,
+      },
+      {
+        icon: 'folder-upload',
+        label: 'Upload Folder',
+        onPress: handleFolderUpload,
       },
     ];
 
@@ -808,6 +873,57 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
                   style={styles.modalButton}
                 >
                   Create
+                </Button>
+              </View>
+            </Card.Content>
+          </Card>
+        </Modal>
+      </Portal>
+    );
+  }
+
+  function renderFolderUploadModal() {
+    return (
+      <Portal>
+        <Modal
+          visible={isFolderUploadModalOpen}
+          onDismiss={() => {
+            setIsFolderUploadModalOpen(false);
+            setFolderName('');
+          }}
+          contentContainerStyle={styles.modalContainer}
+        >
+          <Card>
+            <Card.Content>
+              <Text style={styles.modalTitle}>Upload Folder</Text>
+              <Text style={styles.modalText}>
+                Enter a folder name and then select multiple files to upload as folder content.
+              </Text>
+              <TextInput
+                mode="outlined"
+                label="Folder name"
+                value={folderName}
+                onChangeText={setFolderName}
+                style={styles.input}
+                placeholder="e.g., Documents, Photos, etc."
+              />
+              <View style={styles.buttonRow}>
+                <Button
+                  mode="outlined"
+                  onPress={() => {
+                    setIsFolderUploadModalOpen(false);
+                    setFolderName('');
+                  }}
+                  style={styles.modalButton}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  mode="contained"
+                  onPress={uploadFolderContent}
+                  style={styles.modalButton}
+                >
+                  Select Files
                 </Button>
               </View>
             </Card.Content>
@@ -1196,6 +1312,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
       )}
       
       {renderCreateFolderModal()}
+      {renderFolderUploadModal()}
       {renderRenameModal()}
       {renderUploadProgress()}
       {renderActionButton()}
