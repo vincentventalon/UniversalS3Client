@@ -19,6 +19,7 @@ import { generateEndpoint, getProviderConfig } from './src/config/providers';
 // Remove secureStorage auth helpers and only use simplified storage APIs
 import { saveProviders, getProviders } from './src/services/secureStorage';
 import { ClipboardProvider } from './src/context/ClipboardContext';
+import { testHeicDetection, testHeicConversionSupport } from './src/utils/heicTestUtils';
 
 export default function App() {
   const [providers, setProviders] = useState<S3Provider[]>([]);
@@ -50,6 +51,11 @@ export default function App() {
 
   // Initial app setup - load providers immediately
   useEffect(() => {
+    // Test HEIC support on app initialization
+    console.log('=== HEIC Support Initialization ===');
+    testHeicDetection();
+    testHeicConversionSupport();
+    
     loadProviders();
   }, []);
 

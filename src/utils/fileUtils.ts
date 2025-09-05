@@ -2,7 +2,7 @@
  * Image file extensions that should display as thumbnails
  */
 const IMAGE_EXTENSIONS = [
-  '.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg', '.tiff', '.tif', '.ico'
+  '.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg', '.tiff', '.tif', '.ico', '.heic', '.heif'
 ];
 
 /**
@@ -26,4 +26,14 @@ export function getFileExtension(filename: string): string {
     return '';
   }
   return filename.substring(lastDotIndex).toLowerCase();
+}
+
+/**
+ * Checks if a file is a HEIC/HEIF image based on its file extension
+ * @param filename The name of the file
+ * @returns true if the file is a HEIC/HEIF image, false otherwise
+ */
+export function isHeicFile(filename: string): boolean {
+  const extension = getFileExtension(filename);
+  return extension === '.heic' || extension === '.heif';
 }
