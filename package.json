@@ -1,6 +1,6 @@
 {
   "name": "universal-s3-client",
-  "version": "25.8.0",
+  "version": "25.9.0",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
