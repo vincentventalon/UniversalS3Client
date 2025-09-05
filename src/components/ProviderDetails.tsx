@@ -599,17 +599,18 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
       const result = await DocumentPicker.getDocumentAsync({
         type: '*/*',
         copyToCacheDirectory: true,
-        multiple: false
+        multiple: true // Permettre la sélection multiple
       });
 
       if (result.canceled) {
         return;
       }
 
-      await uploadSelectedFile(result.assets[0]);
+      // Upload tous les fichiers sélectionnés
+      await uploadSelectedFiles(result.assets);
     } catch (err) {
       console.error('File selection error:', err);
-      Alert.alert('Error', 'Failed to select file. Please try again.');
+      Alert.alert('Error', 'Failed to select files. Please try again.');
     }
   }
 
@@ -627,22 +628,25 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         mediaTypes: 'images',
         allowsEditing: false,
         quality: 1,
+        allowsMultipleSelection: true, // Permettre la sélection multiple
       });
 
       if (result.canceled) {
         return;
       }
 
-      const asset = result.assets[0];
-      await uploadSelectedFile({
+      // Convertir les assets en format compatible avec uploadSelectedFiles
+      const files = result.assets.map(asset => ({
         uri: asset.uri,
         name: asset.uri.split('/').pop() || `photo-${Date.now()}.jpg`,
         mimeType: 'image/jpeg',
-        size: 0, // Size will be determined when reading the file
-      });
+        size: asset.fileSize || 0,
+      }));
+
+      await uploadSelectedFiles(files);
     } catch (err) {
       console.error('Photo selection error:', err);
-      Alert.alert('Error', 'Failed to select photo. Please try again.');
+      Alert.alert('Error', 'Failed to select photos. Please try again.');
     }
   }
 
