@@ -680,3 +680,82 @@ export async function copyFolderCrossBucket(
     throw error;
   }
 }
+
+/**
+ * Download file content as text
+ */
+export async function downloadFileAsText(
+  provider: S3Provider,
+  bucketName: string,
+  key: string
+): Promise<string> {
+  try {
+    const client = createS3Client(provider);
+    const command = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: key,
+    });
+    
+    const response = await client.send(command);
+    
+    if (!response.Body) {
+      throw new Error('Failed to retrieve file content');
+    }
+
+    // Convert the response body to text for React Native
+    let textContent: string;
+    
+    if (response.Body instanceof Uint8Array) {
+      textContent = new TextDecoder('utf-8').decode(response.Body);
+    } else if (response.Body && typeof response.Body.transformToString === 'function') {
+      textContent = await response.Body.transformToString();
+    } else {
+      // Fallback: convert stream to text
+      const chunks: Buffer[] = [];
+      const stream = response.Body as any;
+      
+      for await (const chunk of stream) {
+        chunks.push(chunk);
+      }
+      
+      const buffer = Buffer.concat(chunks);
+      textContent = buffer.toString('utf-8');
+    }
+
+    return textContent;
+  } catch (error) {
+    console.error('Error downloading file as text:', error);
+    throw error;
+  }
+}
+
+/**
+ * Upload text content as a file, replacing the existing file
+ */
+export async function uploadTextAsFile(
+  provider: S3Provider,
+  bucketName: string,
+  key: string,
+  textContent: string,
+  contentType: string = 'text/plain'
+): Promise<void> {
+  try {
+    const client = createS3Client(provider);
+    
+    // Convert text to Uint8Array
+    const encoder = new TextEncoder();
+    const uint8Array = encoder.encode(textContent);
+
+    const command = new PutObjectCommand({
+      Bucket: bucketName,
+      Key: key,
+      Body: uint8Array,
+      ContentType: contentType,
+    });
+
+    await client.send(command);
+  } catch (error) {
+    console.error('Error uploading text as file:', error);
+    throw error;
+  }
+}

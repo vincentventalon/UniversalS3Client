@@ -1090,6 +1090,7 @@ function ProviderDetails({ provider, onBack }: ProviderDetailsProps) {
         bucketName={bucketName}
         object={selectedObject}
         onBack={() => setSelectedObject(null)}
+        onRefresh={() => loadBucketContents()}
       />
     );
   }
