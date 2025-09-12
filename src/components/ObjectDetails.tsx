@@ -5,21 +5,25 @@ import * as Clipboard from 'expo-clipboard';
 import * as Sharing from 'expo-sharing';
 import { S3Provider, S3Object } from '../types';
 import { getObjectUrl, getSignedObjectUrl, deleteObject } from '../services/s3Service';
+import { isEditableFile } from '../utils/fileUtils';
+import FileEditor from './FileEditor';
 
 interface ObjectDetailsProps {
   provider: S3Provider;
   bucketName: string;
   object: S3Object;
   onBack: () => void;
+  onRefresh?: () => void;
 }
 
-function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsProps) {
+function ObjectDetails({ provider, bucketName, object, onBack, onRefresh }: ObjectDetailsProps) {
   const [isLoadingUrl, setIsLoadingUrl] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [isRenameModalVisible, setIsRenameModalVisible] = React.useState(false);
   const [newName, setNewName] = React.useState(object.name);
   const [isRenaming, setIsRenaming] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
+  const [showEditor, setShowEditor] = React.useState(false);
 
   function formatSize(bytes: number): string {
     if (bytes === 0) return '0 Bytes';
@@ -173,6 +177,32 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
     }
   }
 
+  const handleEdit = () => {
+    setShowEditor(true);
+  };
+
+  const handleEditorBack = () => {
+    setShowEditor(false);
+  };
+
+  const handleEditorSaved = () => {
+    // Refresh the parent view if callback is provided
+    onRefresh?.();
+  };
+
+  // Show the file editor if requested
+  if (showEditor) {
+    return (
+      <FileEditor
+        provider={provider}
+        bucketName={bucketName}
+        object={object}
+        onBack={handleEditorBack}
+        onSaved={handleEditorSaved}
+      />
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -264,6 +294,20 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
 
               {error && <Text style={styles.errorText}>{error}</Text>}
               
+              {isEditableFile(object.name) && (
+                <View style={styles.editButtonContainer}>
+                  <Button
+                    mode="contained"
+                    onPress={handleEdit}
+                    style={[styles.actionButton, styles.editButton]}
+                    icon="file-edit"
+                    contentStyle={styles.buttonContent}
+                  >
+                    Edit File
+                  </Button>
+                </View>
+              )}
+
               <View style={styles.managementButtonsContainer}>
                 <Button
                   mode="outlined"
@@ -395,6 +439,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     gap: 12,
   },
+  editButtonContainer: {
+    marginTop: 16,
+    marginBottom: 8,
+  },
   managementButtonsContainer: {
     flexDirection: 'row',
     marginTop: 8,
@@ -420,6 +468,9 @@ const styles = StyleSheet.create({
   managementButton: {
     borderColor: '#FF9800',
     borderWidth: 1,
+  },
+  editButton: {
+    backgroundColor: '#9C27B0',
   },
   deleteButton: {
     backgroundColor: '#FF5252',
