@@ -5,6 +5,10 @@ import * as Clipboard from 'expo-clipboard';
 import * as Sharing from 'expo-sharing';
 import { S3Provider, S3Object } from '../types';
 import { getObjectUrl, getSignedObjectUrl, deleteObject } from '../services/s3Service';
+import { isCsvFile, isJsonFile, isTextFile, getFileType } from '../utils/fileUtils';
+import CsvViewer from './CsvViewer';
+import JsonViewer from './JsonViewer';
+import TextViewer from './TextViewer';
 
 interface ObjectDetailsProps {
   provider: S3Provider;
@@ -20,6 +24,7 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
   const [newName, setNewName] = React.useState(object.name);
   const [isRenaming, setIsRenaming] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
+  const [viewerMode, setViewerMode] = React.useState<'details' | 'csv' | 'json' | 'text'>('details');
 
   function formatSize(bytes: number): string {
     if (bytes === 0) return '0 Bytes';
@@ -173,6 +178,48 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
     }
   }
 
+  const handleOpenViewer = (type: 'csv' | 'json' | 'text') => {
+    setViewerMode(type);
+  };
+
+  const handleBackToDetails = () => {
+    setViewerMode('details');
+  };
+
+  // Show appropriate viewer based on mode
+  if (viewerMode === 'csv') {
+    return (
+      <CsvViewer
+        provider={provider}
+        bucketName={bucketName}
+        object={object}
+        onBack={handleBackToDetails}
+      />
+    );
+  }
+
+  if (viewerMode === 'json') {
+    return (
+      <JsonViewer
+        provider={provider}
+        bucketName={bucketName}
+        object={object}
+        onBack={handleBackToDetails}
+      />
+    );
+  }
+
+  if (viewerMode === 'text') {
+    return (
+      <TextViewer
+        provider={provider}
+        bucketName={bucketName}
+        object={object}
+        onBack={handleBackToDetails}
+      />
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -261,6 +308,47 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
                   Share Link
                 </Button>
               </View>
+
+              {/* File Viewer Buttons */}
+              {(isCsvFile(object.name) || isJsonFile(object.name) || isTextFile(object.name)) && (
+                <View style={styles.viewerButtonsContainer}>
+                  {isCsvFile(object.name) && (
+                    <Button
+                      mode="contained"
+                      onPress={() => handleOpenViewer('csv')}
+                      style={[styles.actionButton, styles.viewerButton]}
+                      icon="table"
+                      contentStyle={styles.buttonContent}
+                    >
+                      Ouvrir dans le visualiseur de CSV
+                    </Button>
+                  )}
+                  
+                  {isJsonFile(object.name) && (
+                    <Button
+                      mode="contained"
+                      onPress={() => handleOpenViewer('json')}
+                      style={[styles.actionButton, styles.viewerButton]}
+                      icon="code-json"
+                      contentStyle={styles.buttonContent}
+                    >
+                      Ouvrir dans le visualiseur de JSON
+                    </Button>
+                  )}
+                  
+                  {isTextFile(object.name) && (
+                    <Button
+                      mode="contained"
+                      onPress={() => handleOpenViewer('text')}
+                      style={[styles.actionButton, styles.viewerButton]}
+                      icon="file-document"
+                      contentStyle={styles.buttonContent}
+                    >
+                      Ouvrir dans le visualiseur de texte
+                    </Button>
+                  )}
+                </View>
+              )}
 
               {error && <Text style={styles.errorText}>{error}</Text>}
               
@@ -399,6 +487,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 8,
     gap: 12,
+  },
+  viewerButtonsContainer: {
+    marginTop: 16,
+    gap: 8,
+  },
+  viewerButton: {
+    backgroundColor: '#9C27B0',
   },
   actionButton: {
     flex: 1,
