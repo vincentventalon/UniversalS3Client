@@ -20,6 +20,13 @@ const JSON_EXTENSIONS = [
 ];
 
 /**
+ * YAML file extensions
+ */
+const YAML_EXTENSIONS = [
+  '.yaml', '.yml'
+];
+
+/**
  * Text file extensions that can be viewed as plain text
  */
 const TEXT_EXTENSIONS = [
@@ -82,6 +89,16 @@ export function isJsonFile(filename: string): boolean {
 }
 
 /**
+ * Checks if a file is a YAML file based on its file extension
+ * @param filename The name of the file
+ * @returns true if the file is a YAML file, false otherwise
+ */
+export function isYamlFile(filename: string): boolean {
+  const extension = getFileExtension(filename);
+  return YAML_EXTENSIONS.includes(extension);
+}
+
+/**
  * Checks if a file is a text file based on its file extension
  * @param filename The name of the file
  * @returns true if the file is a text file, false otherwise
@@ -100,6 +117,7 @@ export function getFileType(filename: string): string {
   if (isImageFile(filename)) return 'image';
   if (isCsvFile(filename)) return 'csv';
   if (isJsonFile(filename)) return 'json';
+  if (isYamlFile(filename)) return 'yaml';
   if (isTextFile(filename)) return 'text';
   return 'file';
 }

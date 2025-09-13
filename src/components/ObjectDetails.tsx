@@ -5,9 +5,10 @@ import * as Clipboard from 'expo-clipboard';
 import * as Sharing from 'expo-sharing';
 import { S3Provider, S3Object } from '../types';
 import { getObjectUrl, getSignedObjectUrl, deleteObject } from '../services/s3Service';
-import { isCsvFile, isJsonFile, isTextFile, getFileType } from '../utils/fileUtils';
+import { isCsvFile, isJsonFile, isYamlFile, isTextFile, getFileType } from '../utils/fileUtils';
 import CsvViewer from './CsvViewer';
 import JsonViewer from './JsonViewer';
+import YamlViewer from './YamlViewer';
 import TextViewer from './TextViewer';
 
 interface ObjectDetailsProps {
@@ -24,7 +25,7 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
   const [newName, setNewName] = React.useState(object.name);
   const [isRenaming, setIsRenaming] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
-  const [viewerMode, setViewerMode] = React.useState<'details' | 'csv' | 'json' | 'text'>('details');
+  const [viewerMode, setViewerMode] = React.useState<'details' | 'csv' | 'json' | 'yaml' | 'text'>('details');
 
   function formatSize(bytes: number): string {
     if (bytes === 0) return '0 Bytes';
@@ -178,7 +179,7 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
     }
   }
 
-  const handleOpenViewer = (type: 'csv' | 'json' | 'text') => {
+  const handleOpenViewer = (type: 'csv' | 'json' | 'yaml' | 'text') => {
     setViewerMode(type);
   };
 
@@ -201,6 +202,17 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
   if (viewerMode === 'json') {
     return (
       <JsonViewer
+        provider={provider}
+        bucketName={bucketName}
+        object={object}
+        onBack={handleBackToDetails}
+      />
+    );
+  }
+
+  if (viewerMode === 'yaml') {
+    return (
+      <YamlViewer
         provider={provider}
         bucketName={bucketName}
         object={object}
@@ -310,7 +322,7 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
               </View>
 
               {/* File Viewer Buttons */}
-              {(isCsvFile(object.name) || isJsonFile(object.name) || isTextFile(object.name)) && (
+              {(isCsvFile(object.name) || isJsonFile(object.name) || isYamlFile(object.name) || isTextFile(object.name)) && (
                 <View style={styles.viewerButtonsContainer}>
                   {isCsvFile(object.name) && (
                     <Button
@@ -320,7 +332,7 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
                       icon="table"
                       contentStyle={styles.buttonContent}
                     >
-                      Ouvrir dans le visualiseur de CSV
+                      Open CSV Viewer
                     </Button>
                   )}
                   
@@ -332,7 +344,19 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
                       icon="code-json"
                       contentStyle={styles.buttonContent}
                     >
-                      Ouvrir dans le visualiseur de JSON
+                      Open JSON Viewer
+                    </Button>
+                  )}
+                  
+                  {isYamlFile(object.name) && (
+                    <Button
+                      mode="contained"
+                      onPress={() => handleOpenViewer('yaml')}
+                      style={[styles.actionButton, styles.viewerButton]}
+                      icon="code-tags"
+                      contentStyle={styles.buttonContent}
+                    >
+                      Open YAML Viewer
                     </Button>
                   )}
                   
@@ -344,7 +368,7 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
                       icon="file-document"
                       contentStyle={styles.buttonContent}
                     >
-                      Ouvrir dans le visualiseur de texte
+                      Open Text Viewer
                     </Button>
                   )}
                 </View>
