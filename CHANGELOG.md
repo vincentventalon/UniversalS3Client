@@ -31,6 +31,10 @@ and this project uses [Calendar Versioning](https://calver.org/) (YY.M.MICRO).
   - Multi-select support with checkboxes
   - Pull-to-refresh functionality
   - Touch feedback and selection states
+  - **Enhanced Grid Item Layout**: Improved visual styling and layout for grid items
+    - Optimized dynamic item sizing with minimal spacing
+    - Better file title display for folders and non-image files by default
+    - Refactored grid file item component with improved styling
 
 - **Title Visibility Toggle**: Eye icon to show/hide file titles in grid view
   - Only appears in grid modes (2x2 and 3x3)
