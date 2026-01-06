@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M.MICRO).
 
+## [26.1.0] - 2026-01-06
+
+### Added
+- **File Viewers**: New built-in viewers for common file formats
+  - YAML file viewer with syntax highlighting
+  - CSV file viewer with table display
+  - JSON file viewer with formatted output
+  - Text file viewer for plain text files
+
+- **HEIC Image Support**: Full support for Apple's HEIC image format
+  - Automatic HEIC detection and conversion
+  - Optimized thumbnail generation with compression
+  - Seamless integration with existing image preview
+
+- **Multi-Select Copy**: Copy multiple selected files at once
+  - Select multiple objects and copy them to clipboard
+  - Enhanced clipboard functionality for batch operations
+
+### Improved
+- **Multi-File Upload**: Enhanced file upload experience for multiple files
+- Updated dependencies and stability improvements
+
+---
+
 ## [25.8.0] - 2025-08-15
 
 ### Added
