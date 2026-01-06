@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, FlatList } from 'react-native';
 import { Card, Text, IconButton, Divider, Surface, useTheme } from 'react-native-paper';
 import { S3Provider } from '../types';
+import { getProviderConfig } from '../config/providers';
 
 interface ProviderListProps {
   providers: S3Provider[];
@@ -34,23 +35,18 @@ function ProviderList({ providers, onSelect, onDelete }: ProviderListProps) {
   }
 
   const renderProviderItem = ({ item }: { item: S3Provider }) => {
-    let bucketName = '';
-    let host = '';
-    let location = item.region || '';
-    if (item.type === 'aws') {
-      host = 'AWS';
-      const match = item.name.match(/- ([^(]+)(?:\s|$)/);
-      bucketName = match && match[1] ? match[1].trim() : item.name;
-    } else if (item.type === 'hetzner') {
-      host = 'Hetzner';
-      const match = item.name.match(/- ([^(]+)(?:\s|$)/);
-      bucketName = match && match[1] ? match[1].trim() : item.name;
-    }
+    const config = getProviderConfig(item.type);
+    const location = item.region || '';
+
+    // Extract bucket name from provider name (format: "Provider Name - bucket-name")
+    const match = item.name.match(/- ([^(]+)(?:\s|$)/);
+    const bucketName = match && match[1] ? match[1].trim() : item.name;
+
     return (
       <Card style={styles.providerCard} onPress={() => onSelect(item)} mode="elevated">
         <Card.Content style={styles.rowContent}>
           <Text style={styles.bucketLine} numberOfLines={1}>
-            {host} — {bucketName}{location ? ` (${location})` : ''}
+            {config.name} — {bucketName}{location ? ` (${location})` : ''}
           </Text>
           <IconButton
             icon="delete-outline"
