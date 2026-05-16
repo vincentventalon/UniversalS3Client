@@ -12,7 +12,8 @@ export type S3ProviderType =
   | 'scaleway'
   | 'vultr'
   | 'linode'
-  | 'minio';
+  | 'minio'
+  | 'idrive';
 
 export interface S3Provider {
   id: string;

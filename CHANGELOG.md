@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M.MICRO).
 
+## [26.5.0] - 2026-05-16
+
+### Added
+- **iDrive e2 provider**: Native support for iDrive e2 S3-compatible object storage
+  - Custom endpoint configuration (paste the region endpoint from the iDrive e2 console)
+  - Endpoint normalization: `https://` prefix is auto-stripped if pasted
+
+### Fixed
+- Object rename now uses path-style URLs for all non-AWS providers (previously path-style was only forced for Hetzner, which could break renames on MinIO, DigitalOcean, Wasabi, etc.)
+
 ## [26.1.0] - 2026-01-06
 
 ### Added

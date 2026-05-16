@@ -160,7 +160,7 @@ function ObjectDetails({ provider, bucketName, object, onBack }: ObjectDetailsPr
           accessKeyId: provider.accessKey,
           secretAccessKey: provider.secretKey
         },
-        forcePathStyle: provider.type === 'hetzner',
+        forcePathStyle: provider.type !== 'aws',
       });
       const CopyObjectCommand = require('@aws-sdk/client-s3').CopyObjectCommand;
       await client.send(new CopyObjectCommand({

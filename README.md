@@ -21,7 +21,7 @@ See `PrivacyPolicy.md` for more details. There is no analytics and no master pas
 
 ## Supported providers
 
-Out of the box, 14 S3‑compatible providers are supported:
+Out of the box, 15 S3‑compatible providers are supported:
 
 - AWS S3 (33 regions)
 - Hetzner Storage Box (3 locations)
@@ -37,6 +37,7 @@ Out of the box, 14 S3‑compatible providers are supported:
 - Google Cloud Storage
 - Azure Blob Storage
 - MinIO (custom endpoints)
+- iDrive e2 (custom endpoints)
 
 Note on compatibility: the app pins AWS SDK v3.188.0 for best compatibility (e.g., Hetzner requires ≤ v3.188.0 due to checksum changes in later versions).
 

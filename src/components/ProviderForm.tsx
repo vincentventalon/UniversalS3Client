@@ -69,6 +69,7 @@ function ProviderForm({
   const [locationHintMenuVisible, setLocationHintMenuVisible] = useState(false);
 
   const currentConfig = getProviderConfig(type);
+  const usesCustomEndpoint = type === 'minio' || type === 'idrive';
 
   // Reset additional fields when provider type changes
   useEffect(() => {
@@ -98,7 +99,7 @@ function ProviderForm({
       isValid = false;
     }
 
-    if (!region.trim() && type !== 'minio') {
+    if (!region.trim() && !usesCustomEndpoint) {
       newErrors.region = 'Region is required';
       isValid = false;
     }
@@ -128,8 +129,8 @@ function ProviderForm({
       isValid = false;
     }
 
-    if (type === 'minio' && !customEndpoint.trim()) {
-      newErrors.customEndpoint = 'Custom endpoint is required for MinIO';
+    if (usesCustomEndpoint && !customEndpoint.trim()) {
+      newErrors.customEndpoint = `Custom endpoint is required for ${currentConfig.name}`;
       isValid = false;
     }
 
@@ -256,8 +257,8 @@ function ProviderForm({
             </>
           )}
 
-          {/* Custom endpoint for MinIO */}
-          {type === 'minio' && (
+          {/* Custom endpoint for MinIO / iDrive e2 */}
+          {usesCustomEndpoint && (
             <>
               <TextInput
                 mode="outlined"
@@ -266,7 +267,11 @@ function ProviderForm({
                 onChangeText={setCustomEndpoint}
                 style={styles.input}
                 error={!!errors.customEndpoint}
-                placeholder="https://your-minio-server.com"
+                placeholder={
+                  type === 'idrive'
+                    ? 'https://x0x0.xx.idrivee2-xx.com'
+                    : 'https://your-minio-server.com'
+                }
                 autoCapitalize="none"
               />
               {errors.customEndpoint ? <HelperText type="error">{errors.customEndpoint}</HelperText> : null}
@@ -274,7 +279,7 @@ function ProviderForm({
           )}
 
           {/* Region selection */}
-          {type !== 'minio' && (
+          {!usesCustomEndpoint && (
             <>
               <Text style={styles.sectionLabel}>Region</Text>
               <Menu

@@ -194,6 +194,15 @@ export const PROVIDER_CONFIGS: Record<S3ProviderType, ProviderConfig> = {
     ],
   },
 
+  idrive: {
+    name: 'iDrive e2',
+    type: 'idrive',
+    endpointPattern: 'https://{customEndpoint}',
+    regions: [
+      { value: 'custom', label: 'Custom Endpoint' },
+    ],
+  },
+
   google: {
     name: 'Google Cloud Storage',
     type: 'google',
@@ -296,7 +305,9 @@ export function generateEndpoint(
     endpoint = endpoint.replace('{clusterId}', clusterId);
   }
   if (customEndpoint) {
-    endpoint = endpoint.replace('{customEndpoint}', customEndpoint);
+    // Strip any user-pasted scheme so we don't end up with https://https://...
+    const cleaned = customEndpoint.replace(/^https?:\/\//i, '');
+    endpoint = endpoint.replace('{customEndpoint}', cleaned);
   }
 
   return endpoint;
