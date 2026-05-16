@@ -2,7 +2,7 @@ import { ProviderConfig, S3ProviderType } from '../types';
 
 export const PROVIDER_CONFIGS: Record<S3ProviderType, ProviderConfig> = {
   aws: {
-    name: 'AWS S3',
+    name: 'AWS',
     type: 'aws',
     endpointPattern: 'https://s3.{region}.amazonaws.com',
     regions: [
@@ -43,7 +43,7 @@ export const PROVIDER_CONFIGS: Record<S3ProviderType, ProviderConfig> = {
   },
 
   hetzner: {
-    name: 'Hetzner Storage Box',
+    name: 'Hetzner',
     type: 'hetzner',
     endpointPattern: 'https://{region}.your-objectstorage.com',
     regions: [
@@ -73,7 +73,7 @@ export const PROVIDER_CONFIGS: Record<S3ProviderType, ProviderConfig> = {
   },
 
   digitalocean: {
-    name: 'DigitalOcean Spaces',
+    name: 'DigitalOcean',
     type: 'digitalocean',
     endpointPattern: 'https://{region}.digitaloceanspaces.com',
     regions: [
@@ -100,7 +100,7 @@ export const PROVIDER_CONFIGS: Record<S3ProviderType, ProviderConfig> = {
   },
 
   backblaze: {
-    name: 'Backblaze B2',
+    name: 'Backblaze',
     type: 'backblaze',
     endpointPattern: 'https://s3.{region}.backblazeb2.com',
     regions: [
@@ -111,7 +111,7 @@ export const PROVIDER_CONFIGS: Record<S3ProviderType, ProviderConfig> = {
   },
 
   scaleway: {
-    name: 'Scaleway Object Storage',
+    name: 'Scaleway',
     type: 'scaleway',
     endpointPattern: 'https://s3.{region}.scw.cloud',
     regions: [
@@ -122,7 +122,7 @@ export const PROVIDER_CONFIGS: Record<S3ProviderType, ProviderConfig> = {
   },
 
   vultr: {
-    name: 'Vultr Object Storage',
+    name: 'Vultr',
     type: 'vultr',
     endpointPattern: 'https://{region}.vultrobjects.com',
     regions: [
@@ -136,7 +136,7 @@ export const PROVIDER_CONFIGS: Record<S3ProviderType, ProviderConfig> = {
   },
 
   linode: {
-    name: 'Linode Object Storage',
+    name: 'Linode',
     type: 'linode',
     endpointPattern: 'https://{clusterId}.linodeobjects.com',
     requiresClusterId: true,
@@ -148,7 +148,7 @@ export const PROVIDER_CONFIGS: Record<S3ProviderType, ProviderConfig> = {
   },
 
   oracle: {
-    name: 'Oracle Cloud Infrastructure',
+    name: 'Oracle',
     type: 'oracle',
     endpointPattern: 'https://{namespace}.compat.objectstorage.{region}.oraclecloud.com',
     requiresNamespace: true,
@@ -168,7 +168,7 @@ export const PROVIDER_CONFIGS: Record<S3ProviderType, ProviderConfig> = {
   },
 
   ibm: {
-    name: 'IBM Cloud Object Storage',
+    name: 'IBM',
     type: 'ibm',
     endpointPattern: 'https://s3.{region}.cloud-object-storage.appdomain.cloud',
     regions: [
@@ -255,7 +255,7 @@ export const PROVIDER_CONFIGS: Record<S3ProviderType, ProviderConfig> = {
   },
 
   azure: {
-    name: 'Azure Blob Storage',
+    name: 'Azure',
     type: 'azure',
     endpointPattern: 'https://{accountId}.blob.core.windows.net',
     regions: [
