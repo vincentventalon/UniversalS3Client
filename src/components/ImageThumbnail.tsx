@@ -3,8 +3,6 @@ import { View, Image, StyleSheet } from 'react-native';
 import { List } from 'react-native-paper';
 import { S3Object, S3Provider } from '../types';
 import { getSignedObjectUrl } from '../services/s3Service';
-import { isHeicFile } from '../utils/fileUtils';
-import { convertHeicFromUrl, convertHeicToThumbnail, createBlobUrl, revokeBlobUrl, isHeicConversionSupported } from '../utils/heicConverter';
 
 interface ImageThumbnailProps {
   item: S3Object;
@@ -17,69 +15,33 @@ interface ImageThumbnailProps {
 
 /**
  * Component that displays an image thumbnail for image files,
- * with fallback to generic file icon on error
+ * with fallback to generic file icon on error.
+ * iOS natively supports HEIC images, no conversion needed.
  */
-export function ImageThumbnail({ 
-  item, 
-  provider, 
-  bucketName, 
-  color = '#2196F3', 
-  size = 24, 
-  fillContainer = false 
+export function ImageThumbnail({
+  item,
+  provider,
+  bucketName,
+  color = '#2196F3',
+  size = 24,
+  fillContainer = false
 }: ImageThumbnailProps) {
   const [imageError, setImageError] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isConverting, setIsConverting] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
-    let currentBlobUrl: string | null = null;
 
     const generateImageUrl = async () => {
       try {
         setLoading(true);
         setImageError(false);
-        setIsConverting(false);
-        
-        // Use signed URLs for all providers (AWS and S3-compatible)
-        // This ensures authentication works for both public and private buckets
-        const signedUrl = await getSignedObjectUrl(provider, bucketName, item.key, 3600); // 1 hour expiry
-        
-        if (!isMounted) return;
 
-        // Check if this is a HEIC file and if conversion is supported
-        const isHeic = isHeicFile(item.name);
-        
-        if (isHeic && isHeicConversionSupported()) {
-          try {
-            setIsConverting(true);
-            console.log('Converting HEIC image:', item.name);
-            
-            // Convert HEIC to JPEG thumbnail with optimized compression
-            const convertedBlob = await convertHeicToThumbnail(signedUrl);
-            
-            if (!isMounted) return;
-            
-            // Create a blob URL for the converted thumbnail
-            const blobUrl = createBlobUrl(convertedBlob);
-            currentBlobUrl = blobUrl;
-            setImageUrl(blobUrl);
-            
-            console.log('HEIC conversion successful for:', item.name);
-          } catch (conversionError) {
-            console.error('Error converting HEIC image:', conversionError);
-            if (isMounted) {
-              // Fallback to original URL (might not work in all browsers, but worth trying)
-              setImageUrl(signedUrl);
-            }
-          } finally {
-            if (isMounted) {
-              setIsConverting(false);
-            }
-          }
-        } else {
-          // For non-HEIC images, use the signed URL directly
+        // Use signed URLs for all providers (AWS and S3-compatible)
+        const signedUrl = await getSignedObjectUrl(provider, bucketName, item.key, 3600);
+
+        if (isMounted) {
           setImageUrl(signedUrl);
         }
       } catch (error) {
@@ -98,24 +60,19 @@ export function ImageThumbnail({
 
     return () => {
       isMounted = false;
-      // Clean up blob URL to prevent memory leaks
-      if (currentBlobUrl) {
-        revokeBlobUrl(currentBlobUrl);
-      }
     };
   }, [provider, bucketName, item.key]);
 
   // Show loading state
-  if (loading || isConverting) {
-    const loadingIcon = isConverting ? "image-sync" : "loading";
+  if (loading) {
     if (fillContainer) {
       return (
         <View style={styles.fullContainer}>
-          <List.Icon icon={loadingIcon} color="rgba(33, 150, 243, 0.8)" />
+          <List.Icon icon="loading" color="rgba(33, 150, 243, 0.8)" />
         </View>
       );
     }
-    return <List.Icon icon={loadingIcon} color={color} />;
+    return <List.Icon icon="loading" color={color} />;
   }
   
   // If there was an error loading the image or no URL, show generic file icon
