@@ -1,0 +1,56 @@
+name: iOS Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'EAS build profile'
+        required: false
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - preview
+
+jobs:
+  build:
+    name: EAS iOS Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Verify tag matches app.json version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          APP_VERSION=$(node -p "require('./app.json').expo.version")
+          if [ "$TAG_VERSION" != "$APP_VERSION" ]; then
+            echo "::error::Tag version '$TAG_VERSION' does not match app.json expo.version '$APP_VERSION'. Bump app.json or retag."
+            exit 1
+          fi
+          echo "Tag and app.json version match: $APP_VERSION"
+
+      - name: Queue EAS iOS build
+        run: |
+          PROFILE="${{ github.event.inputs.profile || 'production' }}"
+          echo "Queueing EAS build with profile: $PROFILE"
+          eas build --platform ios --profile "$PROFILE" --non-interactive --no-wait

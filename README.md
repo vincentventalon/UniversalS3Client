@@ -82,6 +82,30 @@ npx eas build -p android
 npx eas build -p ios
 ```
 
+## Releasing
+
+iOS builds are queued automatically by GitHub Actions on every release tag (`v*`). To cut a release:
+
+1. Bump `expo.version` in `app.json` (CalVer `YY.M.MICRO`) and add a `CHANGELOG.md` entry
+2. Commit and push to `master`
+3. Tag the commit and push the tag:
+
+```bash
+git tag -a vYY.M.MICRO <commit> -m "Release YY.M.MICRO: <summary>"
+git push origin vYY.M.MICRO
+```
+
+4. Watch the build on [expo.dev](https://expo.dev) (workflow exits as soon as the build is queued; iOS build runs ~4 min on Expo's macOS workers)
+5. Once the build is `FINISHED`, submit to TestFlight from your local machine:
+
+```bash
+npx eas submit -p ios --latest
+```
+
+The CI workflow verifies that the pushed tag matches `app.json` `expo.version` and fails fast on mismatch. The iOS `buildNumber` is auto-incremented by EAS (`autoIncrement: true` in `eas.json`) — no manual bump needed.
+
+**Required GitHub secret:** `EXPO_TOKEN` (generate at <https://expo.dev/settings/access-tokens>, add via repo Settings → Secrets and variables → Actions).
+
 ## Platform and versions
 
 - React Native 0.76.9 + TypeScript
