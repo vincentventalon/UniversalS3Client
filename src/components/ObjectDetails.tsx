@@ -513,6 +513,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   viewerButtonsContainer: {
+    flexDirection: 'row',
     marginTop: 16,
     gap: 8,
   },

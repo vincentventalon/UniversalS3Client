@@ -43,6 +43,7 @@ function CsvViewer({ provider, bucketName, object, onBack }: CsvViewerProps) {
       }
       
       const csvText = await response.text();
+      console.log('[CsvViewer] fetched bytes:', csvText.length);
       const parsedData = parseCsv(csvText);
       setCsvData(parsedData);
       setEditedData(parsedData);
@@ -286,13 +287,14 @@ function CsvViewer({ provider, bucketName, object, onBack }: CsvViewerProps) {
         </View>
       </View>
 
-      <Card style={styles.tableCard}>
-        <Card.Content style={styles.tableContainer}>
-          <ScrollView style={styles.tableScrollView}>
-            {renderTable()}
-          </ScrollView>
-        </Card.Content>
-      </Card>
+      <View style={styles.tableCard}>
+        <ScrollView
+          style={styles.tableScrollView}
+          contentContainerStyle={styles.tableScrollContent}
+        >
+          {renderTable()}
+        </ScrollView>
+      </View>
     </View>
   );
 }
@@ -348,12 +350,11 @@ const styles = StyleSheet.create({
   tableCard: {
     flex: 1,
   },
-  tableContainer: {
-    flex: 1,
-    padding: 0,
-  },
   tableScrollView: {
     flex: 1,
+  },
+  tableScrollContent: {
+    flexGrow: 1,
   },
   tableRow: {
     flexDirection: 'row',

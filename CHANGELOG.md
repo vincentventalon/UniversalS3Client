@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project uses [Calendar Versioning](https://calver.org/) (YY.M.MICRO).
 
+## [26.5.1] - 2026-05-17
+
+### Fixed
+- **Object Details**: viewer button (Open JSON / CSV / YAML / Text Viewer) no longer overlaps the Rename / Delete row below it
+- **File viewers**: JSON, Text, CSV, and YAML viewer content cards now render correctly under the new architecture (Fabric); content was previously blank after the Expo SDK 54 upgrade
+
 ## [26.5.0] - 2026-05-16
 
 ### Added

@@ -41,6 +41,7 @@ function YamlViewer({ provider, bucketName, object, onBack }: YamlViewerProps) {
       }
       
       const yamlText = await response.text();
+      console.log('[YamlViewer] fetched bytes:', yamlText.length);
       setRawYamlText(yamlText);
       setEditedYamlText(yamlText);
       
@@ -254,29 +255,28 @@ function YamlViewer({ provider, bucketName, object, onBack }: YamlViewerProps) {
         </Card>
       )}
 
-      <Card style={styles.contentCard}>
-        <Card.Content style={styles.contentContainer}>
-          <ScrollView style={styles.scrollView}>
-            {isEditing ? (
-              <TextInput
-                mode="outlined"
-                multiline
-                value={editedYamlText}
-                onChangeText={handleYamlTextChange}
-                style={styles.textEditor}
-                placeholder="Enter YAML content..."
-                error={!!yamlError}
-              />
-            ) : (
-              <View style={styles.yamlTreeContainer}>
-                {yamlData ? renderYamlTree(yamlData) : (
-                  <Text style={styles.rawText}>{rawYamlText}</Text>
-                )}
-              </View>
-            )}
-          </ScrollView>
-        </Card.Content>
-      </Card>
+      <View style={styles.contentCard}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {isEditing ? (
+            <TextInput
+              mode="outlined"
+              multiline
+              value={editedYamlText}
+              onChangeText={handleYamlTextChange}
+              style={styles.textEditor}
+              placeholder="Enter YAML content..."
+              error={!!yamlError}
+            />
+          ) : (
+            yamlData ? renderYamlTree(yamlData) : (
+              <Text style={styles.rawText}>{rawYamlText}</Text>
+            )
+          )}
+        </ScrollView>
+      </View>
     </View>
   );
 }
@@ -332,21 +332,18 @@ const styles = StyleSheet.create({
   contentCard: {
     flex: 1,
   },
-  contentContainer: {
-    flex: 1,
-    padding: 0,
-  },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 16,
   },
   textEditor: {
     flex: 1,
     fontFamily: 'monospace',
     fontSize: 12,
     minHeight: 400,
-  },
-  yamlTreeContainer: {
-    padding: 16,
   },
   yamlContainer: {
     marginVertical: 2,

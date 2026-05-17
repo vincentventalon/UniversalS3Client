@@ -40,6 +40,7 @@ function JsonViewer({ provider, bucketName, object, onBack }: JsonViewerProps) {
       }
       
       const jsonText = await response.text();
+      console.log('[JsonViewer] fetched bytes:', jsonText.length);
       setRawJsonText(jsonText);
       setEditedJsonText(jsonText);
       
@@ -257,29 +258,28 @@ function JsonViewer({ provider, bucketName, object, onBack }: JsonViewerProps) {
         </Card>
       )}
 
-      <Card style={styles.contentCard}>
-        <Card.Content style={styles.contentContainer}>
-          <ScrollView style={styles.scrollView}>
-            {isEditing ? (
-              <TextInput
-                mode="outlined"
-                multiline
-                value={editedJsonText}
-                onChangeText={handleJsonTextChange}
-                style={styles.textEditor}
-                placeholder="Enter JSON content..."
-                error={!!jsonError}
-              />
-            ) : (
-              <View style={styles.jsonTreeContainer}>
-                {jsonData ? renderJsonTree(jsonData) : (
-                  <Text style={styles.rawText}>{rawJsonText}</Text>
-                )}
-              </View>
-            )}
-          </ScrollView>
-        </Card.Content>
-      </Card>
+      <View style={styles.contentCard}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {isEditing ? (
+            <TextInput
+              mode="outlined"
+              multiline
+              value={editedJsonText}
+              onChangeText={handleJsonTextChange}
+              style={styles.textEditor}
+              placeholder="Enter JSON content..."
+              error={!!jsonError}
+            />
+          ) : (
+            jsonData ? renderJsonTree(jsonData) : (
+              <Text style={styles.rawText}>{rawJsonText}</Text>
+            )
+          )}
+        </ScrollView>
+      </View>
     </View>
   );
 }
@@ -335,21 +335,18 @@ const styles = StyleSheet.create({
   contentCard: {
     flex: 1,
   },
-  contentContainer: {
-    flex: 1,
-    padding: 0,
-  },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 16,
   },
   textEditor: {
     flex: 1,
     fontFamily: 'monospace',
     fontSize: 12,
     minHeight: 400,
-  },
-  jsonTreeContainer: {
-    padding: 16,
   },
   jsonContainer: {
     marginVertical: 2,

@@ -38,6 +38,7 @@ function TextViewer({ provider, bucketName, object, onBack }: TextViewerProps) {
       }
       
       const content = await response.text();
+      console.log('[TextViewer] fetched bytes:', content.length);
       setTextContent(content);
       setEditedContent(content);
       
@@ -150,26 +151,27 @@ function TextViewer({ provider, bucketName, object, onBack }: TextViewerProps) {
         </View>
       </View>
 
-      <Card style={styles.contentCard}>
-        <Card.Content style={styles.contentContainer}>
-          <ScrollView style={styles.scrollView}>
-            {isEditing ? (
-              <TextInput
-                mode="outlined"
-                multiline
-                value={editedContent}
-                onChangeText={setEditedContent}
-                style={styles.textEditor}
-                placeholder="Enter text content..."
-              />
-            ) : (
-              <Text style={styles.textContent} selectable>
-                {textContent}
-              </Text>
-            )}
-          </ScrollView>
-        </Card.Content>
-      </Card>
+      <View style={styles.contentCard}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {isEditing ? (
+            <TextInput
+              mode="outlined"
+              multiline
+              value={editedContent}
+              onChangeText={setEditedContent}
+              style={styles.textEditor}
+              placeholder="Enter text content..."
+            />
+          ) : (
+            <Text style={styles.textContent} selectable>
+              {textContent}
+            </Text>
+          )}
+        </ScrollView>
+      </View>
     </View>
   );
 }
@@ -225,12 +227,12 @@ const styles = StyleSheet.create({
   contentCard: {
     flex: 1,
   },
-  contentContainer: {
-    flex: 1,
-    padding: 0,
-  },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 16,
   },
   textEditor: {
     flex: 1,
@@ -242,7 +244,6 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
     fontSize: 14,
     lineHeight: 20,
-    padding: 16,
   },
 });
 
