@@ -25,6 +25,13 @@ Universal S3 Client — a loose monorepo (no workspaces). Each app is self-conta
 - Lint/format before committing: `npm run check` (astro + eslint + prettier); `npm run fix` auto-fixes. Prettier: single quotes, semicolons, 2-space, 120-col.
 - **Programmatic SEO**: each entry in `src/data/providers.ts` generates one `/gui/<provider>` landing page. Add a provider = edit that one file.
 - Deploy is to Cloudflare Workers static assets (`wrangler-static.toml`, served from `dist/`): manual via `./deploy.sh` (or `npm run deploy`), or auto on push to master touching `apps/marketing/**` (`.github/workflows/deploy-marketing.yml`, needs the `CLOUDFLARE_API_TOKEN` repo secret). The zone `universals3client.com` must live on Cloudflare for the routes to bind.
+- **Sitemap / Google Search Console**: `@astrojs/sitemap` builds `dist/sitemap-index.xml` + `dist/sitemap-0.xml` at build; the AstroWind vendor integration auto-appends the `Sitemap:` line to `dist/robots.txt` (so `public/robots.txt` intentionally omits it — don't add it there). Live at `https://universals3client.com/sitemap-index.xml`. GSC property is `sc-domain:universals3client.com` (owner: `vincent.ventalon.pro@gmail.com`). The sitemap was submitted to GSC via the Search Console API on 2026-07-19 — re-submit is idempotent and rarely needed (Google re-fetches from robots.txt), but to do it programmatically:
+  ```sh
+  TOKEN=$(gcloud auth application-default print-access-token)
+  curl -X PUT -H "Authorization: Bearer $TOKEN" \
+    "https://searchconsole.googleapis.com/webmasters/v3/sites/sc-domain%3Auniversals3client.com/sitemaps/https%3A%2F%2Funiversals3client.com%2Fsitemap-index.xml"
+  ```
+  gcloud ADC on this machine is authorized for the Search Console API across all the portfolio's `sc-domain:` properties (`GET .../v3/sites` to list) — same token works for `templatefox.com`, `photocv.fr`, etc.
 
 ## Conventions
 
