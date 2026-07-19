@@ -1,0 +1,109 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import Hero from '~/components/widgets/Hero.astro';
+import Features from '~/components/widgets/Features.astro';
+import Steps from '~/components/widgets/Steps.astro';
+import CallToAction from '~/components/widgets/CallToAction.astro';
+import { providers, getProvider } from '~/data/providers';
+
+export async function getStaticPaths() {
+  return providers.map((p) => ({ params: { slug: p.slug } }));
+}
+
+const { slug } = Astro.params;
+const provider = getProvider(slug as string);
+if (!provider) return Astro.redirect('/404');
+
+const metadata = {
+  title: `${provider.name} GUI for macOS — Universal S3 Client`,
+  ignoreTitleTemplate: true,
+  description: `A native macOS GUI for ${provider.name}. Browse buckets, upload and download files, and manage ${provider.name} object storage with drag & drop — no command line required.`,
+};
+
+const factItems = [
+  { title: 'Endpoint', description: provider.endpoint, icon: 'tabler:plug-connected' },
+  { title: 'Regions', description: provider.regions, icon: 'tabler:world' },
+  { title: 'Storage', description: provider.storage, icon: 'tabler:database' },
+  { title: 'Egress', description: provider.egress, icon: 'tabler:arrow-down-circle' },
+];
+
+const highlightItems = provider.highlights.map((h) => ({
+  title: h,
+  icon: 'tabler:circle-check',
+}));
+---
+
+<Layout metadata={metadata}>
+  <Hero
+    actions={[
+      { variant: 'primary', text: 'Download for macOS', href: '/#download', icon: 'tabler:download' },
+      { text: 'See all providers', href: '/gui', variant: 'secondary' },
+    ]}
+    image={{
+      src: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      alt: `${provider.name} on macOS`,
+    }}
+  >
+    <Fragment slot="title">
+      A native <span class="text-accent dark:text-white">{provider.name}</span> GUI for macOS
+    </Fragment>
+    <Fragment slot="subtitle">
+      {provider.tagline}<br />
+      <span class="font-semibold">Universal S3 Client</span> connects to {provider.name} over the S3 API — browse
+      buckets, transfer files with drag & drop, and manage your storage without touching the command line.
+    </Fragment>
+  </Hero>
+
+  <Features
+    id="details"
+    tagline={provider.name}
+    title={`Connect Universal S3 Client to ${provider.name}`}
+    subtitle={
+      provider.builtIn
+        ? `${provider.name} is available as a built-in preset — pick it and paste your keys.`
+        : `${provider.name} speaks the S3 API, so it works with a custom endpoint and your access keys.`
+    }
+    items={[...highlightItems, ...factItems]}
+  />
+
+  <Steps
+    title={`How to manage ${provider.name} from your Mac`}
+    tagline="Getting started"
+    items={[
+      {
+        title: 'Download Universal S3 Client',
+        description: 'Install the native macOS app — no Docker, no CLI, no browser tab.',
+        icon: 'tabler:download',
+      },
+      {
+        title: `Create ${provider.name} access keys`,
+        description: `Generate an access key and secret key from your ${provider.name} console.`,
+        icon: 'tabler:key',
+      },
+      {
+        title: 'Add the connection',
+        description: provider.builtIn
+          ? `Choose ${provider.name} from the provider list and paste your keys.`
+          : `Add a custom S3 connection pointing at ${provider.endpoint} and paste your keys.`,
+        icon: 'tabler:plug-connected',
+      },
+      {
+        title: 'Manage your buckets',
+        description: 'Browse, preview, upload and download objects with a native Finder-like interface.',
+        icon: 'tabler:folder-check',
+      },
+    ]}
+  />
+
+  <CallToAction
+    id="download"
+    actions={[
+      { variant: 'primary', text: 'Download Universal S3 Client', href: '/#download', icon: 'tabler:download' },
+    ]}
+  >
+    <Fragment slot="title">The macOS client for {provider.name}</Fragment>
+    <Fragment slot="subtitle">
+      Stop juggling web consoles and CLI commands. Manage {provider.name} the native macOS way.
+    </Fragment>
+  </CallToAction>
+</Layout>

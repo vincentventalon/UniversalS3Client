@@ -1,0 +1,46 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import HeroText from '~/components/widgets/HeroText.astro';
+import CallToAction from '~/components/widgets/CallToAction.astro';
+import { providers } from '~/data/providers';
+
+const metadata = {
+  title: 'A native macOS GUI for every S3-compatible provider',
+  description:
+    'Universal S3 Client is a native macOS app for AWS S3, Cloudflare R2, Wasabi, Backblaze B2, DigitalOcean Spaces and every other S3-compatible storage provider.',
+};
+---
+
+<Layout metadata={metadata}>
+  <HeroText tagline="Providers" title="A native macOS GUI for your S3-compatible storage">
+    <Fragment slot="subtitle">
+      Universal S3 Client speaks the S3 API, so it works with any S3-compatible provider. Pick yours below to see how
+      to connect and manage it from your Mac.
+    </Fragment>
+  </HeroText>
+
+  <section class="px-4 py-8 sm:px-6 mx-auto max-w-6xl">
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        providers.map((p) => (
+          <a
+            href={`/gui/${p.slug}`}
+            class="block p-6 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition bg-white dark:bg-slate-900"
+          >
+            <h2 class="text-xl font-bold mb-1 dark:text-white">{p.name} GUI for macOS</h2>
+            <p class="text-muted text-sm">{p.tagline}</p>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <CallToAction
+    actions={[
+      { variant: 'primary', text: 'Download Universal S3 Client', href: '/#download', icon: 'tabler:download' },
+    ]}
+  >
+    <Fragment slot="title">One macOS app for all your S3 storage</Fragment>
+    <Fragment slot="subtitle">AWS, Cloudflare R2, Wasabi, Backblaze and every S3-compatible service — in one native app.</Fragment>
+  </CallToAction>
+</Layout>

@@ -3,8 +3,12 @@ import { getPermalink, getBlogPermalink, getAsset } from './utils/permalinks';
 export const headerData = {
   links: [
     {
+      text: 'Providers',
+      href: getPermalink('/gui'),
+    },
+    {
       text: 'Blog',
-      href: getBlogPermalink(), 
+      href: getBlogPermalink(),
     }
   ],
     // actions: [{ text: 'Download', href: 'https://github.com/onwidget/astrowind', target: '_blank' }],
@@ -15,6 +19,7 @@ export const footerData = {
     {
       title: 'Nos liens',
       links: [
+        { text: 'Providers', href: '/gui' },
         { text: 'Blog', href: '/blog' },
       ],
     },
