@@ -1,0 +1,12 @@
+name = "universals3client-marketing-worker"
+compatibility_date = "2025-05-05"
+workers_dev = true
+routes = [
+  { pattern = "universals3client.com/*", zone_name = "universals3client.com" },
+  { pattern = "www.universals3client.com/*", zone_name = "universals3client.com" },
+]
+
+# Astro builds to ./dist (see `npm run build`). Served as static Worker assets;
+# public/_headers sets the long-cache policy for /_astro/*.
+[assets]
+directory = "./dist"

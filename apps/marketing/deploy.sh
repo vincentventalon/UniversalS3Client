@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
-# Manual deploy of the marketing site to AWS S3 + CloudFront.
+# Manual deploy of the marketing site to Cloudflare Workers (static assets).
 # Mirrors .github/workflows/deploy-marketing.yml for local/one-off deploys.
-# Requires: awscli configured with credentials that can write the bucket and
-# create CloudFront invalidations (us3static uses a dedicated IAM user).
+# Requires: CLOUDFLARE_API_TOKEN in the environment (token with Workers Scripts
+# edit + the universals3client.com zone), or a prior `wrangler login`.
 set -euo pipefail
-
-BUCKET="s3://universals3client.com"
-DISTRIBUTION_ID="E2NABLFL93QGGP"
 
 # Run from this script's directory (apps/marketing) regardless of caller CWD.
 cd "$(dirname "$0")"
@@ -17,10 +14,7 @@ npm install
 echo "==> Building static site"
 npm run build
 
-echo "==> Syncing dist/ to $BUCKET"
-aws s3 sync dist/ "$BUCKET" --delete
-
-echo "==> Invalidating CloudFront ($DISTRIBUTION_ID)"
-aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths "/*"
+echo "==> Deploying to Cloudflare Workers"
+npx wrangler deploy --config wrangler-static.toml
 
 echo "==> Done. https://universals3client.com"
