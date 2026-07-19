@@ -1,0 +1,211 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+
+import Hero from '~/components/widgets/Hero.astro';
+import Features from '~/components/widgets/Features.astro';
+import Features2 from '~/components/widgets/Features2.astro';
+import Content from '~/components/widgets/Content.astro';
+import CallToAction from '~/components/widgets/CallToAction.astro';
+import BlogLatestPosts from '~/components/widgets/BlogLatestPosts.astro';
+
+const metadata = {
+  title: 'Universal S3 Client — Native macOS app for managing your S3 buckets',
+  ignoreTitleTemplate: true,
+  description: 'Native macOS application to easily manage your AWS S3, Cloudflare R2 and all S3-compatible service buckets. Intuitive interface, fast and secure transfers.',
+};
+---
+
+<Layout metadata={metadata}>
+  <!-- Hero Widget ******************* -->
+
+  <Hero
+    actions={[
+      {
+        variant: 'primary',
+        text: 'Download for macOS',
+        href: '#download',
+        icon: 'tabler:download',
+      },
+      { 
+        text: 'View Features', 
+        href: '#features',
+        variant: 'secondary'
+      },
+    ]}
+    image={{ 
+      src: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', 
+      alt: 'Universal S3 Client Interface' 
+    }}
+  >
+    <Fragment slot="title">
+      Universal S3 Client
+      <span class="text-accent dark:text-white">for macOS</span>
+    </Fragment>
+
+    <Fragment slot="subtitle">
+      <span class="hidden sm:inline">
+        <span class="font-semibold">The native macOS application</span> to manage all your S3 buckets.
+      </span>
+      <span class="block mb-1 sm:hidden font-bold text-blue-600">The S3 app for macOS.</span>
+      Compatible with AWS S3, Cloudflare R2, MinIO and all S3-compatible services. Intuitive interface, fast and secure transfers.
+    </Fragment>
+  </Hero>
+
+  <!-- Features Widget *************** -->
+
+  <Features
+    id="features"
+    tagline="Features"
+    title="Why choose Universal S3 Client?"
+    subtitle="A native macOS application designed to simplify your S3 data management"
+    items={[
+      {
+        title: 'Native macOS Interface',
+        description:
+          '100% native application with an intuitive interface that follows macOS conventions for an optimal user experience.',
+        icon: 'tabler:device-desktop',
+      },
+      {
+        title: 'Multi-Provider S3',
+        description:
+          'Compatible with AWS S3, Cloudflare R2, MinIO, DigitalOcean Spaces and all S3-compatible services.',
+        icon: 'tabler:cloud',
+      },
+      {
+        title: 'Fast Transfers',
+        description:
+          'Optimized uploads and downloads with multipart transfer support and automatic resume on interruption.',
+        icon: 'tabler:rocket',
+      },
+      {
+        title: 'Enhanced Security',
+        description:
+          'Encrypted connections, secure credential storage in macOS Keychain and IAM roles support.',
+        icon: 'tabler:shield-check',
+      },
+      {
+        title: 'Advanced Management',
+        description:
+          'File preview, permissions management, versioning, lifecycle policies and synchronization.',
+        icon: 'tabler:settings',
+      },
+      {
+        title: 'Optimized Performance',
+        description:
+          'Lightweight and fast application with intelligent memory and cache management for optimal performance.',
+        icon: 'tabler:speedboat',
+      },
+    ]}
+  />
+
+  <!-- Content Widget **************** -->
+
+  <Content
+    isReversed
+    tagline="Ease of Use"
+    title="Manage your S3 buckets with simplicity"
+    items={[
+      {
+        title: 'Drag & Drop Interface',
+        description: 'Upload your files simply by dragging them into the application.',
+      },
+      {
+        title: 'Intuitive Navigation',
+        description: 'Browse your buckets and folders just like in macOS Finder.',
+      },
+      {
+        title: 'Integrated Preview',
+        description: 'Preview images, videos and documents directly within the app.',
+      },
+    ]}
+    image={{
+      src: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      alt: 'Simple user interface',
+    }}
+  >
+    <Fragment slot="content">
+      <h3 class="text-2xl font-bold tracking-tight dark:text-white sm:text-3xl mb-2">
+        Interface designed for macOS
+      </h3>
+      A native user experience that will allow you to manage your S3 data with the same ease as your local files.
+    </Fragment>
+
+    <Fragment slot="bg">
+      <div class="absolute inset-0 bg-blue-50 dark:bg-slate-800"></div>
+    </Fragment>
+  </Content>
+
+  <!-- Features2 Widget ************** -->
+
+  <Features2
+    title="Advanced Features"
+    subtitle="Everything you need for professional S3 data management"
+    tagline="Professional Tools"
+    items={[
+      {
+        title: 'Permissions Management',
+        description: "Easily configure ACLs and policies for your buckets and objects.",
+        icon: 'tabler:lock',
+      },
+      {
+        title: 'Bidirectional Sync',
+        description: 'Automatically synchronize your local folders with your S3 buckets.',
+        icon: 'tabler:refresh',
+      },
+      {
+        title: 'Integrated CLI',
+        description: 'Built-in terminal for advanced users with autocompletion.',
+        icon: 'tabler:terminal',
+      },
+      {
+        title: 'Version History',
+        description: 'View and manage different versions of your S3 objects.',
+        icon: 'tabler:history',
+      },
+      {
+        title: 'Advanced Search',
+        description: 'Quickly find your files with filters and metadata.',
+        icon: 'tabler:search',
+      },
+      {
+        title: 'Real-time Monitoring',
+        description: 'Monitor your transfers and bucket usage in real-time.',
+        icon: 'tabler:activity',
+      },
+    ]}
+  >
+    <Fragment slot="bg">
+      <div class="absolute inset-0 bg-blue-50 dark:bg-slate-800"></div>
+    </Fragment>
+  </Features2>
+
+  <!-- HighlightedPosts Widget ******* -->
+
+  <BlogLatestPosts
+    title="Discover our latest articles"
+    information={`Stay informed about new features and best practices to optimize your use of Universal S3 Client.`}
+  />
+
+  <!-- CallToAction Widget *********** -->
+
+  <CallToAction
+    id="download"
+    actions={[
+      {
+        variant: 'primary',
+        text: 'Download Universal S3 Client',
+        href: '#',
+        target: '_blank',
+        icon: 'tabler:download',
+      },
+    ]}
+  >
+    <Fragment slot="title">
+      Ready to simplify your S3 management?
+    </Fragment>
+
+    <Fragment slot="subtitle">
+      Download Universal S3 Client and transform the way you manage your cloud data. 14-day free trial.
+    </Fragment>
+  </CallToAction>
+</Layout>
