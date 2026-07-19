@@ -34,3 +34,10 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Astro marketing site (apps/marketing)
+.astro/
+.output/
+.env
+.env.production
+pnpm-lock.yaml
