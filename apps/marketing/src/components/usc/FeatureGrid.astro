@@ -1,0 +1,22 @@
+---
+import { Icon } from 'astro-icon/components';
+
+export interface Props {
+  items: { icon: string; title: string; description: string }[];
+  columns?: 2 | 3;
+}
+
+const { items, columns = 3 } = Astro.props;
+---
+
+<div class={`grid gap-4 sm:grid-cols-2 ${columns === 3 ? 'lg:grid-cols-3' : ''}`}>
+  {
+    items.map((item) => (
+      <div class="panel px-5 py-5">
+        <Icon name={item.icon} class="mb-3 h-6 w-6 text-primary" />
+        <h3 class="mb-1.5 font-semibold text-heading">{item.title}</h3>
+        <p class="text-sm text-muted">{item.description}</p>
+      </div>
+    ))
+  }
+</div>

@@ -69,13 +69,13 @@ npm install
 
 ### Available Commands
 
-| Command                 | Action                                            |
-| :---------------------- | :------------------------------------------------ |
-| `npm run dev`           | Start development server                          |
-| `npm run build`         | Build the site for production                     |
-| `npm run preview`       | Preview local build                               |
-| `npm run check`         | Check project (Astro, ESLint, Prettier)          |
-| `npm run fix`           | Automatically fix errors                          |
+| Command           | Action                                  |
+| :---------------- | :-------------------------------------- |
+| `npm run dev`     | Start development server                |
+| `npm run build`   | Build the site for production           |
+| `npm run preview` | Preview local build                     |
+| `npm run check`   | Check project (Astro, ESLint, Prettier) |
+| `npm run fix`     | Automatically fix errors                |
 
 ### Local Development
 
@@ -104,7 +104,7 @@ metadata:
   title:
     default: Universal S3 Client
     template: '%s — Universal S3 Client'
-  description: "Native macOS app to manage your S3 buckets..."
+  description: 'Native macOS app to manage your S3 buckets...'
 ```
 
 ## Content
@@ -116,8 +116,8 @@ Articles are stored in `src/data/post/` in Markdown format with frontmatter:
 ```markdown
 ---
 publishDate: 2024-12-19T00:00:00Z
-title: "Article Title"
-excerpt: "Short description..."
+title: 'Article Title'
+excerpt: 'Short description...'
 image: https://example.com/image.jpg
 tags:
   - s3

@@ -1,0 +1,62 @@
+---
+// Pure-CSS mockup of the app's file browser.
+// TODO: replace with a real App Store screenshot once one is exported to ~/assets/images/.
+export interface Props {
+  provider?: string;
+  bucket?: string;
+}
+
+const { provider = 'cloudflare-r2', bucket = 'assets-prod' } = Astro.props;
+
+const files = [
+  { icon: '▸', name: 'images/', size: '—', kind: 'folder' },
+  { icon: '▸', name: 'exports/', size: '—', kind: 'folder' },
+  { icon: '·', name: 'config.json', size: '2.1 KB', kind: 'file' },
+  { icon: '·', name: 'deploy.yaml', size: '844 B', kind: 'file' },
+  { icon: '·', name: 'users-export.csv', size: '312 KB', kind: 'file' },
+  { icon: '·', name: 'logo@2x.png', size: '48 KB', kind: 'file' },
+];
+---
+
+<div class="panel w-full max-w-md select-none overflow-hidden text-sm shadow-2xl" aria-hidden="true">
+  <!-- Title bar -->
+  <div class="flex items-center gap-2 border-b border-line px-4 py-3">
+    <span class="h-2.5 w-2.5 rounded-full bg-line"></span>
+    <span class="h-2.5 w-2.5 rounded-full bg-line"></span>
+    <span class="h-2.5 w-2.5 rounded-full bg-line"></span>
+    <span class="ml-2 font-mono text-xs text-muted">Universal S3 Client</span>
+  </div>
+  <!-- Connection row -->
+  <div class="flex items-center gap-2 border-b border-line px-4 py-2.5">
+    <span class="h-1.5 w-1.5 rounded-full bg-primary"></span>
+    <span class="font-mono text-xs text-default">{provider} · {bucket}</span>
+  </div>
+  <!-- Breadcrumb -->
+  <div class="border-b border-line px-4 py-2 font-mono text-xs text-muted">{bucket} / backups /</div>
+  <!-- File rows -->
+  <ul class="divide-y divide-line/60">
+    {
+      files.map((file) => (
+        <li class="flex items-center justify-between px-4 py-2.5">
+          <span class={`font-mono text-xs ${file.kind === 'folder' ? 'text-primary' : 'text-default'}`}>
+            <span class="mr-2 inline-block w-3 text-muted">{file.icon}</span>
+            {file.name}
+          </span>
+          <span class="font-mono text-xs text-muted">{file.size}</span>
+        </li>
+      ))
+    }
+    <li class="px-4 py-2.5">
+      <div class="mb-1.5 flex items-center justify-between">
+        <span class="font-mono text-xs text-default">
+          <span class="mr-2 inline-block w-3 text-muted">↑</span>
+          backup-2026-07-19.tar.gz
+        </span>
+        <span class="font-mono text-xs text-primary">68%</span>
+      </div>
+      <div class="ml-5 h-1 overflow-hidden rounded bg-line">
+        <div class="h-full w-[68%] rounded bg-primary"></div>
+      </div>
+    </li>
+  </ul>
+</div>

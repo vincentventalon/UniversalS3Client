@@ -12,11 +12,15 @@ export default {
         accent: 'var(--aw-color-accent)',
         default: 'var(--aw-color-text-default)',
         muted: 'var(--aw-color-text-muted)',
+        heading: 'var(--aw-color-text-heading)',
+        panel: 'var(--aw-color-bg-panel)',
+        line: 'var(--aw-color-border)',
       },
       fontFamily: {
         sans: ['var(--aw-font-sans, ui-sans-serif)', ...defaultTheme.fontFamily.sans],
         serif: ['var(--aw-font-serif, ui-serif)', ...defaultTheme.fontFamily.serif],
         heading: ['var(--aw-font-heading, ui-sans-serif)', ...defaultTheme.fontFamily.sans],
+        mono: ['var(--aw-font-mono, ui-monospace)', ...defaultTheme.fontFamily.mono],
       },
 
       animation: {

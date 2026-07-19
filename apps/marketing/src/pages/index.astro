@@ -1,211 +1,223 @@
 ---
 import Layout from '~/layouts/PageLayout.astro';
-
-import Hero from '~/components/widgets/Hero.astro';
-import Features from '~/components/widgets/Features.astro';
-import Features2 from '~/components/widgets/Features2.astro';
-import Content from '~/components/widgets/Content.astro';
-import CallToAction from '~/components/widgets/CallToAction.astro';
-import BlogLatestPosts from '~/components/widgets/BlogLatestPosts.astro';
+import Section from '~/components/usc/Section.astro';
+import CtaButtons from '~/components/usc/CtaButtons.astro';
+import AppMock from '~/components/usc/AppMock.astro';
+import FeatureGrid from '~/components/usc/FeatureGrid.astro';
+import ProviderStrip from '~/components/usc/ProviderStrip.astro';
+import Faq from '~/components/usc/Faq.astro';
+import StructuredData from '~/components/usc/StructuredData.astro';
+import { Icon } from 'astro-icon/components';
+import { providers } from '~/data/providers';
+import { APP_STORE_URL, GITHUB_URL } from '~/data/links';
 
 const metadata = {
-  title: 'Universal S3 Client — Native macOS app for managing your S3 buckets',
+  title: 'Universal S3 Client — Free S3 Browser for iPhone, iPad & Mac',
   ignoreTitleTemplate: true,
-  description: 'Native macOS application to easily manage your AWS S3, Cloudflare R2 and all S3-compatible service buckets. Intuitive interface, fast and secure transfers.',
+  description:
+    'Free, open-source S3 client for iPhone, iPad and Apple Silicon Macs. Browse buckets, upload files and share presigned URLs across AWS S3, Cloudflare R2 and 13 more S3-compatible providers.',
+};
+
+const features = [
+  {
+    icon: 'tabler:folder-open',
+    title: 'Browse buckets & folders',
+    description: 'Navigate any bucket with breadcrumbs, list or grid view, and inline image thumbnails.',
+  },
+  {
+    icon: 'tabler:upload',
+    title: 'Uploads with real progress',
+    description: 'Multipart uploads from your photo library or files, with a real progress bar — not a spinner.',
+  },
+  {
+    icon: 'tabler:link',
+    title: 'Share presigned URLs',
+    description: 'Generate time-limited links to private objects and send them from the native share sheet.',
+  },
+  {
+    icon: 'tabler:checkbox',
+    title: 'Bulk operations',
+    description: 'Multi-select to copy, rename or delete files — including recursive folder operations.',
+  },
+  {
+    icon: 'tabler:file-code',
+    title: 'Built-in viewers & editors',
+    description: 'Open JSON, YAML, CSV and text/code files in place — edit and save them back to the bucket.',
+  },
+  {
+    icon: 'tabler:plug-connected',
+    title: 'Connection tests & offline mode',
+    description: 'Verify credentials before saving, and get a clear offline banner instead of silent failures.',
+  },
+];
+
+const notList = [
+  'no telemetry, no analytics',
+  'no account, no signup',
+  'no ads',
+  'no in-app purchases',
+  'no backend — your device talks straight to your provider',
+];
+
+const platforms = [
+  { icon: 'tabler:device-mobile', name: 'iPhone', detail: 'iOS 15.1+' },
+  { icon: 'tabler:device-ipad', name: 'iPad', detail: 'iPadOS 15.1+' },
+  { icon: 'tabler:device-laptop', name: 'Mac', detail: 'Apple Silicon, macOS 12+' },
+  { icon: 'tabler:eyeglass', name: 'Apple Vision', detail: 'visionOS 1.0+' },
+];
+
+const faqItems = [
+  {
+    q: 'Is Universal S3 Client really free?',
+    a: 'Yes — completely. No subscription, no in-app purchases, no ads, no feature paywall. The full source code is MIT-licensed on GitHub.',
+  },
+  {
+    q: 'Which storage providers does it work with?',
+    a: 'Fifteen presets: AWS S3, Cloudflare R2, Hetzner, DigitalOcean Spaces, Wasabi, Backblaze B2, Scaleway, Vultr, Linode, Oracle Cloud, IBM Cloud, Google Cloud Storage, Azure Blob, MinIO and IDrive e2 — anything that speaks the S3 API.',
+  },
+  {
+    q: 'Where are my access keys stored?',
+    a: 'In your device Keychain, encrypted on-device. The app has no server, so your credentials never leave the device except to sign requests to your own provider.',
+  },
+  {
+    q: 'Does it run on the Mac?',
+    a: 'Yes — the App Store version installs on Apple Silicon Macs (macOS 12 or later), alongside iPhone, iPad and Apple Vision Pro.',
+  },
+];
+
+const softwareJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Universal S3 Client',
+  operatingSystem: 'iOS 15.1+, iPadOS 15.1+, macOS 12+, visionOS 1.0+',
+  applicationCategory: 'UtilitiesApplication',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  downloadUrl: APP_STORE_URL,
+  installUrl: APP_STORE_URL,
+  url: 'https://universals3client.com',
+  sameAs: [GITHUB_URL],
+  license: 'https://opensource.org/licenses/MIT',
+  description:
+    'Free, open-source S3 client for iPhone, iPad and Mac. Browse buckets, upload files and share presigned URLs across 15 S3-compatible storage providers.',
+};
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqItems.map((item) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: { '@type': 'Answer', text: item.a },
+  })),
 };
 ---
 
 <Layout metadata={metadata}>
-  <!-- Hero Widget ******************* -->
+  <StructuredData data={softwareJsonLd} />
+  <StructuredData data={faqJsonLd} />
 
-  <Hero
-    actions={[
-      {
-        variant: 'primary',
-        text: 'Download for macOS',
-        href: '#download',
-        icon: 'tabler:download',
-      },
-      { 
-        text: 'View Features', 
-        href: '#features',
-        variant: 'secondary'
-      },
-    ]}
-    image={{ 
-      src: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', 
-      alt: 'Universal S3 Client Interface' 
-    }}
+  <!-- Hero -->
+  <section class="mx-auto max-w-6xl px-4 pb-12 pt-12 md:px-6 md:pb-20 md:pt-20">
+    <div class="grid items-center gap-10 lg:grid-cols-2">
+      <div>
+        <p class="mb-3 font-mono text-sm text-primary">$ one client, every S3 provider</p>
+        <h1 class="mb-5 font-heading text-4xl font-bold tracking-tight text-heading md:text-5xl">
+          A free, open-source S3 client for iPhone, iPad&nbsp;&amp;&nbsp;Mac
+        </h1>
+        <p class="mb-7 text-lg text-muted">
+          Browse buckets, upload with progress, share presigned links and manage files across AWS S3, Cloudflare R2,
+          Hetzner and 12 more S3-compatible providers. Your credentials never leave your device.
+        </p>
+        <CtaButtons />
+        <p class="mt-5 font-mono text-sm text-muted">Free · MIT licensed · No account · No tracking</p>
+      </div>
+      <div class="flex justify-center lg:justify-end">
+        <AppMock />
+      </div>
+    </div>
+  </section>
+
+  <!-- Providers -->
+  <Section
+    kicker="providers"
+    title="Works with 15 providers"
+    intro="Every preset builds the right endpoint for you — pick a provider, paste your keys, done. Each one has its own setup guide:"
   >
-    <Fragment slot="title">
-      Universal S3 Client
-      <span class="text-accent dark:text-white">for macOS</span>
-    </Fragment>
+    <ProviderStrip />
+    <p class="mt-6 text-sm text-muted">
+      <a href="/gui" class="text-primary hover:underline">See all provider guides →</a>
+    </p>
+  </Section>
 
-    <Fragment slot="subtitle">
-      <span class="hidden sm:inline">
-        <span class="font-semibold">The native macOS application</span> to manage all your S3 buckets.
-      </span>
-      <span class="block mb-1 sm:hidden font-bold text-blue-600">The S3 app for macOS.</span>
-      Compatible with AWS S3, Cloudflare R2, MinIO and all S3-compatible services. Intuitive interface, fast and secure transfers.
-    </Fragment>
-  </Hero>
-
-  <!-- Features Widget *************** -->
-
-  <Features
-    id="features"
-    tagline="Features"
-    title="Why choose Universal S3 Client?"
-    subtitle="A native macOS application designed to simplify your S3 data management"
-    items={[
-      {
-        title: 'Native macOS Interface',
-        description:
-          '100% native application with an intuitive interface that follows macOS conventions for an optimal user experience.',
-        icon: 'tabler:device-desktop',
-      },
-      {
-        title: 'Multi-Provider S3',
-        description:
-          'Compatible with AWS S3, Cloudflare R2, MinIO, DigitalOcean Spaces and all S3-compatible services.',
-        icon: 'tabler:cloud',
-      },
-      {
-        title: 'Fast Transfers',
-        description:
-          'Optimized uploads and downloads with multipart transfer support and automatic resume on interruption.',
-        icon: 'tabler:rocket',
-      },
-      {
-        title: 'Enhanced Security',
-        description:
-          'Encrypted connections, secure credential storage in macOS Keychain and IAM roles support.',
-        icon: 'tabler:shield-check',
-      },
-      {
-        title: 'Advanced Management',
-        description:
-          'File preview, permissions management, versioning, lifecycle policies and synchronization.',
-        icon: 'tabler:settings',
-      },
-      {
-        title: 'Optimized Performance',
-        description:
-          'Lightweight and fast application with intelligent memory and cache management for optimal performance.',
-        icon: 'tabler:speedboat',
-      },
-    ]}
-  />
-
-  <!-- Content Widget **************** -->
-
-  <Content
-    isReversed
-    tagline="Ease of Use"
-    title="Manage your S3 buckets with simplicity"
-    items={[
-      {
-        title: 'Drag & Drop Interface',
-        description: 'Upload your files simply by dragging them into the application.',
-      },
-      {
-        title: 'Intuitive Navigation',
-        description: 'Browse your buckets and folders just like in macOS Finder.',
-      },
-      {
-        title: 'Integrated Preview',
-        description: 'Preview images, videos and documents directly within the app.',
-      },
-    ]}
-    image={{
-      src: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      alt: 'Simple user interface',
-    }}
+  <!-- Features -->
+  <Section
+    kicker="features"
+    title="Everything a bucket needs, nothing it doesn't"
+    intro="A focused tool: it browses, moves and previews your objects. No dashboards, no upsells."
   >
-    <Fragment slot="content">
-      <h3 class="text-2xl font-bold tracking-tight dark:text-white sm:text-3xl mb-2">
-        Interface designed for macOS
-      </h3>
-      A native user experience that will allow you to manage your S3 data with the same ease as your local files.
-    </Fragment>
+    <FeatureGrid items={features} />
+  </Section>
 
-    <Fragment slot="bg">
-      <div class="absolute inset-0 bg-blue-50 dark:bg-slate-800"></div>
-    </Fragment>
-  </Content>
+  <!-- Privacy & open source -->
+  <Section kicker="privacy" title="Open source, no strings">
+    <div class="grid gap-8 lg:grid-cols-2">
+      <div class="text-lg text-muted">
+        <p class="mb-4">
+          Your access keys are stored in the device Keychain — encrypted by iOS itself. There is no backend: the app
+          signs requests on your device and talks directly to your storage provider.
+        </p>
+        <p>
+          The entire app is MIT-licensed. Read the code, open an issue, or build it yourself from
+          <a href={GITHUB_URL} class="text-primary hover:underline" target="_blank" rel="noopener">the GitHub repo</a>.
+        </p>
+      </div>
+      <div class="panel px-6 py-5">
+        <p class="mb-3 font-mono text-sm text-primary"># what this app does NOT do</p>
+        <ul class="flex flex-col gap-2">
+          {
+            notList.map((item) => (
+              <li class="font-mono text-sm text-default">
+                <span class="mr-2 text-muted">-</span>
+                {item}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </Section>
 
-  <!-- Features2 Widget ************** -->
-
-  <Features2
-    title="Advanced Features"
-    subtitle="Everything you need for professional S3 data management"
-    tagline="Professional Tools"
-    items={[
+  <!-- Platforms -->
+  <Section kicker="platforms" title="One download, four platforms">
+    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
       {
-        title: 'Permissions Management',
-        description: "Easily configure ACLs and policies for your buckets and objects.",
-        icon: 'tabler:lock',
-      },
-      {
-        title: 'Bidirectional Sync',
-        description: 'Automatically synchronize your local folders with your S3 buckets.',
-        icon: 'tabler:refresh',
-      },
-      {
-        title: 'Integrated CLI',
-        description: 'Built-in terminal for advanced users with autocompletion.',
-        icon: 'tabler:terminal',
-      },
-      {
-        title: 'Version History',
-        description: 'View and manage different versions of your S3 objects.',
-        icon: 'tabler:history',
-      },
-      {
-        title: 'Advanced Search',
-        description: 'Quickly find your files with filters and metadata.',
-        icon: 'tabler:search',
-      },
-      {
-        title: 'Real-time Monitoring',
-        description: 'Monitor your transfers and bucket usage in real-time.',
-        icon: 'tabler:activity',
-      },
-    ]}
-  >
-    <Fragment slot="bg">
-      <div class="absolute inset-0 bg-blue-50 dark:bg-slate-800"></div>
-    </Fragment>
-  </Features2>
+        platforms.map((platform) => (
+          <div class="panel px-5 py-5 text-center">
+            <Icon name={platform.icon} class="mx-auto mb-2 h-7 w-7 text-primary" />
+            <p class="font-semibold text-heading">{platform.name}</p>
+            <p class="font-mono text-xs text-muted">{platform.detail}</p>
+          </div>
+        ))
+      }
+    </div>
+  </Section>
 
-  <!-- HighlightedPosts Widget ******* -->
+  <!-- FAQ -->
+  <Section kicker="faq" title="Questions, answered">
+    <Faq items={faqItems} />
+  </Section>
 
-  <BlogLatestPosts
-    title="Discover our latest articles"
-    information={`Stay informed about new features and best practices to optimize your use of Universal S3 Client.`}
-  />
-
-  <!-- CallToAction Widget *********** -->
-
-  <CallToAction
-    id="download"
-    actions={[
-      {
-        variant: 'primary',
-        text: 'Download Universal S3 Client',
-        href: '#',
-        target: '_blank',
-        icon: 'tabler:download',
-      },
-    ]}
-  >
-    <Fragment slot="title">
-      Ready to simplify your S3 management?
-    </Fragment>
-
-    <Fragment slot="subtitle">
-      Download Universal S3 Client and transform the way you manage your cloud data. 14-day free trial.
-    </Fragment>
-  </CallToAction>
+  <!-- Final CTA -->
+  <Section classes="text-center">
+    <h2 class="mb-4 font-heading text-3xl font-bold tracking-tight text-heading md:text-4xl">
+      Your buckets, in your pocket
+    </h2>
+    <p class="mx-auto mb-7 max-w-2xl text-lg text-muted">
+      {providers.length} providers, one free app. Install it, paste your keys, and stop opening web consoles for every little
+      file.
+    </p>
+    <div class="flex justify-center">
+      <CtaButtons />
+    </div>
+  </Section>
 </Layout>

@@ -1,109 +1,193 @@
 ---
 import Layout from '~/layouts/PageLayout.astro';
-import Hero from '~/components/widgets/Hero.astro';
-import Features from '~/components/widgets/Features.astro';
-import Steps from '~/components/widgets/Steps.astro';
-import CallToAction from '~/components/widgets/CallToAction.astro';
-import { providers, getProvider } from '~/data/providers';
+import Section from '~/components/usc/Section.astro';
+import CtaButtons from '~/components/usc/CtaButtons.astro';
+import AppMock from '~/components/usc/AppMock.astro';
+import FactsTable from '~/components/usc/FactsTable.astro';
+import SetupSteps from '~/components/usc/SetupSteps.astro';
+import Faq from '~/components/usc/Faq.astro';
+import ProviderStrip from '~/components/usc/ProviderStrip.astro';
+import StructuredData from '~/components/usc/StructuredData.astro';
+import { Icon } from 'astro-icon/components';
+import { providers, type Provider } from '~/data/providers';
 
 export async function getStaticPaths() {
-  return providers.map((p) => ({ params: { slug: p.slug } }));
+  return providers.map((p) => ({ params: { slug: p.slug }, props: { provider: p } }));
 }
 
-const { slug } = Astro.params;
-const provider = getProvider(slug as string);
-if (!provider) return Astro.redirect('/404');
+interface Props {
+  provider: Provider;
+}
+
+const { provider } = Astro.props;
 
 const metadata = {
-  title: `${provider.name} GUI for macOS — Universal S3 Client`,
+  title: `${provider.name} GUI for Mac, iPhone & iPad — Free S3 Client`,
   ignoreTitleTemplate: true,
-  description: `A native macOS GUI for ${provider.name}. Browse buckets, upload and download files, and manage ${provider.name} object storage with drag & drop — no command line required.`,
+  description: `Free, open-source ${provider.name} GUI for iPhone, iPad and Mac. Browse buckets, upload files and share presigned URLs. Connects to ${provider.endpoint} with your access keys — no account, no tracking.`,
 };
 
-const factItems = [
-  { title: 'Endpoint', description: provider.endpoint, icon: 'tabler:plug-connected' },
-  { title: 'Regions', description: provider.regions, icon: 'tabler:world' },
-  { title: 'Storage', description: provider.storage, icon: 'tabler:database' },
-  { title: 'Egress', description: provider.egress, icon: 'tabler:arrow-down-circle' },
+const factRows = [
+  { label: 'endpoint', value: provider.endpoint },
+  { label: 'auth', value: provider.authFields.join(' · ') },
+  { label: 'regions', value: provider.regions, mono: false },
+  { label: 'storage', value: provider.storage, mono: false },
+  { label: 'egress', value: provider.egress, mono: false },
 ];
 
-const highlightItems = provider.highlights.map((h) => ({
-  title: h,
-  icon: 'tabler:circle-check',
-}));
+const capabilities = [
+  `Browse ${provider.name} buckets and folders with breadcrumbs, list or grid view, and image thumbnails.`,
+  'Upload from your photo library or files with multipart transfers and a real progress bar.',
+  'Generate time-limited presigned URLs to share private objects with anyone.',
+  'Preview and edit JSON, YAML, CSV and text files in place — changes save back to the bucket.',
+];
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: provider.faq.map((item) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: { '@type': 'Answer', text: item.a },
+  })),
+};
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://universals3client.com/' },
+    { '@type': 'ListItem', position: 2, name: 'Providers', item: 'https://universals3client.com/gui' },
+    {
+      '@type': 'ListItem',
+      position: 3,
+      name: provider.name,
+      item: `https://universals3client.com/gui/${provider.slug}`,
+    },
+  ],
+};
 ---
 
 <Layout metadata={metadata}>
-  <Hero
-    actions={[
-      { variant: 'primary', text: 'Download for macOS', href: '/#download', icon: 'tabler:download' },
-      { text: 'See all providers', href: '/gui', variant: 'secondary' },
-    ]}
-    image={{
-      src: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      alt: `${provider.name} on macOS`,
-    }}
+  <StructuredData data={faqJsonLd} />
+  <StructuredData data={breadcrumbJsonLd} />
+
+  <!-- Hero -->
+  <section class="mx-auto max-w-6xl px-4 pb-12 pt-12 md:px-6 md:pb-16 md:pt-16">
+    <nav class="mb-6 font-mono text-sm text-muted" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-primary">~</a>
+      <span class="mx-1">/</span>
+      <a href="/gui" class="hover:text-primary">gui</a>
+      <span class="mx-1">/</span>
+      <span class="text-default">{provider.slug}</span>
+    </nav>
+    <div class="grid items-center gap-10 lg:grid-cols-2">
+      <div>
+        <h1 class="mb-4 font-heading text-4xl font-bold tracking-tight text-heading md:text-5xl">
+          A native {provider.name} GUI for iPhone, iPad&nbsp;&amp;&nbsp;Mac
+        </h1>
+        <p class="mb-4 text-lg text-muted">
+          {provider.tagline} Universal S3 Client connects over the S3 API — browse buckets, transfer files and share presigned
+          links, free and open source.
+        </p>
+        <p class="mb-7"><span class="code-chip">{provider.endpoint}</span></p>
+        <CtaButtons />
+      </div>
+      <div class="flex justify-center lg:justify-end">
+        <AppMock provider={provider.slug} bucket="my-bucket" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Facts -->
+  <Section kicker="facts" title={`${provider.name} at a glance`}>
+    <FactsTable rows={factRows} />
+    <ul class="mt-6 grid gap-2 sm:grid-cols-3">
+      {
+        provider.highlights.map((highlight) => (
+          <li class="flex items-start gap-2 text-sm text-muted">
+            <Icon name="tabler:circle-check" class="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            {highlight}
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <!-- Setup -->
+  <Section
+    kicker="setup"
+    title={`Get your ${provider.name} access keys`}
+    intro={`Credentials are created in the ${provider.consoleName} — here's the exact path:`}
   >
-    <Fragment slot="title">
-      A native <span class="text-accent dark:text-white">{provider.name}</span> GUI for macOS
-    </Fragment>
-    <Fragment slot="subtitle">
-      {provider.tagline}<br />
-      <span class="font-semibold">Universal S3 Client</span> connects to {provider.name} over the S3 API — browse
-      buckets, transfer files with drag & drop, and manage your storage without touching the command line.
-    </Fragment>
-  </Hero>
+    <div class="max-w-3xl">
+      <SetupSteps steps={provider.keySteps} />
+      <p class="mt-6 text-sm text-muted">
+        Console: <a
+          href={provider.consoleUrl}
+          class="font-mono text-primary hover:underline"
+          target="_blank"
+          rel="noopener">{provider.consoleUrl}</a
+        >
+      </p>
+    </div>
+  </Section>
 
-  <Features
-    id="details"
-    tagline={provider.name}
-    title={`Connect Universal S3 Client to ${provider.name}`}
-    subtitle={
-      provider.builtIn
-        ? `${provider.name} is available as a built-in preset — pick it and paste your keys.`
-        : `${provider.name} speaks the S3 API, so it works with a custom endpoint and your access keys.`
-    }
-    items={[...highlightItems, ...factItems]}
-  />
+  <!-- Quirks -->
+  {
+    provider.quirks.length > 0 && (
+      <Section kicker="good to know" title="Before you connect">
+        <div class="flex max-w-3xl flex-col gap-3">
+          {provider.quirks.map((quirk) => (
+            <div class="panel flex items-start gap-3 px-5 py-4">
+              <Icon name="tabler:info-circle" class="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+              <p class="text-sm text-default">{quirk}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
+    )
+  }
 
-  <Steps
-    title={`How to manage ${provider.name} from your Mac`}
-    tagline="Getting started"
-    items={[
+  <!-- Capabilities -->
+  <Section kicker="features" title={`What you can do with ${provider.name}`}>
+    <ul class="grid max-w-4xl gap-3 sm:grid-cols-2">
       {
-        title: 'Download Universal S3 Client',
-        description: 'Install the native macOS app — no Docker, no CLI, no browser tab.',
-        icon: 'tabler:download',
-      },
-      {
-        title: `Create ${provider.name} access keys`,
-        description: `Generate an access key and secret key from your ${provider.name} console.`,
-        icon: 'tabler:key',
-      },
-      {
-        title: 'Add the connection',
-        description: provider.builtIn
-          ? `Choose ${provider.name} from the provider list and paste your keys.`
-          : `Add a custom S3 connection pointing at ${provider.endpoint} and paste your keys.`,
-        icon: 'tabler:plug-connected',
-      },
-      {
-        title: 'Manage your buckets',
-        description: 'Browse, preview, upload and download objects with a native Finder-like interface.',
-        icon: 'tabler:folder-check',
-      },
-    ]}
-  />
+        capabilities.map((capability) => (
+          <li class="flex items-start gap-2 text-muted">
+            <Icon name="tabler:arrow-right" class="mt-1 h-4 w-4 shrink-0 text-primary" />
+            {capability}
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
 
-  <CallToAction
-    id="download"
-    actions={[
-      { variant: 'primary', text: 'Download Universal S3 Client', href: '/#download', icon: 'tabler:download' },
-    ]}
-  >
-    <Fragment slot="title">The macOS client for {provider.name}</Fragment>
-    <Fragment slot="subtitle">
-      Stop juggling web consoles and CLI commands. Manage {provider.name} the native macOS way.
-    </Fragment>
-  </CallToAction>
+  <!-- FAQ -->
+  <Section kicker="faq" title={`${provider.name} — frequently asked`}>
+    <div class="max-w-3xl">
+      <Faq items={provider.faq} />
+    </div>
+  </Section>
+
+  <!-- Related -->
+  <Section kicker="related" title="Also worth a look">
+    <ProviderStrip slugs={provider.related} />
+    <p class="mt-6 text-sm text-muted">
+      <a href="/gui" class="text-primary hover:underline">All 15 providers →</a>
+    </p>
+  </Section>
+
+  <!-- CTA -->
+  <Section classes="text-center">
+    <h2 class="mb-4 font-heading text-3xl font-bold tracking-tight text-heading md:text-4xl">
+      The free {provider.name} client for your pocket
+    </h2>
+    <p class="mx-auto mb-7 max-w-2xl text-lg text-muted">
+      Install the app, paste your {provider.name} keys, and manage your buckets from anywhere.
+    </p>
+    <div class="flex justify-center">
+      <CtaButtons />
+    </div>
+  </Section>
 </Layout>

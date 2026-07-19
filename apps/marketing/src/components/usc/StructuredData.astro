@@ -1,0 +1,9 @@
+---
+export interface Props {
+  data: object;
+}
+
+const { data } = Astro.props;
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(data)} is:inline />

@@ -120,7 +120,7 @@ function JsonViewer({ provider, bucketName, object, onBack }: JsonViewerProps) {
     }
     
     if (typeof data === 'string') {
-      return <Text style={[styles.jsonValue, styles.stringValue]}>"{data}"</Text>;
+      return <Text style={[styles.jsonValue, styles.stringValue]}>{`"${data}"`}</Text>;
     }
     
     if (typeof data === 'number') {
@@ -164,7 +164,7 @@ function JsonViewer({ provider, bucketName, object, onBack }: JsonViewerProps) {
           {keys.map((key, index) => (
             <View key={key} style={[styles.jsonItem, { marginLeft: (depth + 1) * 20 }]}>
               <View style={styles.objectItem}>
-                <Text style={styles.jsonKey}>"{key}"</Text>
+                <Text style={styles.jsonKey}>{`"${key}"`}</Text>
                 <Text style={styles.colon}>: </Text>
                 {renderJsonTree(data[key], depth + 1)}
                 {index < keys.length - 1 && <Text style={styles.comma}>,</Text>}

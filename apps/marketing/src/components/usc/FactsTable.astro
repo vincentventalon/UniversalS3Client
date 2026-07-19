@@ -1,0 +1,20 @@
+---
+export interface Props {
+  rows: { label: string; value: string; mono?: boolean }[];
+}
+
+const { rows } = Astro.props;
+---
+
+<div class="panel overflow-hidden">
+  <dl class="divide-y divide-line">
+    {
+      rows.map((row) => (
+        <div class="flex flex-col gap-1 px-5 py-3.5 sm:flex-row sm:items-baseline sm:gap-4">
+          <dt class="w-40 shrink-0 font-mono text-sm uppercase tracking-wide text-muted">{row.label}</dt>
+          <dd class={row.mono === false ? 'text-default' : 'break-all font-mono text-sm text-default'}>{row.value}</dd>
+        </div>
+      ))
+    }
+  </dl>
+</div>

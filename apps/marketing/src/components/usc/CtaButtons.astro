@@ -1,0 +1,21 @@
+---
+import { Icon } from 'astro-icon/components';
+import { APP_STORE_URL, GITHUB_URL } from '~/data/links';
+
+export interface Props {
+  classes?: string;
+}
+
+const { classes = '' } = Astro.props;
+---
+
+<div class={`flex flex-wrap items-center gap-3 ${classes}`}>
+  <a href={APP_STORE_URL} target="_blank" rel="noopener" class="btn-primary">
+    <Icon name="tabler:brand-apple" class="-ml-1.5 mr-2 inline-block h-5 w-5" />
+    Download on the App Store
+  </a>
+  <a href={GITHUB_URL} target="_blank" rel="noopener" class="btn-secondary">
+    <Icon name="tabler:brand-github" class="-ml-1.5 mr-2 inline-block h-5 w-5" />
+    View source on GitHub
+  </a>
+</div>

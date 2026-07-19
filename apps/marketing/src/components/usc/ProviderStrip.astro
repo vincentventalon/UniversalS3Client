@@ -1,0 +1,28 @@
+---
+import { providers } from '~/data/providers';
+
+export interface Props {
+  // Optional list of slugs to show (in that order). Defaults to all providers.
+  slugs?: string[];
+}
+
+const { slugs } = Astro.props;
+
+const shown = slugs
+  ? slugs.map((slug) => providers.find((p) => p.slug === slug)).filter((p) => p !== undefined)
+  : providers;
+---
+
+<div class="flex flex-wrap gap-2">
+  {
+    shown.map((provider) => (
+      <a
+        href={`/gui/${provider.slug}`}
+        class="panel group inline-flex items-baseline gap-2 px-3.5 py-2 transition-colors hover:border-primary"
+      >
+        <span class="font-medium text-heading group-hover:text-primary">{provider.name}</span>
+        <span class="font-mono text-xs text-muted">{provider.slug}</span>
+      </a>
+    ))
+  }
+</div>

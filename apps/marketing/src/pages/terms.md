@@ -1,5 +1,5 @@
 ---
-title: "Terms of Service"
+title: 'Terms of Service'
 layout: '~/layouts/MarkdownLayout.astro'
 ---
 
@@ -17,7 +17,7 @@ The words of which the initial letter is capitalized have meanings defined under
 
 For the purposes of these Terms of Service:
 
-- **Application** refers to Universal S3 Client, the macOS application provided by the Company.
+- **Application** refers to Universal S3 Client, the application for iPhone, iPad, Mac and Apple Vision provided by the Company.
 
 - **Company** (referred to as either "the Company", "We", "Us" or "Our" in this Agreement) refers to Universal S3 Client.
 

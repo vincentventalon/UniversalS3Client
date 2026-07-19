@@ -11,7 +11,7 @@ metadata:
   title:
     default: Universal S3 Client
     template: '%s — Universal S3 Client'
-  description: "🚀 Native macOS app to manage your AWS S3, Cloudflare R2 and S3-compatible storage buckets. Intuitive interface and high performance."
+  description: 'Free, open-source S3 client for iPhone, iPad and Mac. Browse buckets, upload files and share presigned URLs across AWS S3, Cloudflare R2 and 13 more S3-compatible providers.'
   robots:
     index: true
     follow: true
@@ -23,8 +23,8 @@ metadata:
         height: 628
     type: website
   twitter:
-    handle: '@universals3'
-    site: '@universals3'
+    handle: '@VincentVentalon'
+    site: '@VincentVentalon'
     cardType: summary_large_image
 
 i18n:
@@ -69,4 +69,4 @@ analytics:
       id: null # or "G-XXXXXXXXXX"
 
 ui:
-  theme: 'system' # Values: "system" | "light" | "dark" | "light:only" | "dark:only"
+  theme: 'dark:only' # Values: "system" | "light" | "dark" | "light:only" | "dark:only"

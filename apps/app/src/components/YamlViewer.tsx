@@ -121,7 +121,7 @@ function YamlViewer({ provider, bucketName, object, onBack }: YamlViewerProps) {
     }
     
     if (typeof data === 'string') {
-      return <Text style={[styles.yamlValue, styles.stringValue]}>"{data}"</Text>;
+      return <Text style={[styles.yamlValue, styles.stringValue]}>{`"${data}"`}</Text>;
     }
     
     if (typeof data === 'number') {

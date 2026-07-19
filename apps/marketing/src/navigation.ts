@@ -1,4 +1,5 @@
-import { getPermalink, getBlogPermalink, getAsset } from './utils/permalinks';
+import { getPermalink, getBlogPermalink } from './utils/permalinks';
+import { APP_STORE_URL, GITHUB_URL } from './data/links';
 
 export const headerData = {
   links: [
@@ -9,15 +10,22 @@ export const headerData = {
     {
       text: 'Blog',
       href: getBlogPermalink(),
-    }
+    },
   ],
-    // actions: [{ text: 'Download', href: 'https://github.com/onwidget/astrowind', target: '_blank' }],
+  actions: [{ text: 'Download', href: APP_STORE_URL, target: '_blank' }],
 };
 
 export const footerData = {
   links: [
     {
-      title: 'Nos liens',
+      title: 'Product',
+      links: [
+        { text: 'Download on the App Store', href: APP_STORE_URL },
+        { text: 'Source code on GitHub', href: GITHUB_URL },
+      ],
+    },
+    {
+      title: 'Site',
       links: [
         { text: 'Providers', href: '/gui' },
         { text: 'Blog', href: '/blog' },
@@ -25,17 +33,14 @@ export const footerData = {
     },
   ],
   secondaryLinks: [
-    { text: 'Conditions d\'utilisation', href: getPermalink('/terms') },
-    { text: 'Politique de confidentialité', href: getPermalink('/privacy') },
+    { text: 'Terms', href: getPermalink('/terms') },
+    { text: 'Privacy Policy', href: getPermalink('/privacy') },
   ],
   socialLinks: [
     { ariaLabel: 'X', icon: 'tabler:brand-x', href: 'https://x.com/VincentVentalon' },
-    // { ariaLabel: 'Instagram', icon: 'tabler:brand-instagram', href: '#' },
-    // { ariaLabel: 'Facebook', icon: 'tabler:brand-facebook', href: '#' },
-    // { ariaLabel: 'RSS', icon: 'tabler:rss', href: getAsset('/rss.xml') },
-    // { ariaLabel: 'Github', icon: 'tabler:brand-github', href: 'https://github.com/onwidget/astrowind' },
+    { ariaLabel: 'GitHub', icon: 'tabler:brand-github', href: GITHUB_URL },
   ],
   footNote: `
-Fait avec ❤️ et ☀️ par <a class="text-blue-600 underline dark:text-muted" href="https://vincentventalon.com/"> Vincent</a> · Tous droits réservés.
+Made by <a class="text-primary underline" href="https://vincentventalon.com/">Vincent Ventalon</a> · MIT licensed
   `,
 };

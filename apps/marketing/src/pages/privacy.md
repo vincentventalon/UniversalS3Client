@@ -19,7 +19,7 @@ The words of which the initial letter is capitalized have meanings defined under
 
 For the purposes of this Privacy Policy:
 
-- **Application** refers to Universal S3 Client, the macOS application we provide.
+- **Application** refers to Universal S3 Client, the application for iPhone, iPad, Mac and Apple Vision we provide.
 - **Company** (referred to as either "the Company", "We", "Us" or "Our" in this Agreement) refers to Universal S3 Client.
 - **Cookies** are small files that are placed on your computer, mobile device or any other device by a website, containing the details of your browsing history on that website among its many uses.
 - **Device** means any device that can access the Service such as a computer, a cellphone or a digital tablet.

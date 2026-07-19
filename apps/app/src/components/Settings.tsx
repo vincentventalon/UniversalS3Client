@@ -64,7 +64,7 @@ export default function Settings({ onBack, appVersion }: SettingsProps) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About the Developer</Text>
           <Text style={styles.description}>
-            Hi, I'm Vincent! I built this app to help developers and power users manage their S3 storage efficiently. 
+            Hi, I{"'"}m Vincent! I built this app to help developers and power users manage their S3 storage efficiently.{' '}
             This is a passion project that I maintain in my free time.
           </Text>
           

@@ -1,46 +1,85 @@
 ---
 import Layout from '~/layouts/PageLayout.astro';
-import HeroText from '~/components/widgets/HeroText.astro';
-import CallToAction from '~/components/widgets/CallToAction.astro';
-import { providers } from '~/data/providers';
+import Section from '~/components/usc/Section.astro';
+import CtaButtons from '~/components/usc/CtaButtons.astro';
+import { providers, type ProviderGroup } from '~/data/providers';
 
 const metadata = {
-  title: 'A native macOS GUI for every S3-compatible provider',
+  title: 'S3 GUI for Every Provider — AWS, R2, Wasabi, B2 & 11 More',
+  ignoreTitleTemplate: true,
   description:
-    'Universal S3 Client is a native macOS app for AWS S3, Cloudflare R2, Wasabi, Backblaze B2, DigitalOcean Spaces and every other S3-compatible storage provider.',
+    'One free, open-source S3 client for 15 providers: AWS S3, Cloudflare R2, Hetzner, Wasabi, Backblaze B2, MinIO and more. Setup guides for each provider, on iPhone, iPad and Mac.',
 };
+
+const groups: { key: ProviderGroup; title: string; blurb: string }[] = [
+  {
+    key: 'hyperscaler',
+    title: 'Hyperscalers',
+    blurb: 'The big clouds — deep feature sets, regional sprawl, enterprise pricing.',
+  },
+  {
+    key: 'independent',
+    title: 'Independent clouds',
+    blurb: 'Simpler pricing, often cheaper egress — where most side projects live.',
+  },
+  {
+    key: 'selfhosted',
+    title: 'Self-hosted',
+    blurb: 'Your hardware, your rules.',
+  },
+];
 ---
 
 <Layout metadata={metadata}>
-  <HeroText tagline="Providers" title="A native macOS GUI for your S3-compatible storage">
-    <Fragment slot="subtitle">
-      Universal S3 Client speaks the S3 API, so it works with any S3-compatible provider. Pick yours below to see how
-      to connect and manage it from your Mac.
-    </Fragment>
-  </HeroText>
-
-  <section class="px-4 py-8 sm:px-6 mx-auto max-w-6xl">
-    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {
-        providers.map((p) => (
-          <a
-            href={`/gui/${p.slug}`}
-            class="block p-6 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-lg transition bg-white dark:bg-slate-900"
-          >
-            <h2 class="text-xl font-bold mb-1 dark:text-white">{p.name} GUI for macOS</h2>
-            <p class="text-muted text-sm">{p.tagline}</p>
-          </a>
-        ))
-      }
-    </div>
+  <!-- Hero -->
+  <section class="mx-auto max-w-6xl px-4 pb-4 pt-12 md:px-6 md:pt-16">
+    <p class="mb-3 font-mono text-sm text-primary">$ ls /gui</p>
+    <h1 class="mb-5 font-heading text-4xl font-bold tracking-tight text-heading md:text-5xl">
+      One S3 client for {providers.length} providers
+    </h1>
+    <p class="mb-7 max-w-3xl text-lg text-muted">
+      Anything that speaks the S3 API works with Universal S3 Client. Pick your provider below for a setup guide — where
+      the keys are created, which endpoint to use, and what to watch out for.
+    </p>
+    <CtaButtons />
   </section>
 
-  <CallToAction
-    actions={[
-      { variant: 'primary', text: 'Download Universal S3 Client', href: '/#download', icon: 'tabler:download' },
-    ]}
-  >
-    <Fragment slot="title">One macOS app for all your S3 storage</Fragment>
-    <Fragment slot="subtitle">AWS, Cloudflare R2, Wasabi, Backblaze and every S3-compatible service — in one native app.</Fragment>
-  </CallToAction>
+  {
+    groups.map((group) => {
+      const groupProviders = providers.filter((p) => p.group === group.key);
+      return (
+        <Section
+          kicker={`${group.title.toLowerCase()} · ${groupProviders.length}`}
+          title={group.title}
+          intro={group.blurb}
+        >
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {groupProviders.map((provider) => (
+              <a
+                href={`/gui/${provider.slug}`}
+                class="panel group flex flex-col px-5 py-5 transition-colors hover:border-primary"
+              >
+                <h3 class="mb-1 font-semibold text-heading group-hover:text-primary">{provider.name}</h3>
+                <p class="mb-3 flex-1 text-sm text-muted">{provider.tagline}</p>
+                <p class="break-all font-mono text-xs text-muted">{provider.endpoint}</p>
+              </a>
+            ))}
+          </div>
+        </Section>
+      );
+    })
+  }
+
+  <!-- CTA -->
+  <Section classes="text-center">
+    <h2 class="mb-4 font-heading text-3xl font-bold tracking-tight text-heading md:text-4xl">
+      Fifteen consoles, one app
+    </h2>
+    <p class="mx-auto mb-7 max-w-2xl text-lg text-muted">
+      Free and open source, on iPhone, iPad and Apple Silicon Macs. Your keys stay in your Keychain.
+    </p>
+    <div class="flex justify-center">
+      <CtaButtons />
+    </div>
+  </Section>
 </Layout>
