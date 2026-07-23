@@ -38,3 +38,52 @@ jobs:
         run: npx wrangler deploy --config wrangler-static.toml
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      # --- Post-deploy search-engine pings (standard portfolio) ---
+      # GSC: resubmit the sitemap via API (public ping endpoint retired 2023).
+      # SA gsc-sitemap-ci@siteos-saas must be delegated on sc-domain:universals3client.com.
+      # IndexNow: notify Bing/Yandex & co (Google ignores IndexNow).
+      # continue-on-error: pings must never fail a deploy.
+      - name: Authenticate to Google (GSC)
+        id: gsc-auth
+        continue-on-error: true
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GSC_SA_KEY }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/webmasters
+
+      - name: Submit sitemap to Google Search Console
+        if: steps.gsc-auth.outcome == 'success'
+        continue-on-error: true
+        run: |
+          code=$(curl -s -X PUT \
+            -H "Authorization: Bearer ${{ steps.gsc-auth.outputs.access_token }}" \
+            -o /dev/null -w "%{http_code}" \
+            "https://www.googleapis.com/webmasters/v3/sites/sc-domain%3Auniversals3client.com/sitemaps/https%3A%2F%2Funiversals3client.com%2Fsitemap-index.xml")
+          echo "GSC sitemap submission: HTTP $code"
+          [ "$code" = "204" ] || echo "::warning::GSC sitemap submission returned HTTP $code"
+
+      - name: Submit URLs to IndexNow
+        continue-on-error: true
+        run: |
+          KEY=b48e90deb8d362cfb0bfe2551d0cd4a2
+          HOST=universals3client.com
+          SITEMAP="https://universals3client.com/sitemap-index.xml"
+          locs() { curl -sL "$1" | grep -oE '<loc>[^<]+</loc>' | sed -E 's|</?loc>||g'; }
+          URLS=""
+          for u in $(locs "$SITEMAP"); do
+            case "$u" in
+              *.xml) URLS="$URLS $(locs "$u")" ;;
+              *) URLS="$URLS $u" ;;
+            esac
+          done
+          COUNT=$(echo $URLS | wc -w | tr -d ' ')
+          if [ "$COUNT" = "0" ]; then echo "::warning::IndexNow: no URLs found in sitemap"; exit 0; fi
+          printf '%s\n' $URLS | jq -R . | jq -s --arg h "$HOST" --arg k "$KEY" \
+            '{host:$h, key:$k, keyLocation:("https://"+$h+"/"+$k+".txt"), urlList:.}' > /tmp/indexnow.json
+          code=$(curl -s -X POST "https://api.indexnow.org/indexnow" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -o /dev/null -w "%{http_code}" -d @/tmp/indexnow.json)
+          echo "IndexNow: submitted $COUNT URLs, HTTP $code"
+          case "$code" in 200|202) ;; *) echo "::warning::IndexNow returned HTTP $code" ;; esac
