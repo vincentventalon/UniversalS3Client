@@ -8,5 +8,11 @@ routes = [
 
 # Astro builds to ./dist (see `npm run build`). Served as static Worker assets;
 # public/_headers sets the long-cache policy for /_astro/*.
+# html_handling: the site is trailingSlash:false everywhere (canonicals +
+# sitemap, src/config.yaml) — serve the no-slash URLs directly (308 from the
+# slash variant) instead of the default auto-trailing-slash, which 307'd every
+# canonical URL to its slash variant (canonical/redirect loop, GSC audit
+# 2026-07-27).
 [assets]
 directory = "./dist"
+html_handling = "drop-trailing-slash"

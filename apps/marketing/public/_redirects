@@ -1,0 +1,3 @@
+# Conventional sitemap path → the real @astrojs/sitemap index (also declared
+# in robots.txt). /sitemap.xml itself 404'd before (GSC audit 2026-07-27).
+/sitemap.xml /sitemap-index.xml 301
