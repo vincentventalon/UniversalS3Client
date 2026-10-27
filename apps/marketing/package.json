@@ -11,7 +11,7 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "deploy": "npm run build && wrangler deploy --config wrangler-static.toml",
+    "deploy": "node scripts/deploy-guard.mjs && npm run build && wrangler deploy --config wrangler-static.toml",
     "astro": "astro",
     "check": "npm run check:astro && npm run check:eslint && npm run check:prettier",
     "check:astro": "astro check",
