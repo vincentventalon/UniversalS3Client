@@ -1,4 +1,4 @@
 dist
 node_modules
 .github
-.changeset
+.changesetscripts/deploy-guard.mjs
