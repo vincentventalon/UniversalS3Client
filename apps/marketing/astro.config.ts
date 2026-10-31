@@ -56,8 +56,7 @@ export default defineConfig({
     ),
 
     compress({
-      // csso silently drops the `@media (width>=...)` and @keyframes that Vite 8 emits, and only saved 527 bytes.
-      CSS: false,
+      CSS: true,
       HTML: {
         'html-minifier-terser': {
           removeAttributeQuotes: false,
@@ -88,7 +87,10 @@ export default defineConfig({
 
   vite: {
     build: {
-      // Vite 6's default: keeps `min-width` media queries for browsers older than Safari 16.4 (Vite 8 would use ranges).
+      // Same CSS minifier and target as before Astro 7. Vite 8's default (Lightning CSS) rounds lengths (1px shifts),
+      // strips prefixes, and writes `@media (width>=...)`, which the csso step of astro-compress silently deletes.
+      // Without this target, esbuild drops -webkit-backdrop-filter, still needed by Safari before 18.
+      cssMinify: 'esbuild',
       cssTarget: ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14'],
     },
     // @astrojs/tailwind is capped at Astro 5: Tailwind v3 now runs as a plain PostCSS plugin.
